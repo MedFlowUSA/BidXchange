@@ -1,0 +1,44 @@
+{
+  "name": "bidxchange",
+  "version": "1.0.0",
+  "description": "BidXchange government-contracting workspace",
+  "scripts": {
+    "dev": "next dev apps/web --hostname 127.0.0.1",
+    "build": "next build apps/web",
+    "start": "next start apps/web --hostname 127.0.0.1",
+    "typecheck": "tsc --project apps/web/tsconfig.json --noEmit",
+    "test": "playwright test",
+    "lint": "eslint apps/web packages tests",
+    "format": "prettier --write apps/web packages tests docs package.json",
+    "format:check": "prettier --check apps/web packages tests docs package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MedFlowUSA/BidXchange.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MedFlowUSA/BidXchange/issues"
+  },
+  "homepage": "https://github.com/MedFlowUSA/BidXchange#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "lucide-react": "^1.47.0",
+    "next": "^16.3.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.5",
+    "prettier": "^3.9.8",
+    "typescript": "^5.9.3"
+  },
+  "private": true
+}
