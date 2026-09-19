@@ -1,8 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
 async function navigate(page: Page, name: string) {
+  await expect(page.locator('main h1')).toBeVisible();
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
   if (await menu.isVisible()) await menu.click();
-  await page.getByRole('navigation').getByRole('button', { name, exact: false }).click();
+  await page.getByRole('navigation').getByRole('link', { name, exact: false }).click();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
 }
 test('dashboard, navigation, search and empty results', async ({ page }) => {
   const errors: string[] = [];
@@ -42,12 +44,13 @@ test('manual intake persists and unverified eligibility blocks pursuit', async (
   await page.reload();
   await navigate(page, 'Opportunities');
   await page.getByRole('heading', { name: 'Fictional retrofit test', exact: true }).click();
-  await expect(dialog.getByRole('option', { name: 'Pursuing', exact: true })).toHaveAttribute(
+  await expect(page.getByRole('option', { name: 'Pursuing', exact: true })).toHaveAttribute(
     'disabled',
     '',
   );
-  await dialog.getByLabel('Demo workflow stage').selectOption('In review');
-  await page.getByRole('button', { name: 'Close dialog' }).click();
+  await page.getByLabel('Demo workflow stage').selectOption('In review');
+  await page.getByRole('link', { name: /Back to (opportunities|pursuits)/ }).click();
+  await expect(page.locator('main h1')).toHaveText(/^(Opportunities|Pursuits)$/);
   await navigate(page, 'Pursuits');
   await expect(
     page.getByRole('heading', { name: 'Fictional retrofit test', exact: true }),
@@ -58,16 +61,18 @@ test('eligible pursuit supports tasks and exports a labeled brief', async ({ pag
   await page
     .getByRole('heading', { name: 'Municipal building energy retrofit', exact: true })
     .click();
-  const dialog = page.getByRole('dialog');
+  const dialog = page.getByRole('region', { name: 'Opportunity details' });
   await dialog.getByLabel('Demo workflow stage').selectOption('Pursuing');
   await dialog.getByRole('checkbox', { name: 'Confirm estimating capacity' }).check();
-  await page.keyboard.press('Escape');
+  await page.getByRole('link', { name: /Back to (opportunities|pursuits)/ }).click();
+  await expect(page.locator('main h1')).toHaveText(/^(Opportunities|Pursuits)$/);
   await navigate(page, 'Pursuits');
   await page
     .getByRole('heading', { name: 'Municipal building energy retrofit', exact: true })
     .click();
   await expect(dialog.getByRole('checkbox', { name: 'Confirm estimating capacity' })).toBeChecked();
-  await page.getByRole('button', { name: 'Close dialog' }).click();
+  await page.getByRole('link', { name: /Back to (opportunities|pursuits)/ }).click();
+  await expect(page.locator('main h1')).toHaveText(/^(Opportunities|Pursuits)$/);
   await navigate(page, 'Reports');
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export brief', exact: true }).click();
@@ -79,9 +84,10 @@ test('failed licensing blocks a pursuit and documents open accessibly', async ({
   await page
     .getByRole('heading', { name: 'Fleet depot EV charging installation', exact: true })
     .click();
-  await expect(
-    page.getByRole('dialog').getByRole('option', { name: 'Pursuing', exact: true }),
-  ).toHaveAttribute('disabled', '');
+  await expect(page.getByRole('option', { name: 'Pursuing', exact: true })).toHaveAttribute(
+    'disabled',
+    '',
+  );
   await page.keyboard.press('Escape');
   await navigate(page, 'Documents');
   await page.getByRole('button', { name: /Bid readiness checklist/ }).click();

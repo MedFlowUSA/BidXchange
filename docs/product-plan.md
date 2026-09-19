@@ -25,12 +25,12 @@ A managed government-contracting desk for established contractors. The first wor
 5. An exported brief identifies its fictional contents and includes timezone-aware deadlines.
 6. Type checking, production build, lint, formatting, scoring tests, and browser flows pass.
 
-## Next increment: secure pilot foundation
+## Phase 2: secure onboarding foundation
 
-Implement Supabase authentication, organizations, memberships, roles, versioned company facts, and append-only audit records. Every tenant table must carry organization scope and enforce row-level security. Add tests that attempt cross-tenant access and unauthorized mutations before storing actual client records. Identify the named client approver before enabling live bid/no-bid decisions.
+Implemented routes, Supabase passwordless sessions, organizations, memberships, roles, individually reviewed company facts, audit records and tenant RLS tests. GES onboarding data is separate from the fictional demo and remains pending verification. See [the phase report](phase2-completion.md) for results and [setup](setup.md) for deployment/rollback. Identify the named client approver before enabling live decisions.
 
 Subsequent increments: normalized intake/import and production eligibility engine; pursuit approvals; private document storage and scanning; grounded AI with citations; authorized source connectors; notifications; restore and launch rehearsals. The prototype scoring weights are illustrative, not a production qualification policy.
 
 ## Rollback
 
-This increment changes no remote database schema or records. Stop the local server to disable the preview. Use “Reset demo workspace” to restore sample content, or remove the browser local-storage key `bidxchange-demo-v1`. Revert the application files to remove the increment. Existing Supabase and Vercel project links are independent of demo data.
+The original demo can still be reset with “Reset demo workspace” or by removing `bidxchange-demo-v1`. Phase 2 adds real remote schema and onboarding records: application rollback must preserve those records and RLS. Follow [the current rollback procedure](setup.md#deploy-and-rollback).

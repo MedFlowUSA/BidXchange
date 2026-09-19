@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "description": "BidXchange government-contracting workspace",
   "scripts": {
-    "dev": "next dev apps/web --hostname 127.0.0.1",
+    "dev": "node scripts/next.mjs dev",
     "build": "next build apps/web",
-    "start": "next start apps/web --hostname 127.0.0.1",
+    "start": "node scripts/next.mjs start",
     "typecheck": "tsc --project apps/web/tsconfig.json --noEmit",
     "test": "playwright test",
     "lint": "eslint apps/web packages tests",
     "format": "prettier --write apps/web packages tests docs package.json",
-    "format:check": "prettier --check apps/web packages tests docs package.json"
+    "format:check": "prettier --check apps/web packages tests docs package.json",
+    "test:security": "node scripts/test-database.mjs",
+    "ges:assign-admin": "node scripts/assign-ges-admin.mjs",
+    "test:secrets": "node scripts/scan-secrets.mjs",
+    "test:auth": "node scripts/test-auth.mjs"
   },
   "repository": {
     "type": "git",
@@ -24,20 +28,26 @@
   },
   "homepage": "https://github.com/MedFlowUSA/BidXchange#readme",
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^1.47.0",
     "next": "^16.3.5",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.2",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.5",
+    "pg": "^8.23.0",
     "prettier": "^3.9.8",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   },
   "private": true

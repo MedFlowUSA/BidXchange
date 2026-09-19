@@ -1,0 +1,273 @@
+{
+  "organization": {
+    "legal_name": "Peace Officers for a Green Environment",
+    "operating_name": "Green Energy Solutions",
+    "slug": "green-energy-solutions",
+    "website": "https://www.gesfree.com/",
+    "organization_type": "Contractor",
+    "status": "onboarding",
+    "default_timezone": "America/Los_Angeles"
+  },
+  "facts": [
+    {
+      "fact_type": "identity",
+      "label": "Operating name",
+      "value": "Green Energy Solutions",
+      "source_note": "Provided by Manuel for onboarding; verify with authorized GES records before proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "identity",
+      "label": "Legal entity",
+      "value": "Peace Officers for a Green Environment",
+      "source_note": "Provided by Manuel for onboarding; verify with authorized GES records before proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "identity",
+      "label": "Website",
+      "value": "https://www.gesfree.com/",
+      "source_note": "Provided by Manuel for onboarding; verify with authorized GES records before proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "identity",
+      "label": "Working operating history",
+      "value": "Approximately since 2009",
+      "source_note": "Not verified. Do not convert into a formal years-in-business claim without documentation.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "license",
+      "label": "CSLB license number",
+      "value": "936656",
+      "source_note": "Previously identified through public research; verify directly against the current CSLB record and company documents before proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "license",
+      "label": "B classification",
+      "value": "B ? General Building Contractor",
+      "source_note": "Previously identified through public research; verify directly against the current CSLB record and company documents before proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "license",
+      "label": "C-53 classification",
+      "value": "C-53 ? Swimming Pool Contractor",
+      "source_note": "Previously identified through public research; verify directly against the current CSLB record and company documents before proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "federal",
+      "label": "UEI",
+      "value": "WUVYAQA917S8",
+      "source_note": "Previously identified through public research; current SAM.gov registration and entity status must be verified directly before federal proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "federal",
+      "label": "CAGE",
+      "value": "9S2Z6",
+      "source_note": "Previously identified through public research; current SAM.gov registration and entity status must be verified directly before federal proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "naics",
+      "label": "Primary NAICS",
+      "value": "238990 ? All Other Specialty Trade Contractors",
+      "source_note": "Previously identified through public research; current SAM.gov registration and entity status must be verified directly before federal proposal use.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "territory",
+      "label": "Southern California",
+      "value": "Southern California",
+      "source_note": "Working pursuit territory; requires confirmation from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "territory",
+      "label": "Los Angeles County",
+      "value": "Los Angeles County",
+      "source_note": "Working pursuit territory; requires confirmation from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "territory",
+      "label": "Orange County",
+      "value": "Orange County",
+      "source_note": "Working pursuit territory; requires confirmation from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "territory",
+      "label": "Riverside County",
+      "value": "Riverside County",
+      "source_note": "Working pursuit territory; requires confirmation from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "territory",
+      "label": "San Bernardino County",
+      "value": "San Bernardino County",
+      "source_note": "Working pursuit territory; requires confirmation from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "territory",
+      "label": "San Diego County",
+      "value": "San Diego County",
+      "source_note": "Working pursuit territory; requires confirmation from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Utility energy-efficiency program implementation",
+      "value": "Utility energy-efficiency program implementation",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Energy-efficiency installation",
+      "value": "Energy-efficiency installation",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Direct-install programs",
+      "value": "Direct-install programs",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Public-building renovations",
+      "value": "Public-building renovations",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Public-building energy upgrades",
+      "value": "Public-building energy upgrades",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Weatherization",
+      "value": "Weatherization",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Building-envelope improvements",
+      "value": "Building-envelope improvements",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Agricultural energy-efficiency work",
+      "value": "Agricultural energy-efficiency work",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Industrial energy-efficiency work",
+      "value": "Industrial energy-efficiency work",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "School-facility improvements",
+      "value": "School-facility improvements",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Municipal-facility improvements",
+      "value": "Municipal-facility improvements",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Swimming-pool construction and rehabilitation",
+      "value": "Swimming-pool construction and rehabilitation",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "Utility-program contracting",
+      "value": "Utility-program contracting",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "General building improvements",
+      "value": "General building improvements",
+      "source_note": "Working capability; requires confirmation and supporting evidence from GES management.",
+      "verification_status": "pending_verification"
+    },
+    {
+      "fact_type": "capability",
+      "label": "EV charging infrastructure integration",
+      "value": "EV charging infrastructure integration",
+      "source_note": "May require a qualified and approved C-10 electrical contractor or subcontractor. Do not represent GES as independently holding C-10 authority unless verified.",
+      "verification_status": "pending_verification"
+    }
+  ],
+  "sources": [
+    "PEPMA",
+    "Southern California Edison procurement",
+    "SAP Ariba",
+    "SAM.gov",
+    "Cal eProcure",
+    "California State Contracts Register",
+    "County procurement portals",
+    "City procurement portals",
+    "School-district procurement portals",
+    "OpenGov",
+    "PlanetBids",
+    "Prime-contractor subcontracting opportunities"
+  ],
+  "missing": [
+    "Legal mailing address",
+    "Primary business phone",
+    "Authorized company email",
+    "Exact formation date",
+    "Current CSLB status",
+    "Current SAM.gov status",
+    "Secondary NAICS codes",
+    "NIGP or commodity codes",
+    "Insurance carrier and limits",
+    "Policy expiration dates",
+    "Single-project bonding capacity",
+    "Aggregate bonding capacity",
+    "Geographic restrictions",
+    "Minimum preferred project value",
+    "Maximum preferred project value",
+    "Current delivery capacity",
+    "Approved subcontractors",
+    "Electrical/C-10 partner",
+    "Key personnel and resumes",
+    "Safety record",
+    "Certifications",
+    "Public-agency references",
+    "Utility references",
+    "Approved past-performance projects",
+    "Standard pricing authority",
+    "Final bid approver",
+    "Final pricing approver"
+  ]
+}
