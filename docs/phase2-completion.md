@@ -79,10 +79,11 @@ Donn's exact login email is separately required before any invitation.
 ## Executed checks
 
 - Desktop/mobile/scoring Playwright suite: 20 passed. Covers routes, direct links, refresh, browser history, protected redirects, demo persistence, detail pages, Settings, search, export content, mobile menus, keyboard navigation and dialog focus.
-- Authenticated browser suite: 14 checks passed locally using disposable accounts, both magic-link and code sign-in, authorized direct links, refresh, workspace switch, cross-tenant denial, viewer restrictions and sign-out. All fixtures removed.
+- Authenticated browser suite: 14 checks passed locally and 14 on production using disposable accounts, both magic-link and code sign-in, authorized direct links, refresh, workspace switch, cross-tenant denial, viewer restrictions and sign-out. All fixtures removed. Production assertions wait for streamed page content before inspecting records.
 - Database suite: 251 checks passed against the applied schema, including cross-tenant reads/updates/deletes, denied inserts and foreign references, role escalation, anonymous denial, administrator verification, audit protection, seed idempotency and pristine GES assertions. Fixtures rolled back.
 - TypeScript, ESLint and production Next.js build passed.
 - Formatting check and source-secret scan passed; the scan covered 78 tracked/unignored source files.
+- Production smoke test passed for all seven main sections, configured login and protected redirects.
 
 Automated tests did not send emails or validate Manuel's actual mailbox, administrator browser submissions, long-lived token expiry, or a production document workflow. Those are explicit remaining limits, not claimed passes.
 
@@ -90,7 +91,7 @@ Automated tests did not send emails or validate Manuel's actual mailbox, adminis
 
 Supabase URL/publishable key are configured. Production SITE_URL is now configured as https://bidxchange-beta.vercel.app. No additional application secrets are required for this phase. For reliable external email delivery, configure an owned sender/custom SMTP and verify its receipt; do not store provider secrets in Git. See [setup](setup.md) for commands, staging guidance and rollback, and [security](security.md) for remaining production limits.
 
-Release sequence: run all checks, commit/push the reviewed changes, deploy the linked Vercel project, and verify production routes/auth with disposable accounts. Keep migrations and GES records intact if rolling back the application.
+Application commit `a384970` was pushed to `main` and deployed successfully to https://bidxchange-beta.vercel.app. Vercel deployment `dpl_Fj9X3FWoY7cW2nf32z4GaRz8RYZZ` is ready. Production route/auth checks passed after deployment. A subsequent validation-only commit records the streamed-page test timing correction and these results. Keep migrations and GES records intact if rolling back the application.
 
 ## Exact next recommended task
 

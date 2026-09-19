@@ -102,6 +102,7 @@ try {
     await page.goto(`${base}/opportunities/${f.opp}?organization=${f.org}`);
     await page.getByRole('heading', { name: 'Scope', exact: true }).waitFor();
     await page.reload();
+    await page.getByRole('heading', { name: 'Scope', exact: true }).waitFor();
     check(
       (await page.locator('body').innerText()).includes('Synthetic test source'),
       'Authenticated direct opportunity URL survives refresh',
@@ -110,6 +111,7 @@ try {
     await page.getByRole('heading', { name: 'Compliance matrix', exact: true }).waitFor();
     check(true, 'Authenticated pursuit foundation renders');
     await page.goto(`${base}/company?organization=${f.org}`);
+    await page.getByRole('heading', { name: 'Fictional license', exact: true }).waitFor();
     check(
       !(await page.locator('main').innerText()).includes('Apex Energy'),
       'Demo credentials do not appear in authenticated company',
@@ -141,6 +143,7 @@ try {
   );
   const viewer = contexts[1].pages()[0];
   await viewer.goto(`${base}/settings?organization=${fixtures[1].org}`);
+  await viewer.getByRole('heading', { name: 'Organization profile', exact: true }).waitFor();
   check(
     (await viewer.getByRole('button', { name: 'Save organization', exact: true }).count()) === 0,
     'Viewer has no administrator controls',
