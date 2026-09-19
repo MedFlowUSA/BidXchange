@@ -70,7 +70,7 @@ export default function AppShell({
       )}
       <aside className={`sidebar ${mobile ? 'visible' : ''}`}>
         <Link href={workspaceHref('/dashboard', organization?.id)} className="brand">
-          <img src="/brand/bidxchange-icon.png" alt="" />
+          <img src="/brand/bidxchange-icon.png?v=2" alt="" />
           <span>
             Bid<span className="gold">X</span>change
           </span>

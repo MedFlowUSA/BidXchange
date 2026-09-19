@@ -12,7 +12,7 @@ export default async function Login({
   return (
     <main className="auth-page">
       <section className="panel auth-card">
-        <img src="/brand/bidxchange-logo.png" alt="BidXchange" />
+        <img src="/brand/bidxchange-logo.png?v=2" alt="BidXchange" />
         <h1>Welcome to your contract desk.</h1>
         <p>Sign in with your email. No password needed.</p>
         {!configured && (

@@ -4,7 +4,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'BidXchange | Your contract desk',
   description: 'Find the right opportunities. Build a confident pursuit.',
-  icons: { icon: '/brand/bidxchange-icon.png' },
+  icons: { icon: '/brand/bidxchange-icon.png?v=2', apple: '/brand/bidxchange-icon.png?v=2' },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

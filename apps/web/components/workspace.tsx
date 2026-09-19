@@ -1056,7 +1056,7 @@ export default function Workspace({
       {modal === 'help' && (
         <Dialog title="Your contract desk, taking shape" close={() => setModal(null)}>
           <div className="guide">
-            <img src="/brand/bidxchange-logo.png" alt="BidXchange" />
+            <img src="/brand/bidxchange-logo.png?v=2" alt="BidXchange" />
             <p>
               Explore the first BidXchange workflow using Apex Energy Demo, a fictional contractor.
             </p>
