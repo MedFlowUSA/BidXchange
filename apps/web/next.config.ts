@@ -2,6 +2,12 @@ import type { NextConfig } from 'next';
 import path from 'node:path';
 const nextConfig: NextConfig = {
   logging: { incomingRequests: false },
+  images: {
+    localPatterns: [
+      { pathname: '/brand/bidxchange-logo.png', search: '?v=2' },
+      { pathname: '/brand/bidxchange-icon.png', search: '?v=2' },
+    ],
+  },
   turbopack: { root: path.resolve(__dirname, '../..') },
   async redirects() {
     return [

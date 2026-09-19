@@ -17,12 +17,13 @@ Open http://127.0.0.1:3000. The public demo needs no credentials and uses `bidxc
 
 ## Application
 
-- `/` redirects to `/dashboard?workspace=demo`.
+- `/` is the public marketing homepage. It explains the product and current capability stages, with distinct sign-in and fictional-demo links.
 - `/dashboard`, `/opportunities`, `/opportunities/[opportunityId]`, `/pursuits`, `/pursuits/[pursuitId]`, `/company`, `/documents`, `/reports`, `/settings` are real routes.
 - `?workspace=demo` selects the fictional Apex workspace. Real workspaces use `?organization=<authorized UUID>` and require email sign-in.
 - `/login` supports magic links and one-time codes; `/auth/callback` establishes a server-managed session.
 - GES has pending company facts, an onboarding checklist and procurement preferences. Its real pipeline starts empty.
 - Settings allows administrators to edit organization details, review fact verification and change existing member roles. Invitations, upload/scanning, operational editors, approvals, connectors and AI remain explicitly labeled placeholders.
+- The public demo-request/beta-interest form is a disabled preview; no lead information is collected. See [homepage launch requirements](docs/marketing-homepage.md) before enabling it.
 
 ## Validation
 

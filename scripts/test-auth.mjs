@@ -99,6 +99,15 @@ try {
       (await context.cookies()).some((c) => c.name.includes('auth-token') && c.httpOnly),
       'Passwordless callback creates HttpOnly session',
     );
+    await page.goto(base + '/');
+    await page.getByRole('heading', { level: 1, name: /Stop Searching/ }).waitFor();
+    check(
+      !(await page.locator('body').innerText()).includes('Auth Fixture'),
+      'Public homepage does not disclose tenant identity',
+    );
+    await page.getByRole('link', { name: 'Open Workspace', exact: true }).click();
+    await page.getByRole('heading', { name: 'Your workspace starts with the facts.' }).waitFor();
+    check(true, 'Signed-in homepage entry reaches the authorized workspace');
     await page.goto(`${base}/opportunities/${f.opp}?organization=${f.org}`);
     await page.getByRole('heading', { name: 'Scope', exact: true }).waitFor();
     await page.reload();
