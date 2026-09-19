@@ -2,7 +2,7 @@
 
 Next.js, React and TypeScript contracting workspace with a separate fictional demo and an authenticated Supabase organization foundation. The existing visual design and browser-local demo remain intact. This is an onboarding beta, not a production bid-submission system.
 
-Live: https://bidxchange-beta.vercel.app
+Live: https://bidxapp.vercel.app
 
 ## Run locally
 

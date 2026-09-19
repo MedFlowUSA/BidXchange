@@ -3,6 +3,16 @@ import path from 'node:path';
 const nextConfig: NextConfig = {
   logging: { incomingRequests: false },
   turbopack: { root: path.resolve(__dirname, '../..') },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'bidxchange-beta.vercel.app' }],
+        destination: 'https://bidxapp.vercel.app/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

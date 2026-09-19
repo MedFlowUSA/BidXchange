@@ -4,11 +4,11 @@
 
 Set these application variables in Vercel and local ignored `.env.local`:
 
-| Name                     | Value                                                                                             |
-| ------------------------ | ------------------------------------------------------------------------------------------------- |
-| SUPABASE_URL             | Linked project's HTTPS API URL                                                                    |
-| SUPABASE_PUBLISHABLE_KEY | Project publishable key                                                                           |
-| SITE_URL                 | Exact public origin: production https://bidxchange-beta.vercel.app or local http://127.0.0.1:3000 |
+| Name                     | Value                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| SUPABASE_URL             | Linked project's HTTPS API URL                                                            |
+| SUPABASE_PUBLISHABLE_KEY | Project publishable key                                                                   |
+| SITE_URL                 | Exact public origin: production https://bidxapp.vercel.app or local http://127.0.0.1:3000 |
 
 Do not use `NEXT_PUBLIC` service credentials. Build succeeds without credentials and sign-in shows setup guidance. Arbitrary preview domains are not automatically authorized for sign-in; configure a separate staging project/origin before authenticated preview testing.
 
