@@ -22,7 +22,8 @@ Open http://127.0.0.1:3000. The public demo needs no credentials and uses `bidxc
 - `?workspace=demo` selects the fictional Apex workspace. Real workspaces use `?organization=<authorized UUID>` and require email sign-in.
 - `/login` supports magic links and one-time codes; `/auth/callback` establishes a server-managed session.
 - GES has pending company facts, an onboarding checklist and procurement preferences. Its real pipeline starts empty.
-- Settings allows administrators to edit organization details, review fact verification and change existing member roles. Invitations, upload/scanning, operational editors, approvals, connectors and AI remain explicitly labeled placeholders.
+- Settings allows administrators to edit organization details, review fact verification and change existing member roles. Invitations, upload/scanning, operational editors, approvals and connectors remain explicitly labeled placeholders.
+- `/assistant` and contextual dashboard/opportunity/pursuit panels implement a read-only evidence assistant behind explicit configuration and organization activation. No live feeds or private document retrieval are provided. See [AI architecture and activation](docs/ai-assistant.md).
 - The public demo-request/beta-interest form is a disabled preview; no lead information is collected. See [homepage launch requirements](docs/marketing-homepage.md) before enabling it.
 
 ## Validation
@@ -33,6 +34,8 @@ npm run lint
 npm run format:check
 npm test
 npm run test:security
+npm run test:security:local
+npm run test:ai:database
 npm run test:auth
 npm run test:secrets
 npm run build
@@ -41,6 +44,8 @@ npm run build
 `npm test` covers the public app in desktop/mobile Edge. Database tests require an authenticated, linked Supabase CLI or an explicit test database connection; browser auth tests additionally use the linked project's admin API to create and remove disposable accounts. Run these against a dedicated test project for routine CI. See [setup and testing](docs/setup.md) for prerequisites and exact commands.
 
 ## Infrastructure and documentation
+
+AI tests mock model responses and spend no credits. The `:local` security suite and `test:ai:database` use isolated PostgreSQL and synthetic fixtures without connecting to production. Hosted validation and paid model evaluation remain separate activation gates. See [the AI operational runbook](docs/ai-operations.md).
 
 Vercel builds from the root using `npm ci` and `npm run build`, with `apps/web/.next` as output. The linked GitHub production branch is `main`. `.vercelignore` excludes local credentials, CLI state and test artifacts.
 

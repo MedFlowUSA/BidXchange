@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppShell from './app-shell';
 import Dialog from './dialog';
-import AiPreview from './ai-preview';
+import Assistant from './assistant';
 import PursuitFoundation from './pursuit-foundation';
 import { sections, workspaceHref, type OrganizationChoice } from '../lib/routes';
 import {
@@ -44,6 +44,7 @@ const due = (o: Opportunity) =>
   new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
+    year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
     timeZone: o.timezone,
@@ -80,12 +81,14 @@ const isOpportunity = (v: unknown): v is Opportunity => {
 };
 
 export default function Workspace({
+  demoAssistantEnabled = false,
   initialPage = 'Today',
   recordId,
   recordType,
   choices = [],
   userEmail,
 }: {
+  demoAssistantEnabled?: boolean;
   initialPage?: string;
   recordId?: string;
   recordType?: 'opportunity' | 'pursuit';
@@ -272,6 +275,7 @@ export default function Workspace({
             {new Date(o.deadline).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
+              year: 'numeric',
               timeZone: o.timezone,
             })}
             <ChevronRight size={16} />
@@ -832,14 +836,21 @@ export default function Workspace({
             </p>
           </section>
         )}
-        {page === 'Today' && <AiPreview />}
+        {(page === 'Today' || page === 'Assistant' || recordId) && (
+          <Assistant
+            demo
+            demoEnabled={demoAssistantEnabled}
+            name="Apex Energy Demo"
+            expanded={page === 'Assistant'}
+          />
+        )}
         {selected && (recordType !== 'pursuit' || selected.stage !== 'Inbox') && (
           <section className="panel record-page" aria-label="Opportunity details">
             <Link
               className="text-button"
               href={workspaceHref(recordType === 'pursuit' ? '/pursuits' : '/opportunities')}
             >
-              ? Back to {recordType === 'pursuit' ? 'pursuits' : 'opportunities'}
+              Back to {recordType === 'pursuit' ? 'pursuits' : 'opportunities'}
             </Link>
             {recordType === 'pursuit' && (
               <PursuitFoundation

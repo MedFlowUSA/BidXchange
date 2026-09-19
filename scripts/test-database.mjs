@@ -3,7 +3,9 @@ import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { connectDatabase } from './db.mjs';
 
-const db = await connectDatabase();
+const db = process.argv.includes('--local')
+  ? await (await import('./local-test-db.mjs')).localTestDatabase()
+  : await connectDatabase();
 let checks = 0;
 const check = (condition, description) => {
   assert.ok(condition, description);

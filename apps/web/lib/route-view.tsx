@@ -27,6 +27,7 @@ export async function renderWorkspace(
         recordType={recordType}
         choices={account.choices}
         userEmail={account.user?.email}
+        demoAssistantEnabled={process.env.BIDXCHANGE_AI_DEMO_ENABLED === 'true'}
       />
     );
   }

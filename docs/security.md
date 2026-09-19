@@ -26,4 +26,12 @@ Service-role keys are absent from application environment requirements. Protecte
 - Test actual token-expiry refresh over time, MFA and email-provider outage handling. Initial sessions/sign-out are tested, not every provider failure mode.
 - Establish separate staging and production Supabase projects for ongoing development.
 
-No live procurement connectors, AI analysis, automatic pricing, automated approvals or portal submission are enabled. Demo scoring is illustrative and does not authorize real bids.
+No live procurement connectors, production AI activation, automatic pricing, automated approvals or portal submission are enabled. Demo scoring is illustrative and does not authorize real bids.
+
+## Read-only assistant implementation
+
+The assistant is gated by server configuration and an operator-controlled organization setting. It uses user-session Supabase clients, verified active membership, injected organization filters and existing RLS. Migration 005 adds explicit fact sensitivity: unknown facts are excluded from AI for every role, and database reads of unknown/restricted facts are narrowed to authorized sensitive-data roles. Lower roles require explicit workspace classification and a safe fact-type allowlist. Source notes, private documents, pricing and arbitrary evidence text never enter tools.
+
+Strict read-only function calls expose no SQL, writes, approval, verification, messaging or submission action. Model prose is not accepted as factual output: selected records and citations are rendered from authorized evidence, then refetched before release. Usage is reserved atomically in the database; requests cannot refund themselves. The public demo never calls paid AI. Conversations are ephemeral private tab memory with no shared or persisted prompt/answer store; status checks clear them when access changes. No service-role key is required by ordinary application requests.
+
+The new migration and existing RLS are tested in isolated PostgreSQL. Hosted JWT/PostgREST integration, multi-process concurrency, actual provider behavior and production activation require the additional gates described in [AI architecture](ai-assistant.md) and [operations](ai-operations.md). This implementation does not resolve unrelated privileged MFA, full verification-invalidation or operational-recovery audit findings.

@@ -1,13 +1,14 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 const files = execFileSync(
   'git',
   ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
   { encoding: 'utf8' },
 )
   .split('\0')
-  .filter(Boolean);
+  .filter((file) => file && existsSync(file));
 const patterns = [
+  /\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}/,
   /sb_secret_[A-Za-z0-9_-]{15,}/,
   /sbp_[a-f0-9]{20,}/,
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,

@@ -11,12 +11,13 @@ export default defineConfig({
     { name: 'desktop', use: { ...devices['Desktop Chrome'], channel: 'msedge' } },
     {
       name: 'mobile',
-      testMatch: /(workspace|routes|marketing)\.spec\.ts/,
+      testMatch: /(workspace|routes|marketing|assistant-ui|assistant-stream)\.spec\.ts/,
       use: { ...devices['iPhone 13'], defaultBrowserType: 'chromium', channel: 'msedge' },
     },
   ],
   webServer: {
     command: 'npm run dev',
+    env: { BIDXCHANGE_AI_DEMO_ENABLED: 'true', BIDXCHANGE_AI_ENABLED: 'false' },
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

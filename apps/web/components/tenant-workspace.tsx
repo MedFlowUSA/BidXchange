@@ -2,7 +2,9 @@
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
 import AppShell from './app-shell';
-import AiPreview from './ai-preview';
+import Assistant from './assistant';
+import AssistantUsage from './assistant-usage';
+import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData, Fact } from '../lib/tenant-types';
@@ -36,7 +38,7 @@ function ActionForm({
 function FactCard({ fact, admin, org }: { fact: Fact; admin: boolean; org: string }) {
   const verified = ['verified', 'expiring'].includes(fact.verification_status);
   return (
-    <section className="panel fact-card">
+    <section className="panel fact-card" id={`fact-${fact.id}`}>
       <div className="flex-between">
         <h3>{fact.label}</h3>
         <span className={`fit ${verified ? 'green' : 'amber'}`}>
@@ -166,13 +168,7 @@ export default function TenantWorkspace({
     setTimeout(() => URL.revokeObjectURL(url), 60000);
     setNotice('Brief download started.');
   };
-  const deadline = opportunity?.official_deadline
-    ? new Intl.DateTimeFormat('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-        timeZone: opportunity.deadline_timezone,
-      }).format(new Date(opportunity.official_deadline))
-    : 'Not provided';
+  const deadline = displayDate(opportunity?.official_deadline, opportunity?.deadline_timezone);
   return (
     <AppShell
       page={page}
@@ -308,8 +304,20 @@ export default function TenantWorkspace({
                 </Link>
               </section>
             </div>
-            <AiPreview />
+            <Assistant organizationId={org.id} name={org.operating_name} />
           </>
+        )}
+        {!recordId && page === 'Assistant' && (
+          <Assistant organizationId={org.id} name={org.operating_name} expanded />
+        )}
+        {!recordId && page === 'Assistant' && admin && <AssistantUsage organizationId={org.id} />}
+        {recordId && (
+          <Assistant
+            key={recordId}
+            organizationId={org.id}
+            name={org.operating_name}
+            context={{ kind: recordType === 'pursuit' ? 'pursuit' : 'opportunity', id: recordId }}
+          />
         )}
         {!recordId && page === 'Company' && (
           <>
@@ -332,7 +340,7 @@ export default function TenantWorkspace({
               ))}
             </div>
             <section className="panel">
-              <h2>Needs information from GES</h2>
+              <h2>Needs information from {org.operating_name}</h2>
               <p>Confirm these with Donn or an authorized company representative.</p>
               <div className="onboarding-grid">
                 {data.onboarding.map((i) => (
@@ -403,7 +411,8 @@ export default function TenantWorkspace({
               <div className="panel empty-state">
                 <h2>No pursuits yet</h2>
                 <p>
-                  GES starts with an empty pipeline. No bid decisions or awards have been assumed.
+                  This workspace starts with an empty pipeline. No bid decisions or awards have been
+                  assumed.
                 </p>
               </div>
             )}

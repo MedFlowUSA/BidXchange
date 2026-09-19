@@ -12,6 +12,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  Sparkles,
   Target,
   TrendingUp,
 } from 'lucide-react';
@@ -20,6 +21,7 @@ import { signOut } from '../app/login/actions';
 import Dialog from './dialog';
 
 const icons = {
+  Assistant: Sparkles,
   Today: LayoutDashboard,
   Opportunities: Search,
   Pursuits: Target,
