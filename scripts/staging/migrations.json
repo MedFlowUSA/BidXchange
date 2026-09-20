@@ -51,7 +51,12 @@
       "file": "20260920001000_pursuit_decisions.sql",
       "sha256": "a949d82f677e1891973bc53f300e355e6650cbaf4e74180df631f35bf5d15d9b",
       "action": "include-schema"
+    },
+    {
+      "file": "20260920001100_requirement_resolutions.sql",
+      "sha256": "2a220d6a1ee6ebaf3063feaab352bd6a56233bb4384b583607835bbc35250743",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 6
+  "packageRevision": 7
 }

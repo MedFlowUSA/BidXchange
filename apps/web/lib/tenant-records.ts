@@ -22,6 +22,9 @@ type RecordContext = Pick<
   | 'decisionsEnabled'
   | 'decisionContext'
   | 'decisions'
+  | 'resolutionsEnabled'
+  | 'resolutions'
+  | 'resolutionHistory'
 >;
 
 // The caller supplies its validated user-session client; never use an operator client here.
@@ -111,7 +114,35 @@ export async function loadRecordContext(
     if (history.error) throw new Error('Decision history could not be loaded. Please retry.');
     decisions = (history.data ?? []) as NonNullable<TenantData['decisions']>;
   }
+  const resolutionsEnabled = process.env.BIDXCHANGE_RESOLUTIONS_ENABLED === 'true';
+  let resolutions: NonNullable<TenantData['resolutions']> = [],
+    resolutionHistory: NonNullable<TenantData['resolutionHistory']> = [];
+  if (resolutionsEnabled) {
+    const fields =
+      'id,requirement_id,disposition,reason,authority_name,authority_reference,reviewed_by,reviewed_at';
+    const [current, history] = await Promise.all([
+      scoped(
+        'current_requirement_resolutions',
+        'id,requirement_id,disposition,reason,authority_name,authority_reference,reviewed_by,reviewed_at,review_current',
+      )
+        .eq('pursuit_id', pursuit.id)
+        .order('requirement_id')
+        .limit(501),
+      scoped('requirement_resolution_history', fields)
+        .eq('pursuit_id', pursuit.id)
+        .order('reviewed_at', { ascending: false })
+        .order('sequence', { ascending: false })
+        .limit(100),
+    ]);
+    if (current.error || history.error)
+      throw new Error('Requirement reviews could not be loaded. Please retry.');
+    resolutions = (current.data ?? []) as NonNullable<TenantData['resolutions']>;
+    resolutionHistory = (history.data ?? []) as NonNullable<TenantData['resolutionHistory']>;
+  }
   return {
+    resolutionsEnabled,
+    resolutions,
+    resolutionHistory,
     decisionsEnabled,
     decisionContext,
     decisions,

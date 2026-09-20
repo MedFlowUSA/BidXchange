@@ -8,6 +8,7 @@ import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import PursuitDecisionBrief from './pursuit-decision-brief';
 import PursuitDecision from './pursuit-decision';
+import RequirementResolution from './requirement-resolution';
 import TodayTaskQueue from './today-task-queue';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
@@ -296,14 +297,21 @@ export default function TenantWorkspace({
                         Notice citation:{' '}
                         {requirement.citation || 'Not recorded; source review needed'}
                       </p>
-                      <p>
-                        Follow-up:{' '}
-                        {Object.hasOwn(requirementStatuses, requirement.status)
-                          ? requirementStatuses[
-                              requirement.status as keyof typeof requirementStatuses
-                            ]
-                          : 'Needs review'}
-                      </p>
+                      {!(
+                        data.resolutionsEnabled &&
+                        data.resolutions?.some(
+                          (r) => r.requirement_id === requirement.id && r.review_current,
+                        )
+                      ) && (
+                        <p>
+                          Follow-up:{' '}
+                          {Object.hasOwn(requirementStatuses, requirement.status)
+                            ? requirementStatuses[
+                                requirement.status as keyof typeof requirementStatuses
+                              ]
+                            : 'Needs review'}
+                        </p>
+                      )}
                       <p>
                         Owner:{' '}
                         {requirement.owner_user_id === data.userId
@@ -316,6 +324,9 @@ export default function TenantWorkspace({
                           pursuitId={recordId}
                           requirement={requirement}
                         />
+                      )}
+                      {data.resolutionsEnabled && (
+                        <RequirementResolution data={data} requirement={requirement} />
                       )}
                       {data.evidenceReviewsEnabled && (
                         <EvidenceUseReview data={data} requirement={requirement} />

@@ -1,4 +1,5 @@
 import type { OrganizationChoice } from './routes';
+import type { RequirementResolution } from './requirement-resolution';
 export type Organization = OrganizationChoice & {
   legal_name: string;
   slug: string;
@@ -46,6 +47,9 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  resolutionsEnabled?: boolean;
+  resolutions?: RequirementResolution[];
+  resolutionHistory?: RequirementResolution[];
   decisionsEnabled?: boolean;
   decisionContext?: string;
   decisions?: {

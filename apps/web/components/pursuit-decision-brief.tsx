@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { TenantData } from '../lib/tenant-types';
 import { pursuitBrief } from '../lib/pursuit-brief';
+import { resolutionLabels } from '../lib/requirement-resolution';
 
 export default function PursuitDecisionBrief({
   data,
@@ -28,6 +29,13 @@ export default function PursuitDecisionBrief({
           before making a decision.
         </p>
       )}
+      {data.resolutionsEnabled && rows.length > 0 && (
+        <p>
+          In this visible register, {rows.filter((r) => r.resolved).length} requirements have
+          current support or a documented waiver; {rows.filter((r) => !r.resolved).length} still
+          need resolution. This is review progress, not an eligibility score.
+        </p>
+      )}
       {!data.evidenceReviewsEnabled && (
         <p>
           Evidence-use reviews are unavailable. This brief cannot assess saved evidence approvals.
@@ -42,9 +50,17 @@ export default function PursuitDecisionBrief({
         <details open>
           <summary>{rows.length} visible requirements to discuss</summary>
           <ul className="decision-brief-list">
-            {rows.map(({ requirement, approved, issues }) => (
+            {rows.map(({ requirement, approved, issues, resolution, resolved }) => (
               <li key={requirement.id}>
                 <Link href={`#requirement-${requirement.id}`}>{requirement.requirement}</Link>
+                {resolution && (
+                  <p>
+                    Requirement review:{' '}
+                    {resolution.review_current
+                      ? resolutionLabels[resolution.disposition]
+                      : 'Needs another review'}
+                  </p>
+                )}
                 <p>
                   {requirement.citation
                     ? `Notice: ${requirement.citation}`
@@ -53,12 +69,16 @@ export default function PursuitDecisionBrief({
                 <p>
                   {issues.length
                     ? issues.join(' · ')
-                    : 'Confirm the requirement interpretation and remaining conditions with the reviewer.'}
+                    : resolved
+                      ? 'Human review recorded. Confirm its scope before relying on it.'
+                      : 'Confirm the requirement interpretation and remaining conditions with the reviewer.'}
                 </p>
                 {approved > 0 && (
                   <p>
                     {approved} current evidence {approved === 1 ? 'approval' : 'approvals'} visible.
-                    Requirement compliance still needs a human assessment.
+                    {resolved
+                      ? 'Requirement review is recorded separately.'
+                      : 'Requirement compliance still needs a human assessment.'}
                   </p>
                 )}
               </li>

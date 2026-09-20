@@ -128,6 +128,9 @@ export async function loadTenant(
     data.decisionsEnabled = recordContext.decisionsEnabled;
     data.decisionContext = recordContext.decisionContext;
     data.decisions = recordContext.decisions;
+    data.resolutionsEnabled = recordContext.resolutionsEnabled;
+    data.resolutions = recordContext.resolutions;
+    data.resolutionHistory = recordContext.resolutionHistory;
   }
   return { account, data };
 }
