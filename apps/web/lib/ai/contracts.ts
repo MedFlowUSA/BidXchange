@@ -17,6 +17,7 @@ export const requestSchema = z
     requestId: z.uuid(),
     prompt: z.string().trim().min(1).max(3000),
     context: contextSchema.nullable(),
+    mode: z.enum(['general', 'workspace']).default('workspace'),
   })
   .strict();
 export type AssistantContext = z.infer<typeof contextSchema>;

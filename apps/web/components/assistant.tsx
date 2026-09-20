@@ -26,6 +26,7 @@ export default function Assistant({
   const [prompt, setPrompt] = useState(''),
     [conversations, setConversations] = useState<Conversation[]>([]),
     [active, setActive] = useState<string | null>(null);
+  const [mode, setMode] = useState<'general' | 'workspace'>('general');
   const [pending, setPending] = useState(false),
     [status, setStatus] = useState(''),
     [error, setError] = useState(''),
@@ -34,15 +35,21 @@ export default function Assistant({
   const access = useRef<string | null>(null);
   const selected = conversations.find((c) => c.id === active);
   const questions =
-    context?.kind === 'pursuit'
-      ? ['Summarize this pursuit.', 'What tasks are overdue?']
-      : context
-        ? ['Why should we review this opportunity?', 'What could disqualify us?']
-        : [
-            `What information needs verification for ${name}?`,
-            'Which opportunities are due in the next 14 days?',
-            'What new opportunities were added today?',
-          ];
+    !demo && mode === 'general'
+      ? [
+          'Explain how a bid bond works.',
+          'Help me write a professional follow-up email.',
+          'Brainstorm ways to improve our estimating process.',
+        ]
+      : context?.kind === 'pursuit'
+        ? ['Summarize this pursuit.', 'What tasks are overdue?']
+        : context
+          ? ['Why should we review this opportunity?', 'What could disqualify us?']
+          : [
+              `What information needs verification for ${name}?`,
+              'Which opportunities are due in the next 14 days?',
+              'What new opportunities were added today?',
+            ];
   useEffect(() => {
     if (demo) return;
     const abort = new AbortController();
@@ -139,7 +146,13 @@ export default function Assistant({
       const response = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ organizationId, requestId: id, prompt: question, context }),
+        body: JSON.stringify({
+          organizationId,
+          requestId: id,
+          prompt: question,
+          context: mode === 'general' ? null : context,
+          mode,
+        }),
         signal: abort.signal,
       });
       if (!response.ok) {
@@ -209,10 +222,12 @@ export default function Assistant({
       <div className={styles.heading}>
         <div>
           <div className="eyebrow">ASK BIDXCHANGE</div>
-          <h2>Review your records with evidence.</h2>
+          <h2>Ask, explore, and get work moving.</h2>
           <p>
             {name} ·{' '}
-            {demo ? 'Fictional scripted demonstration' : 'Read-only organization assistant'}
+            {demo
+              ? 'Fictional scripted demonstration'
+              : 'General questions and authorized workspace records'}
           </p>
         </div>
         <button className="button secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -227,8 +242,8 @@ export default function Assistant({
           </p>
           {!demo && (
             <p>
-              Only explicitly classified structured records are eligible. Private documents and
-              source notes are excluded. Do not enter passwords, keys, or private document contents.
+              General questions use no company records. Workspace records use authorized, classified
+              evidence only. No live web browsing is available. Do not enter passwords or API keys.
             </p>
           )}
           {checking ? (
@@ -255,8 +270,8 @@ export default function Assistant({
                 New conversation
               </button>
               <p>
-                Private to this tab. Cleared on reload or workspace change. Each question retrieves
-                fresh evidence independently.
+                Private to this tab. Cleared on reload or workspace change. Questions are answered
+                independently; include the context needed in each question.
               </p>
               {conversations.map((c, i) => (
                 <button
@@ -305,7 +320,23 @@ export default function Assistant({
                   void ask();
                 }}
               >
-                <label htmlFor="assistant-question">Ask about {name}</label>
+                {!demo && (
+                  <label>
+                    Answer mode
+                    <select
+                      aria-label="Answer mode"
+                      value={mode}
+                      disabled={pending}
+                      onChange={(e) => setMode(e.target.value as 'general' | 'workspace')}
+                    >
+                      <option value="general">General questions</option>
+                      <option value="workspace">Workspace records</option>
+                    </select>
+                  </label>
+                )}
+                <label htmlFor="assistant-question">
+                  {!demo && mode === 'general' ? 'Ask a question' : `Ask about ${name}`}
+                </label>
                 <textarea
                   id="assistant-question"
                   value={prompt}
@@ -350,10 +381,13 @@ export default function Assistant({
               )}
               {selected?.answer && (
                 <article aria-label="Assistant answer">
-                  <h3>{demo ? 'Fictional answer' : 'Supporting records'}</h3>
+                  <h3>{demo ? 'Fictional answer' : 'Assistant response'}</h3>
+                  <p>{selected.answer.notice}</p>
                   <p>{selected.question}</p>
                   {selected.answer.answer.map((item, index) => (
-                    <p key={index}>{item.text}</p>
+                    <p key={index} style={{ whiteSpace: 'pre-wrap' }}>
+                      {item.text}
+                    </p>
                   ))}
                   {selected.answer.evidence.map((item) => (
                     <details key={item.citation.key} open>
@@ -372,15 +406,15 @@ export default function Assistant({
                       </dl>
                     </details>
                   ))}
-                  <h3>Risks or missing information</h3>
+                  {selected.answer.risks.length > 0 && <h3>Risks or missing information</h3>}
                   <ul>
                     {selected.answer.risks.map((r) => (
                       <li key={r}>{r}</li>
                     ))}
                   </ul>
-                  <h3>Recommended next action</h3>
+                  {selected.answer.nextAction && <h3>Recommended next action</h3>}
                   <p>{selected.answer.nextAction}</p>
-                  <h3>Sources</h3>
+                  {selected.answer.citations.length > 0 && <h3>Sources</h3>}
                   <ul>
                     {selected.answer.citations.map((c) => (
                       <li key={c.key}>

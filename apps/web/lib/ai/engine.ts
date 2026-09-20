@@ -12,6 +12,7 @@ import {
 } from './contracts';
 import { SYSTEM_POLICY } from './policy';
 import { EvidenceTools, functionTools } from './tools';
+import { generalAnswer } from './general';
 export type ModelClient = Pick<OpenAI, 'responses'>;
 export async function runAssistant(
   client: ModelClient,
@@ -22,7 +23,12 @@ export async function runAssistant(
   signal: AbortSignal,
   status: (text: string) => void,
   authorize: () => Promise<void>,
+  mode: 'general' | 'workspace' = 'workspace',
 ): Promise<{ answer: Answer; inputTokens: number; outputTokens: number }> {
+  if (mode === 'general') {
+    status('Thinking about your question…');
+    return generalAnswer(client, model, prompt, signal, authorize);
+  }
   const input: ResponseInput = [{ role: 'user', content: prompt }];
   let calls = 0,
     inputTokens = 0,

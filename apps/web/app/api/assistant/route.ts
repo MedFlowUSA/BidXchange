@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     if (!config) throw new AiError('unavailable', 503);
     const evidence = new EvidenceTools(account.db, body.organizationId, account.role);
     // Validate context before reserving paid work. Never trust client record IDs.
-    if (body.context)
+    if (body.mode === 'workspace' && body.context)
       await evidence.run(body.context.kind === 'opportunity' ? 'get_opportunity' : 'get_pursuit', {
         id: body.context.id,
       });
@@ -33,7 +33,9 @@ export async function POST(request: Request) {
           '|' +
           body.prompt +
           '|' +
-          JSON.stringify(body.context),
+          JSON.stringify(body.context) +
+          '|' +
+          body.mode,
       )
       .digest('hex');
     const { data: reservation, error } = await account.db.rpc('reserve_ai_request', {
@@ -81,6 +83,7 @@ export async function POST(request: Request) {
                 .maybeSingle();
               if (error || !setting?.enabled || !aiConfig()) throw new AiError('unavailable', 503);
             },
+            body.mode,
           );
           // Recheck citations against current RLS/classification before releasing any evidence.
           const current = new EvidenceTools(account.db, body.organizationId, account.role);
@@ -90,10 +93,11 @@ export async function POST(request: Request) {
             ),
           );
           result.answer.citations = result.answer.evidence.map((item) => item.citation);
-          result.answer.answer = result.answer.evidence.map((item) => ({
-            text: `${item.citation.title} — ${item.citation.status.replaceAll('_', ' ')}`,
-            sources: [item.citation.key],
-          }));
+          if (body.mode === 'workspace')
+            result.answer.answer = result.answer.evidence.map((item) => ({
+              text: `${item.citation.title} — ${item.citation.status.replaceAll('_', ' ')}`,
+              sources: [item.citation.key],
+            }));
           if (controller.signal.aborted) throw new AiError('cancelled', 499);
           emit({ type: 'answer', answer: result.answer });
           // Operational totals only. No prompt, tool payload, generated text, key or token logged.

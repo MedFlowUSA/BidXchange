@@ -34,8 +34,39 @@ async function mount(page: Page, available = true) {
     r.fulfill({ json: { available, access: 'synthetic-user:viewer' } }),
   );
   await page.goto('/assistant-test');
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('workspace');
   await expect(page.getByLabel('Ask about Synthetic Test Company')).toBeVisible();
 }
+test('general mode sends no record context and displays uncited helpful prose', async ({
+  page,
+}) => {
+  await page.route('**/api/assistant', (r) => {
+    expect(r.request().postDataJSON()).toMatchObject({ mode: 'general', context: null });
+    return r.fulfill({
+      contentType: 'application/x-ndjson',
+      body:
+        JSON.stringify({
+          type: 'answer',
+          answer: {
+            answer: [{ text: 'Here is a draft email you can adapt.', sources: [] }],
+            evidence: [],
+            citations: [],
+            risks: [],
+            nextAction: '',
+            notice: 'General AI response. No company records or live web sources were used.',
+          },
+        }) + '\n',
+    });
+  });
+  await mount(page);
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await page.getByLabel('Ask a question', { exact: true }).fill('Draft an email');
+  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await expect(page.getByRole('article')).toContainText('Here is a draft email');
+  await expect(
+    page.getByRole('article').getByRole('heading', { name: 'Sources', exact: true }),
+  ).toHaveCount(0);
+});
 test('verified streamed event renders citations and copy/feedback controls', async ({ page }) => {
   await page.route('**/api/assistant', (r) =>
     r.fulfill({
