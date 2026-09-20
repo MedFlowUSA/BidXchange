@@ -31,7 +31,22 @@
       "file": "20260919000600_demo_intake.sql",
       "sha256": "4f1b07c85f6f9732b8b4d65031965c5c96bbfac77089e79e222269675389ea8a",
       "action": "include-schema"
+    },
+    {
+      "file": "20260919000700_evidence_use_reviews.sql",
+      "sha256": "81552501c851603e67d78b6e7c19c41794f6fbbec26f221626f813f1f71e9e3d",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260919000800_evidence_review_grants.sql",
+      "sha256": "b7e3ca9af1a9ba96d17c0158b25e0ae2a1ee2fa0b482a3a7be7eabb599ad08f6",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260919000900_evidence_review_conflict.sql",
+      "sha256": "1a7b4f9fb95bb4f02ffeddcb7906102abac397fb705e833be9601f00d5c5f7ba",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 2
+  "packageRevision": 5
 }

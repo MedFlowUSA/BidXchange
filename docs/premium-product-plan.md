@@ -34,9 +34,11 @@ Eight focused readiness/input tests pass, covering the 60/61-day boundary, expir
 
 ### Data model and decision workflow still required
 
+The next increment is implemented and staged: evidence applicability and proposal-use reviews for a specific fact version and pursuit requirement. Production activation awaits the named migrations and feature-flag approval; see [the release report](evidence-use-release.md). This provides pair-level approval and invalidation, not whole-proposal authorization or complete contextual qualification.
+
 - Typed repeatable claims, applicability decisions and explicit field-level requiredness by pursuit context.
 - Supporting-document relationships, scanned uploads, version history and authorized downloads.
-- Separate proposal-use approval, approved versions and invalidation when evidence changes or expires.
+- Whole-proposal approval built on the staged pair-level evidence reviews, with complete version history and document provenance.
 - Deterministic eligibility factors with requirement-to-evidence links, reasons and unknown/failed states; no score from incomplete or role-filtered samples.
 - Attributed human bid decisions and conditions, followed by versioned approval gates and submission receipts. Existing database decision/submission guards must not be removed casually.
 - Persistent critical-action summaries, mandatory-event scheduling and meaningful notifications after the underlying deadlines/ownership model supports them.

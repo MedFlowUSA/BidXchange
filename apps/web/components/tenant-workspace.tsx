@@ -8,6 +8,7 @@ import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
+import EvidenceUseReview from './evidence-use-review';
 import EvidenceRenewals from './evidence-renewals';
 import { OpportunityForm, StartPursuitForm, TaskForm, RequirementForm } from './capture-forms';
 import { requirementStatuses } from '../lib/capture-input';
@@ -306,6 +307,9 @@ export default function TenantWorkspace({
                           pursuitId={recordId}
                           requirement={requirement}
                         />
+                      )}
+                      {data.evidenceReviewsEnabled && (
+                        <EvidenceUseReview data={data} requirement={requirement} />
                       )}
                     </article>
                   ))}

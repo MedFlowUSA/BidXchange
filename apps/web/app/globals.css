@@ -2328,6 +2328,13 @@ a.nav-item {
 .record-page .info-note {
   margin-top: 22px;
 }
+.evidence-use-note {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.evidence-use-note p {
+  margin: 8px 0 0;
+}
 .auth-card code {
   overflow-wrap: anywhere;
 }

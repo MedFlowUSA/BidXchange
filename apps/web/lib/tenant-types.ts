@@ -45,6 +45,18 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  evidenceReviewsEnabled?: boolean;
+  evidenceReviews?: {
+    id: string;
+    requirement_id: string;
+    fact_id: string;
+    applicability: string;
+    proposal_use: string;
+    approval_current: boolean | null;
+    reason: string;
+    reviewed_by: string;
+    reviewed_at: string;
+  }[];
   requirements?: {
     id: string;
     pursuit_id: string;

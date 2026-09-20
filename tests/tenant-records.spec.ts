@@ -19,7 +19,9 @@ function database(tables: Record<string, Row[]>, failure?: string) {
           let order: string | undefined;
           const result = () => {
             let rows = (tables[table] ?? []).filter((row) =>
-              query.filters.every(([key, value]) => row[key] === value),
+              query.filters.every(([key, value]) =>
+                Array.isArray(value) ? value.includes(row[key]) : row[key] === value,
+              ),
             );
             if (order)
               rows = [...rows].sort((a, b) => String(a[order!]).localeCompare(String(b[order!])));
@@ -32,6 +34,10 @@ function database(tables: Record<string, Row[]>, failure?: string) {
             };
           };
           const chain = {
+            in(key: string, values: unknown[]) {
+              query.filters.push([key, values]);
+              return chain;
+            },
             eq(key: string, value: unknown) {
               query.filters.push([key, value]);
               return chain;
@@ -144,4 +150,37 @@ test('database failures are not disguised as missing records or leaked to the UI
   await expect(loadRecordContext(db, org, { kind: 'opportunity', id })).rejects.toThrow(
     'Record data could not be loaded. Please retry.',
   );
+});
+
+test('evidence reviews require activation, scope to loaded requirements and fail closed on read errors', async () => {
+  const previous = process.env.BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED;
+  const tables = {
+    pursuits: [{ id, organization_id: org, opportunity_id: parent }],
+    opportunities: [{ id: parent, organization_id: org }],
+    pursuit_requirements: [{ id: 'req', organization_id: org, pursuit_id: id }],
+    current_evidence_use_reviews: [
+      { id: 'own-review', organization_id: org, requirement_id: 'req' },
+      { id: 'other-pursuit', organization_id: org, requirement_id: 'other' },
+      { id: 'foreign-review', organization_id: foreign, requirement_id: 'req' },
+    ],
+  };
+  try {
+    process.env.BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED = 'false';
+    const disabled = database(tables);
+    await loadRecordContext(disabled.db, org, { kind: 'pursuit', id });
+    expect(disabled.queries.some((q) => q.table === 'current_evidence_use_reviews')).toBe(false);
+    process.env.BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED = 'true';
+    expect(
+      (await loadRecordContext(database(tables).db, org, { kind: 'pursuit', id }))?.evidenceReviews,
+    ).toMatchObject([{ id: 'own-review' }]);
+    await expect(
+      loadRecordContext(database(tables, 'current_evidence_use_reviews').db, org, {
+        kind: 'pursuit',
+        id,
+      }),
+    ).rejects.toThrow('Evidence reviews could not be loaded. Please retry.');
+  } finally {
+    if (previous === undefined) delete process.env.BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED;
+    else process.env.BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED = previous;
+  }
 });
