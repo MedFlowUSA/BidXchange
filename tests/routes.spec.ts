@@ -6,7 +6,14 @@ test('direct demo routes survive refresh and browser history', async ({ page }) 
   await expect(page.getByRole('heading', { name: 'Company', exact: true })).toBeVisible();
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
   if (await menu.isVisible()) await menu.click();
-  await page.getByRole('navigation').getByRole('link', { name: 'Reports', exact: true }).click();
+  await page
+    .locator('summary')
+    .filter({ hasText: /^More$/ })
+    .click();
+  await page
+    .getByRole('navigation', { name: 'More navigation', exact: true })
+    .getByRole('link', { name: 'Reports', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/reports\?workspace=demo/);
   await page.goBack();
   await expect(page).toHaveURL(/\/company\?workspace=demo/);

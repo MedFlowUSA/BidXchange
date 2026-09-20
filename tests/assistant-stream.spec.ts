@@ -30,7 +30,9 @@ async function mount(page: Page, available = true) {
   await page.route('**/assistant-harness.css', (r) =>
     r.fulfill({ contentType: 'text/css', body: css }),
   );
-  await page.route('**/api/assistant/status?*', (r) => r.fulfill({ json: { available } }));
+  await page.route('**/api/assistant/status?*', (r) =>
+    r.fulfill({ json: { available, access: 'synthetic-user:viewer' } }),
+  );
   await page.goto('/assistant-test');
   await expect(page.getByLabel('Ask about Synthetic Test Company')).toBeVisible();
 }
@@ -121,3 +123,54 @@ test('unconfigured assistant remains safely unavailable', async ({ page }) => {
   await expect(page.getByText(/AI is unavailable for this workspace/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Ask BidXchange', exact: true })).toBeDisabled();
 });
+
+for (const change of ['revoked', 'role', 'pagehide'] as const) {
+  test(`private conversation clears on ${change}`, async ({ page }) => {
+    await page.route('**/api/assistant', (route) =>
+      route.fulfill({
+        contentType: 'application/x-ndjson',
+        body:
+          JSON.stringify({
+            type: 'answer',
+            answer: {
+              answer: [{ text: 'SYNTHETIC PRIVATE ANSWER', sources: ['synthetic'] }],
+              evidence: [],
+              citations: [],
+              risks: [],
+              nextAction: 'Review.',
+              notice: 'No live feeds.',
+            },
+          }) + '\n',
+      }),
+    );
+    await mount(page);
+    await page.getByLabel('Ask about Synthetic Test Company').fill('Synthetic private question');
+    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await expect(page.getByRole('article')).toContainText('SYNTHETIC PRIVATE ANSWER');
+    if (change === 'pagehide') {
+      await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+    } else {
+      await page.route('**/api/assistant/status?*', (route) =>
+        route.fulfill({
+          json: {
+            available: change === 'role',
+            access: change === 'role' ? 'synthetic-user:contributor' : null,
+          },
+        }),
+      );
+      await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    }
+    await expect(page.getByRole('article')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /1\. Synthetic private question/ })).toHaveCount(
+      0,
+    );
+    await expect(page.getByLabel('Ask about Synthetic Test Company')).toHaveValue('');
+    if (change === 'revoked')
+      await expect(
+        page.getByRole('button', { name: 'Ask BidXchange', exact: true }),
+      ).toBeDisabled();
+    expect(
+      await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),
+    ).toEqual({ local: 0, session: 0 });
+  });
+}

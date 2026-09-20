@@ -636,6 +636,9 @@ export default function Workspace({
 
         {page === 'Company' && (
           <>
+            <Link className="text-button" href={workspaceHref('/documents')}>
+              Company documents →
+            </Link>
             <div className="company-hero">
               <span className="large-avatar">AE</span>
               <div>

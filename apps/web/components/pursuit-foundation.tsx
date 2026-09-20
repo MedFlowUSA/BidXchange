@@ -57,21 +57,28 @@ export default function PursuitFoundation({
         </section>
       </div>
       {children}
-      <div className="company-grid">
-        {pursuitSections.map((title) => (
-          <section className="panel" key={title}>
-            <h3>{title}</h3>
-            <p>
-              {title === 'Submission record'
-                ? 'Not submitted. No automatic submission action.'
-                : title === 'Activity history'
-                  ? 'Workflow activity is shown below when available.'
-                  : 'No records yet. Assignment and review controls will be added in the pursuit workflow phase.'}
-            </p>
-            <span className="outline-tag">Foundation</span>
-          </section>
-        ))}
-      </div>
+      <details className="panel" open={demo}>
+        <summary>Planned pursuit tools</summary>
+        <p>
+          These controls are not available yet. Review the linked opportunity and visible tasks
+          first; an authorized human must confirm the decision and submission process.
+        </p>
+        <div className="company-grid">
+          {pursuitSections.map((title) => (
+            <section className="panel" key={title}>
+              <h3>{title}</h3>
+              <p>
+                {title === 'Submission record'
+                  ? 'Not submitted. No automatic submission action.'
+                  : title === 'Activity history'
+                    ? 'Workflow activity is shown below when available.'
+                    : 'Assignment and review controls are planned. This section does not report whether saved records exist.'}
+              </p>
+              <span className="outline-tag">Foundation</span>
+            </section>
+          ))}
+        </div>
+      </details>
     </section>
   );
 }

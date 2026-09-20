@@ -10,7 +10,7 @@ Fact verification requires an authenticated administrator, saved source evidence
 
 The app uses server-only Supabase clients and HttpOnly, SameSite=Lax cookies, with Secure cookies in production. Proxy refreshes sessions; server loaders validate the user. Responses are private/no-store. Redirect destinations are locally allowlisted and callback origins use configured SITE_URL. Passwords are neither requested nor handled. Auth errors log only a code, never a token. Development request logging is disabled to avoid callback tokens in logs. Configure hosting log redaction/retention for query strings before production.
 
-Service-role keys are absent from application environment requirements. Protected operator scripts obtain them from the authenticated CLI into memory only. Restrict operator CLI access and run test suites in a dedicated test project. Never capture raw CLI key/dump output. Local environment files and CLI state are excluded from Git and Vercel uploads.
+Tenant workspace reads and mutations use the authenticated user's client, never a service-role key. The separately gated public demo-intake feature uses a server-only service-role key solely for its bounded intake RPC, with HMAC-based abuse counters; it is configured only in dedicated staging at this checkpoint. Production uses the direct email fallback. Protected operator scripts obtain staging credentials from the authenticated CLI into memory only. Restrict operator CLI access and run test suites in the dedicated test project. Never capture raw CLI key/dump output. Local environment files and CLI state are excluded from Git and Vercel uploads.
 
 `company-private` is a private PDF bucket with a size limit and no client storage policies. Uploads/downloads remain unavailable pending malware scanning, content validation, tenant path policies and authorized expiring signed URLs. Private documents have not been uploaded or committed.
 
@@ -21,7 +21,7 @@ Service-role keys are absent from application environment requirements. Protecte
 - Implement invitations with exact supplied emails, expiry/revocation and rate limits; Donn has no account.
 - Add auth abuse protection, monitoring/alerting, backups and a rehearsed restore, retention/deletion policy and incident response.
 - Add document scanning and private-download authorization tests before enabling storage policies.
-- Add pagination and database search. Reads/search currently cover at most 500 records/category and 100 audit events; record routes use that bounded collection.
+- Add pagination and database search. Workspace lists/search still use a sample of at most 500 records/category and 100 audit events. Opportunity/pursuit detail routes now retrieve the requested UUID independently under tenant scope and RLS, including the pursuit's source opportunity and up to 500 related tasks or pursuits. Detail context is merged into the search sample without changing authorization. This fixes inaccessible deep links beyond the workspace sample; it does not provide full-list pagination or exhaustive search.
 - Exercise administrator forms with dedicated staging accounts before an operational pilot. Database administrator policies/verification guards are tested; automated browser fixtures currently use viewer roles.
 - Test actual token-expiry refresh over time, MFA and email-provider outage handling. Initial sessions/sign-out are tested, not every provider failure mode.
 - Establish separate staging and production Supabase projects for ongoing development.

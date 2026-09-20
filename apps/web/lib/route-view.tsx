@@ -37,7 +37,12 @@ export async function renderWorkspace(
   const next =
     path +
     (query.organization ? '?organization=' + encodeURIComponent(query.organization as string) : '');
-  const { account, data } = await loadTenant(query.organization as string | undefined, next);
+  if (recordId && (!recordType || !z.uuid().safeParse(recordId).success)) notFound();
+  const { account, data } = await loadTenant(
+    query.organization as string | undefined,
+    next,
+    recordId && recordType ? { id: recordId, kind: recordType } : undefined,
+  );
   if (!data)
     return (
       <AppShell page={page} choices={account.choices} userEmail={account.user?.email}>
@@ -62,11 +67,6 @@ export async function renderWorkspace(
         </main>
       </AppShell>
     );
-  if (recordId) {
-    if (!z.uuid().safeParse(recordId).success) notFound();
-    const records = recordType === 'pursuit' ? data.pursuits : data.opportunities;
-    if (!records.some((r) => r.id === recordId)) notFound();
-  }
   return (
     <TenantWorkspace
       key={data.organization.id}

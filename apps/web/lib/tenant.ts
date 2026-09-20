@@ -4,6 +4,13 @@ import { notFound, redirect } from 'next/navigation';
 import { createSupabaseServer } from './supabase/server';
 import type { OrganizationChoice } from './routes';
 import type { TenantData } from './tenant-types';
+import {
+  loadRecordContext,
+  opportunityFields,
+  pursuitFields,
+  taskFields,
+  type TenantRecordSelection,
+} from './tenant-records';
 
 export async function accountContext() {
   const supabase = await createSupabaseServer();
@@ -27,7 +34,11 @@ export async function accountContext() {
   });
   return { supabase, user, choices };
 }
-export async function loadTenant(organizationId: string | undefined, next: string) {
+export async function loadTenant(
+  organizationId: string | undefined,
+  next: string,
+  record?: TenantRecordSelection,
+) {
   const account = await accountContext();
   if (!account.user || !account.supabase) redirect('/login?next=' + encodeURIComponent(next));
   if (organizationId && !z.uuid().safeParse(organizationId).success) notFound();
@@ -40,12 +51,14 @@ export async function loadTenant(organizationId: string | undefined, next: strin
   if (!choice) return { account, data: null };
   const db = account.supabase;
   const id = choice.id;
+  const recordContext = record ? await loadRecordContext(db, id, record) : undefined;
+  if (record && !recordContext) notFound();
   const results = await Promise.all([
     db.from('organizations').select('*').eq('id', id).single(),
     db
       .from('profile_facts')
       .select(
-        'id,fact_type,label,value,verification_status,source_reference,source_note,verified_by,verified_at,expiration_date,updated_at',
+        'id,fact_type,label,value,verification_status,source_reference,source_note,verified_by,verified_at,effective_date,expiration_date,updated_at',
       )
       .eq('organization_id', id)
       .order('created_at')
@@ -61,18 +74,8 @@ export async function loadTenant(organizationId: string | undefined, next: strin
       .select('id,name,access_status,notes')
       .eq('organization_id', id)
       .limit(500),
-    db
-      .from('opportunities')
-      .select(
-        'id,title,solicitation_number,buyer,source_url,source_note,official_deadline,deadline_timezone,summary,estimated_value,status',
-      )
-      .eq('organization_id', id)
-      .limit(500),
-    db
-      .from('pursuits')
-      .select('id,title,opportunity_id,decision,status')
-      .eq('organization_id', id)
-      .limit(500),
+    db.from('opportunities').select(opportunityFields).eq('organization_id', id).limit(500),
+    db.from('pursuits').select(pursuitFields).eq('organization_id', id).limit(500),
     db
       .from('company_documents')
       .select('id,title,document_type,scan_status')
@@ -89,17 +92,14 @@ export async function loadTenant(organizationId: string | undefined, next: strin
       .eq('organization_id', id)
       .order('created_at', { ascending: false })
       .limit(100),
-    db
-      .from('pursuit_tasks')
-      .select('id,pursuit_id,title,status')
-      .eq('organization_id', id)
-      .limit(500),
+    db.from('pursuit_tasks').select(taskFields).eq('organization_id', id).limit(500),
   ]);
   if (results.some((r) => r.error))
     throw new Error(
       'Workspace data could not be loaded. Please retry or contact the administrator.',
     );
   const data = {
+    reviewAsOf: new Date().toISOString(),
     organization: { ...results[0].data, role: choice.role },
     choices: account.choices,
     userEmail: account.user.email ?? '',
@@ -114,6 +114,15 @@ export async function loadTenant(organizationId: string | undefined, next: strin
     audit: results[8].data,
     tasks: results[9].data,
   } as TenantData;
+  if (recordContext) {
+    // Keep the existing workspace search sample while resolving detail records independently.
+    const merge = <T extends { id: string }>(sample: T[], direct: T[]) => [
+      ...new Map([...sample, ...direct].map((row) => [row.id, row])).values(),
+    ];
+    data.opportunities = merge(data.opportunities, recordContext.opportunities);
+    data.pursuits = merge(data.pursuits, recordContext.pursuits);
+    data.tasks = merge(data.tasks, recordContext.tasks);
+  }
   return { account, data };
 }
 export async function requireAdmin(organizationId: string) {

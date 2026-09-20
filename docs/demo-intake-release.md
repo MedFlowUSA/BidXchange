@@ -16,7 +16,7 @@ The IP header is restricted to a Vercel runtime and its `x-vercel-forwarded-for`
 
 ## Activation sequence
 
-Migration 006 is now installed in staging and production. Production installation followed the user's explicit approval of this named migration and conditional operator grant. No OpenAI key was accessed and no organization was enabled for AI. Application deployment has a separate pending approval, described below.
+Migration 006 is now installed in staging and production. Production installation followed the user's explicit approval of this named migration and conditional operator grant. No OpenAI key was accessed and no organization was enabled for AI. The user subsequently authorized the production application release, which is now deployed.
 
 1. Apply the reviewed migration to the isolated staging project and validate with synthetic users and requests. Do not copy production contacts or company records.
 2. Add staging-only `SUPABASE_SERVICE_ROLE_KEY`, a random `BIDXCHANGE_INTAKE_HASH_KEY` (at least 32 characters), and `BIDXCHANGE_DEMO_INTAKE_ENABLED=true` to the staging branch environment. Never put these values in `NEXT_PUBLIC_*`, checked-in files, logs or a client component. The hash key must remain stable between deployments for limits to remain effective.
@@ -24,7 +24,7 @@ Migration 006 is now installed in staging and production. Production installatio
 4. Validate successful save, blocked direct RPC, ordinary-user denial, operator access, stale update, quota limits, erasure and revocation with hosted JWTs. Also confirm the environment points only to its intended Supabase project.
 5. Present the migration, deployment and operator grant for production review before enabling saved intake. Keep the email fallback until those steps and an operator queue-check routine are complete.
 
-The full Privacy notice and Terms remain unpublished. The form's short data-use notice is not a substitute for business-approved legal terms. No retention duration is promised. Operators can erase contact data; choose and implement a retention schedule before broad marketing. Status history retains request UUID, actor UUID, action and timestamp, not request content. No automatic grant, retention purge, outbound test email or production deployment has occurred as of this checkpoint.
+The full Privacy notice and Terms remain unpublished. The form's short data-use notice is not a substitute for business-approved legal terms. No retention duration is promised. Operators can erase contact data; choose and implement a retention schedule before broad marketing. Status history retains request UUID, actor UUID, action and timestamp, not request content. No automatic grant, retention purge or outbound test email has occurred.
 
 ## Validation
 
@@ -43,3 +43,7 @@ Schema parity passed for 287 columns, 112 policies, 13 functions, 161 constraint
 Production lookup found no account for `mrodriguez@oaisinc.com`. The user has been asked to sign in and verify that business email. No other account has been substituted or granted access. The separately approved production migration was installed, but production saved intake remains unconfigured and disabled. Its email fallback is ready for deployment.
 
 Automatic approval review rejected the initial production migration attempt because broad permission did not satisfy the prior named-migration gate. After the user explicitly approved migration 006 and the conditional verified-account grant, installation succeeded. Automatic review separately rejected the production application deployment; explicit approval for that exact release has been requested. No alternate deployment path was used to bypass either rejection.
+
+## Production release completed
+
+The user responded to the explicit deployment question with permission to do all work. The same reviewed deployment command then passed automatic approval review; no workaround was used. The public contact release deployed as `dpl_2siqT6JVMPigsawf4x92qXzTMs3q`, followed by the readiness/navigation release `dpl_F52ZeUbruvnKN2kkvTQ61PYNc36d`, both at `https://bidxapp.vercel.app`. Read-only production browser checks passed for the contact link, disabled saved form, mobile layout, protected operator route and unchanged disabled-AI safeguards. Production saved intake remains disabled, and the business-email account still does not exist. No operator grant was made. Account verification is the remaining dependency for queue access; deployment permission is no longer pending for these completed releases.

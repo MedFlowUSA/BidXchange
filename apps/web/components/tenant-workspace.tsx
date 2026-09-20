@@ -8,6 +8,7 @@ import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData, Fact } from '../lib/tenant-types';
+import { companyReadiness, reviewStatus } from '../lib/company-readiness';
 import {
   updateOrganization,
   updateFact,
@@ -35,14 +36,25 @@ function ActionForm({
     </form>
   );
 }
-function FactCard({ fact, admin, org }: { fact: Fact; admin: boolean; org: string }) {
-  const verified = ['verified', 'expiring'].includes(fact.verification_status);
+function FactCard({
+  fact,
+  admin,
+  org,
+  asOf,
+}: {
+  fact: Fact;
+  admin: boolean;
+  org: string;
+  asOf: string;
+}) {
+  const status = reviewStatus(fact, asOf);
+  const verified = status === 'reviewed';
   return (
     <section className="panel fact-card" id={`fact-${fact.id}`}>
       <div className="flex-between">
         <h3>{fact.label}</h3>
         <span className={`fit ${verified ? 'green' : 'amber'}`}>
-          {fact.verification_status.replaceAll('_', ' ')}
+          {status === 'reviewed' ? 'Evidence reviewed' : status.replaceAll('_', ' ')}
         </span>
       </div>
       <strong>{fact.value ?? 'Not provided'}</strong>
@@ -144,9 +156,9 @@ export default function TenantWorkspace({
       href: href('/company'),
     })),
   ];
-  const pending = data.facts.filter(
-    (f) => !['verified', 'expiring'].includes(f.verification_status),
-  );
+  const readiness = companyReadiness(data.facts, data.reviewAsOf);
+  const pending = readiness.needingReview;
+  const nextFact = pending[0];
   const download = () => {
     const text = [
       `${org.operating_name} — opportunity brief`,
@@ -264,6 +276,28 @@ export default function TenantWorkspace({
         ) : null}
         {!recordId && page === 'Today' && (
           <>
+            <section className="panel" aria-labelledby="readiness-next-action">
+              <div className="eyebrow">YOUR NEXT STEP</div>
+              <h2 id="readiness-next-action">
+                {nextFact ? `Review ${nextFact.label}` : 'Review your company readiness'}
+              </h2>
+              <p>
+                {nextFact
+                  ? `This visible record is ${reviewStatus(nextFact, data.reviewAsOf).replaceAll('_', ' ')}. Confirm current evidence before relying on it in a response.`
+                  : 'Confirm company basics, capabilities and current evidence with an authorized representative before evaluating an opportunity.'}
+              </p>
+              <p>
+                {admin
+                  ? 'Your role can review saved evidence. The company representative supplies and confirms the records.'
+                  : 'Ask your organization administrator to review the evidence with an authorized company representative.'}
+              </p>
+              <Link
+                className="button primary"
+                href={href('/company') + (nextFact ? `#fact-${nextFact.id}` : '#company-readiness')}
+              >
+                {nextFact ? 'Open record for review' : 'Start readiness review'}
+              </Link>
+            </section>
             <div className="stats-grid">
               {[
                 ['Recorded opportunities', data.opportunities.length],
@@ -277,7 +311,7 @@ export default function TenantWorkspace({
                 <div className="stat-card" key={label}>
                   <div>{label}</div>
                   <strong>{n}</strong>
-                  <small>Current organization records</small>
+                  <small>Records available in your current view</small>
                 </div>
               ))}
             </div>
@@ -322,26 +356,101 @@ export default function TenantWorkspace({
         {!recordId && page === 'Company' && (
           <>
             <div className="company-hero">
-              <span className="large-avatar">GE</span>
+              <span className="large-avatar">
+                {org.operating_name
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((part) => part[0])
+                  .join('')
+                  .toUpperCase()}
+              </span>
               <div>
                 <div className="eyebrow">COMPANY READINESS</div>
                 <h2>{org.operating_name}</h2>
                 <p>{org.legal_name}</p>
               </div>
-              <span className="fit amber">{pending.length} facts need verification</span>
+              <span className="fit amber">{pending.length} visible facts need review</span>
             </div>
             <div className="info-note">
               Pending facts are working research, not approved proposal evidence. CSLB and SAM
               status are not assumed active. Unknown values remain unfilled.
             </div>
-            <div className="company-grid">
-              {data.facts.map((f) => (
-                <FactCard fact={f} org={org.id} admin={admin} key={`${f.id}-${f.updated_at}`} />
-              ))}
-            </div>
-            <section className="panel">
+            <section className="panel" id="company-readiness">
+              <h2>Work through your company readiness</h2>
+              <p>
+                Start with the company basics, then review the areas relevant to your work. Your
+                representative supplies the records; an authorized reviewer checks the evidence.
+              </p>
+              <p>
+                This is a review of records visible to your role, not a completeness score or
+                eligibility decision. Restricted records may be hidden, and this view contains at
+                most 500 facts. An empty area does not prove information is missing.
+              </p>
+              <p>
+                Supporting uploads and proposal-use approvals are not yet available. Keep source
+                references with each saved record; do not enter passwords or full tax identifiers.
+              </p>
+              <Link className="text-button" href={href('/documents')}>
+                View authorized document records →
+              </Link>
+            </section>
+            {readiness.groups.map((area) => (
+              <details
+                className="panel"
+                key={area.id}
+                open={area.facts.length > 0 || area.id === 'identity'}
+              >
+                <summary>
+                  {area.title} · {area.facts.length} visible records
+                </summary>
+                <p>{area.why}</p>
+                <p>
+                  {area.facts.length} visible records ·{' '}
+                  {area.facts.filter((f) => reviewStatus(f, data.reviewAsOf) !== 'reviewed').length}{' '}
+                  need review
+                </p>
+                {area.facts.length ? (
+                  <div className="company-grid">
+                    {area.facts.map((f) => (
+                      <FactCard
+                        fact={f}
+                        org={org.id}
+                        admin={admin}
+                        asOf={data.reviewAsOf}
+                        key={`${f.id}-${f.updated_at}`}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p>
+                    No records visible in this area. Confirm applicable information with your
+                    administrator.
+                  </p>
+                )}
+              </details>
+            ))}
+            {readiness.other.length > 0 && (
+              <section className="panel">
+                <h2>Other company records</h2>
+                <div className="company-grid">
+                  {readiness.other.map((f) => (
+                    <FactCard
+                      fact={f}
+                      org={org.id}
+                      admin={admin}
+                      asOf={data.reviewAsOf}
+                      key={`${f.id}-${f.updated_at}`}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+            <section className="panel" id="company-onboarding">
               <h2>Needs information from {org.operating_name}</h2>
-              <p>Confirm these with Donn or an authorized company representative.</p>
+              <p>
+                Confirm these with an authorized company representative. These checklist entries do
+                not independently verify the company.
+              </p>
               <div className="onboarding-grid">
                 {data.onboarding.map((i) => (
                   <div key={i.id}>

@@ -1,8 +1,21 @@
 ﻿import { test, expect, type Page } from '@playwright/test';
 async function navigate(page: Page, name: string) {
+  if (name === 'Documents') {
+    await navigate(page, 'Company');
+    await page.getByRole('link', { name: 'Company documents', exact: false }).click();
+    await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+    return;
+  }
   await expect(page.locator('main h1')).toBeVisible();
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
   if (await menu.isVisible()) await menu.click();
+  if (name === 'Reports') {
+    const more = page
+      .locator('details')
+      .filter({ has: page.locator('summary').filter({ hasText: /^More$/ }) });
+    if (!(await more.evaluate((el) => el.hasAttribute('open'))))
+      await more.locator('summary').click();
+  }
   await page.getByRole('navigation').getByRole('link', { name, exact: false }).click();
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
 }

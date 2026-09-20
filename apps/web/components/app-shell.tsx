@@ -6,7 +6,6 @@ import {
   Building2,
   ChevronRight,
   CircleHelp,
-  FolderOpen,
   LayoutDashboard,
   Menu,
   Search,
@@ -26,7 +25,6 @@ const icons = {
   Opportunities: Search,
   Pursuits: Target,
   Company: Building2,
-  Documents: FolderOpen,
   Reports: TrendingUp,
   Settings,
 };
@@ -86,7 +84,14 @@ export default function AppShell({
             setSwitcher(true);
           }}
         >
-          <span className="company-avatar">{organization ? 'GE' : 'AE'}</span>
+          <span className="company-avatar">
+            {name
+              .split(/\s+/)
+              .slice(0, 2)
+              .map((part) => part[0])
+              .join('')
+              .toUpperCase()}
+          </span>
           <span>
             <b>{name}</b>
             <small>{organization ? 'Authenticated workspace' : 'Fictional demonstration'}</small>
@@ -94,7 +99,8 @@ export default function AppShell({
         </button>
         <div className="nav-label">WORKSPACE</div>
         <nav aria-label="Main navigation">
-          {Object.entries(sections).map(([label, path]) => {
+          {['Today', 'Opportunities', 'Pursuits', 'Company', 'Assistant'].map((label) => {
+            const path = sections[label];
             const Icon = icons[label as keyof typeof icons];
             return (
               <Link
@@ -110,6 +116,20 @@ export default function AppShell({
             );
           })}
         </nav>
+        <details className="secondary-navigation" open={page === 'Reports'}>
+          <summary className="nav-item">More</summary>
+          <nav aria-label="More navigation">
+            <Link
+              href={workspaceHref('/reports', organization?.id)}
+              className={`nav-item ${page === 'Reports' ? 'active' : ''}`}
+              aria-current={page === 'Reports' ? 'page' : undefined}
+              onClick={() => setMobile(false)}
+            >
+              <TrendingUp size={19} />
+              Reports
+            </Link>
+          </nav>
+        </details>
         <div className="sidebar-bottom">
           <div className="desk-note">
             <ShieldCheck size={23} />
@@ -127,12 +147,25 @@ export default function AppShell({
             </button>
           )}
           <div className="profile">
-            <span className="profile-avatar">{userEmail ? 'ME' : 'DM'}</span>
+            <span className="profile-avatar">
+              {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'DM'}
+            </span>
             <div>
               <b>{userEmail ? 'Signed in' : 'Demo member'}</b>
               <small>{organization?.role.replaceAll('_', ' ') ?? 'Preview access'}</small>
             </div>
           </div>
+          <details className="secondary-navigation" open={page === 'Settings'}>
+            <summary className="nav-item">Account and organization</summary>
+            <Link
+              className={`nav-item ${page === 'Settings' ? 'active' : ''}`}
+              href={workspaceHref('/settings', organization?.id)}
+              onClick={() => setMobile(false)}
+            >
+              <Settings size={19} />
+              Settings
+            </Link>
+          </details>
           {userEmail ? (
             <form action={signOut}>
               <button className="nav-item">Sign out</button>

@@ -18,6 +18,7 @@ export type Fact = {
   verified_by: string | null;
   verified_at: string | null;
   expiration_date: string | null;
+  effective_date?: string | null;
   updated_at: string;
 };
 export type LiveOpportunity = {
@@ -41,6 +42,7 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  reviewAsOf: string;
   organization: Organization;
   choices: OrganizationChoice[];
   userEmail: string;
