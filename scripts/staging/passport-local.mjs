@@ -149,6 +149,8 @@ try {
   await page.locator('details[aria-label="Add identity evidence"] > summary').click();
   await form.getByLabel('Record label', { exact: true }).fill(label);
   await form.getByLabel('Known information', { exact: true }).fill('Initial synthetic value');
+  const renewalDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  await form.getByLabel('Expiration date', { exact: true }).fill(renewalDate);
   await form
     .getByLabel('Evidence reference', { exact: true })
     .fill('https://example.invalid/evidence');
@@ -172,6 +174,10 @@ try {
   await page.reload();
   let card = page.locator(`#fact-${saved.id}`);
   await expect(card).toContainText('Initial synthetic value');
+  const renewals = page.getByRole('region', { name: 'Renewals needing attention' });
+  await expect(renewals).toContainText(label);
+  await expect(renewals).toContainText('Expires in 30 days');
+  await expect(renewals).toContainText('needs review');
   console.log(
     'PASS real administrator creates evidence with source, owner and restricted visibility; reload preserves it',
   );
@@ -216,6 +222,9 @@ try {
   await expect(page.getByRole('heading', { name: label, exact: true })).toHaveCount(0);
   await expect(page.locator('.company-record-editor')).toHaveCount(0);
   await expect(page.locator('#passport-identity')).not.toContainText('Synthetic Passport Company');
+  await expect(page.getByRole('region', { name: 'Renewals needing attention' })).not.toContainText(
+    label,
+  );
   assert(
     (
       await client.from('profile_facts').insert({

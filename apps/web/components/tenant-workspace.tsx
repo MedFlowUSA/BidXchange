@@ -8,6 +8,7 @@ import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
+import EvidenceRenewals from './evidence-renewals';
 import { OpportunityForm, StartPursuitForm, TaskForm, RequirementForm } from './capture-forms';
 import { requirementStatuses } from '../lib/capture-input';
 import { workspaceHref } from '../lib/routes';
@@ -391,6 +392,7 @@ export default function TenantWorkspace({
                 {nextFact ? 'Open record for review' : 'Start readiness review'}
               </Link>
             </section>
+            <EvidenceRenewals key={org.id} data={data} />
             <div className="stats-grid">
               {[
                 ['Recorded opportunities', data.opportunities.length],
@@ -468,6 +470,7 @@ export default function TenantWorkspace({
               Pending facts are working research, not approved proposal evidence. CSLB and SAM
               status are not assumed active. Unknown values remain unfilled.
             </div>
+            <EvidenceRenewals key={org.id + '-renewals'} data={data} />
             <CompanyPassport key={org.id} data={data} />
             <section className="panel" id="company-readiness">
               <h2>Review your saved company evidence</h2>

@@ -2367,3 +2367,34 @@ a.nav-item {
     display: block;
   }
 }
+.renewal-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+.renewal-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  border-top: 1px solid #e2e7ef;
+  padding: 18px 0;
+}
+.renewal-list li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.renewal-list li > div > a {
+  font-weight: 700;
+  text-decoration: underline;
+}
+.renewal-list p {
+  font-size: 12px;
+  margin: 7px 0;
+}
+@media (max-width: 600px) {
+  .renewal-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

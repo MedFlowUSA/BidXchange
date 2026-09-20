@@ -69,9 +69,30 @@ export const readinessAreas = [
   },
 ] as const;
 
+export function daysUntilExpiration(value: string | null, asOf: string): number | null {
+  const today = asOf.slice(0, 10);
+  const validDay = (day: string) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(day) &&
+    Number.isFinite(Date.parse(day)) &&
+    new Date(day).toISOString().slice(0, 10) === day;
+  if (!value || !validDay(value) || !validDay(today)) return null;
+  return Math.round((Date.parse(value) - Date.parse(today)) / 86400000);
+}
+
+export function renewalQueue(facts: Fact[], asOf: string) {
+  return facts
+    .flatMap((fact) => {
+      const days = daysUntilExpiration(fact.expiration_date, asOf);
+      return days !== null && days <= 60 ? [{ fact, days }] : [];
+    })
+    .sort((a, b) => a.days - b.days || a.fact.label.localeCompare(b.fact.label));
+}
+
 export function reviewStatus(fact: Fact, asOf: string) {
   const today = asOf.slice(0, 10);
-  if (fact.expiration_date && fact.expiration_date < today) return 'expired';
+  const days = daysUntilExpiration(fact.expiration_date, asOf);
+  if (fact.expiration_date && days === null) return 'needs_review';
+  if (days !== null && days < 0) return 'expired';
   if (fact.effective_date && fact.effective_date > today) return 'not_yet_effective';
   if (['expired', 'rejected'].includes(fact.verification_status)) return fact.verification_status;
   if (
@@ -82,6 +103,7 @@ export function reviewStatus(fact: Fact, asOf: string) {
   )
     return 'needs_review';
   if (fact.verification_status === 'expiring') return 'expiring';
+  if (fact.verification_status === 'verified' && days !== null && days <= 60) return 'expiring';
   return fact.verification_status === 'verified' ? 'reviewed' : 'needs_review';
 }
 
@@ -90,8 +112,8 @@ export function companyReadiness(facts: Fact[], asOf: string) {
     expired: 0,
     rejected: 1,
     not_yet_effective: 2,
-    needs_review: 3,
-    expiring: 4,
+    needs_review: 4,
+    expiring: 3,
     reviewed: 5,
   };
   const needingReview = facts
@@ -99,6 +121,8 @@ export function companyReadiness(facts: Fact[], asOf: string) {
     .sort(
       (a, b) =>
         priority[reviewStatus(a, asOf)] - priority[reviewStatus(b, asOf)] ||
+        (daysUntilExpiration(a.expiration_date, asOf) ?? Infinity) -
+          (daysUntilExpiration(b.expiration_date, asOf) ?? Infinity) ||
         a.label.localeCompare(b.label),
     );
   const groups = readinessAreas.map((area) => ({

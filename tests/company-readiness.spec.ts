@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { companyReadiness, reviewStatus } from '../apps/web/lib/company-readiness';
+import {
+  companyReadiness,
+  reviewStatus,
+  daysUntilExpiration,
+  renewalQueue,
+} from '../apps/web/lib/company-readiness';
 import type { Fact } from '../apps/web/lib/tenant-types';
 const asOf = '2026-09-19T12:00:00Z';
 const fact: Fact = {
@@ -12,14 +17,38 @@ const fact: Fact = {
   source_note: null,
   verified_by: 'synthetic-reviewer',
   verified_at: '2026-09-01T12:00:00Z',
-  expiration_date: '2026-10-01',
+  expiration_date: '2027-10-01',
   effective_date: '2026-09-01',
   updated_at: asOf,
 };
 test('expired or future-effective evidence cannot remain reviewed because of its saved status', () => {
   expect(reviewStatus({ ...fact, expiration_date: '2026-09-18' }, asOf)).toBe('expired');
   expect(reviewStatus({ ...fact, effective_date: '2026-09-20' }, asOf)).toBe('not_yet_effective');
-  expect(reviewStatus({ ...fact, expiration_date: '2026-09-19' }, asOf)).toBe('reviewed');
+  expect(reviewStatus({ ...fact, expiration_date: '2026-09-19' }, asOf)).toBe('expiring');
+});
+
+test('renewal boundaries use calendar dates and never turn unverified evidence into reviewed evidence', () => {
+  expect(daysUntilExpiration('2026-11-18', asOf)).toBe(60);
+  expect(daysUntilExpiration('2026-11-19', asOf)).toBe(61);
+  expect(daysUntilExpiration('2026-02-30', asOf)).toBeNull();
+  expect(daysUntilExpiration(null, asOf)).toBeNull();
+  expect(reviewStatus({ ...fact, expiration_date: '2026-11-18' }, asOf)).toBe('expiring');
+  expect(reviewStatus({ ...fact, expiration_date: '2026-11-19' }, asOf)).toBe('reviewed');
+  expect(
+    reviewStatus(
+      { ...fact, expiration_date: '2026-10-01', verification_status: 'pending_verification' },
+      asOf,
+    ),
+  ).toBe('needs_review');
+  expect(reviewStatus({ ...fact, expiration_date: 'bad' }, asOf)).toBe('needs_review');
+  const rows = [
+    { ...fact, id: 'soon', expiration_date: '2026-10-01' },
+    { ...fact, id: 'expired', expiration_date: '2026-09-18' },
+    { ...fact, id: 'later', expiration_date: '2026-11-19' },
+    { ...fact, id: 'unknown', expiration_date: null },
+  ];
+  expect(renewalQueue(rows, asOf).map(({ fact }) => fact.id)).toEqual(['expired', 'soon']);
+  expect(rows[0].id).toBe('soon');
 });
 test('a verified label without a value, source or human verification requires review', () => {
   for (const change of [

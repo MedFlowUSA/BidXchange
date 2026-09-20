@@ -24,6 +24,16 @@ Validation: 13 evidence/readiness/tenant-record regressions pass, as do type che
 
 ## Remaining acceptance criteria
 
+### Renewal follow-up increment
+
+Today and Company now show an authorized-view renewal queue for expired evidence and dates within 60 days, with owners and direct evidence-review links. Verified, otherwise supported claims automatically display as expiring within that window; missing verification still displays as needing review. Saved verification is never rewritten by these reminders. Urgent renewal dates are ordered before undated review work, and equal-priority evidence is sorted by expiration date.
+
+Date comparisons use UTC calendar dates, disclosed in the UI. The expiration date itself displays as “Expires today,” not already expired. Invalid dates fail to Needs review and do not create invented countdowns. The list discloses the 500-entry authorized-view limit and does not count inaccessible evidence. This is an in-app queue, not email notification delivery or a readiness/eligibility score.
+
+Eight focused readiness/input tests pass, covering the 60/61-day boundary, expiration day, invalid dates, ordering and preservation of unknown verification. The staging-backed Passport browser test also checks the 30-day reminder and removal of a restricted item from the renewal view after role revocation.
+
+### Data model and decision workflow still required
+
 - Typed repeatable claims, applicability decisions and explicit field-level requiredness by pursuit context.
 - Supporting-document relationships, scanned uploads, version history and authorized downloads.
 - Separate proposal-use approval, approved versions and invalidation when evidence changes or expires.
