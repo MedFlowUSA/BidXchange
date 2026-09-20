@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import { stagingProvider } from '../../../lib/ai/staging-provider';
 import { createHmac } from 'node:crypto';
 import { aiConfig } from '../../../lib/ai/config';
 import { AiError, errorMessages, LIMITS, requestSchema } from '../../../lib/ai/contracts';
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         };
         try {
           const result = await runAssistant(
-            new OpenAI({ apiKey: config.key, maxRetries: 0, timeout: LIMITS.timeoutMs }),
+            stagingProvider(),
             config.model,
             body.prompt,
             body.context,
@@ -117,11 +117,7 @@ export async function POST(request: Request) {
               : 'timeout'
             : error instanceof AiError
               ? error.code
-              : error instanceof OpenAI.RateLimitError
-                ? 'rate_limited'
-                : error instanceof OpenAI.APIConnectionTimeoutError
-                  ? 'timeout'
-                  : 'service_unavailable';
+              : 'service_unavailable';
           emit({
             type: 'error',
             code,
