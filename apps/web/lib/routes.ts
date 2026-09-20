@@ -13,7 +13,7 @@ export function workspaceHref(path: string, organizationId?: string) {
 }
 export function safeNext(value: unknown) {
   return typeof value === 'string' &&
-    /^\/(assistant|dashboard|opportunities|pursuits|company|documents|reports|settings)(\?|\/|$)/.test(
+    /^\/(assistant|dashboard|opportunities|pursuits|company|documents|reports|settings|operations)(\?|\/|$)/.test(
       value,
     ) &&
     !value.includes('\\') &&

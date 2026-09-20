@@ -29,6 +29,7 @@ import {
 import MarketingHeader from '../components/marketing-header';
 import ProductPreview from '../components/product-preview';
 import InterestPreview from '../components/interest-preview';
+import { demoContactHref } from '../lib/operations-contact';
 import { createSupabaseServer } from '../lib/supabase/server';
 import styles from '../components/marketing.module.css';
 
@@ -604,7 +605,7 @@ export default async function Home() {
             <a href="#request-demo" className={styles.goldButton}>
               Discuss Your Needs <ArrowUpRight size={18} aria-hidden="true" />
             </a>
-            <small>Request form preview · Opening soon</small>
+            <small>Contact Manuel Rodriguez for a walkthrough</small>
           </div>
         </section>
 
@@ -641,15 +642,16 @@ export default async function Home() {
             <strong>Company</strong>
             <a href="#legal-notices">Privacy — pending</a>
             <a href="#legal-notices">Terms — pending</a>
-            <a href="#legal-notices">Contact — coming soon</a>
+            <a href={demoContactHref}>Contact Manuel</a>
           </nav>
         </div>
         <section id="legal-notices" className={styles.legalNotices} aria-labelledby="legal-title">
           <h2 id="legal-title">Before public access opens</h2>
           <p>
-            The Privacy notice, Terms of service, and public contact channel are being finalized.
-            These are placeholders, not published legal terms. The interest form is disabled and
-            does not collect information.
+            The full Privacy notice and Terms of service are being finalized; these links are not
+            published legal terms. For a demo or a question about information you have shared,
+            contact Manuel Rodriguez at mrodriguez@oaisinc.com. Please do not send confidential
+            company records through the public contact channel.
           </p>
         </section>
         <div className={styles.footerBottom}>

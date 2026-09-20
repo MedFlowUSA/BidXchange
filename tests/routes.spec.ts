@@ -24,6 +24,8 @@ test('direct demo routes survive refresh and browser history', async ({ page }) 
   await expect(page.getByRole('checkbox', { name: 'Prepare cost estimate' })).toBeVisible();
 });
 test('protected routes redirect and unauthorized IDs never switch tenant', async ({ page }) => {
+  await page.goto('/operations');
+  await expect(page).toHaveURL(/\/login\?next=%2Foperations/);
   await page.goto('/settings');
   await expect(page).toHaveURL(/\/login\?next=/);
   await expect(page.getByRole('button', { name: 'Email a sign-in link' })).toBeVisible();

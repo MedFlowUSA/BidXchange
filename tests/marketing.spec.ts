@@ -31,28 +31,20 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   ).toBeVisible();
 });
 
-test('request CTAs reach an honestly disabled form that cannot collect data', async ({ page }) => {
+test('request CTAs offer the approved business contact without claiming delivery', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.locator('main').getByRole('link', { name: 'Request a Demo', exact: true }).click();
   await expect(page).toHaveURL(/#request-demo$/);
-  await expect(page.getByText('Demo requests are opening soon.', { exact: true })).toBeVisible();
-  const form = page.getByRole('form', { name: 'Demo request preview' });
-  await expect(form.locator('input,select,textarea,button')).toHaveCount(13);
-  for (const control of await form.locator('input,select,textarea,button').all())
-    await expect(control).toBeDisabled();
-  await expect(form.getByLabel('Full name', { exact: true })).toHaveAttribute('maxlength', '120');
-  await expect(form.getByLabel('Work email', { exact: true })).toHaveAttribute('type', 'email');
-  await expect(form.getByLabel('Work email', { exact: true })).toHaveAttribute('maxlength', '254');
-  await expect(form.getByLabel('Primary service category')).toHaveAttribute('required', '');
-  await expect(form.getByRole('button')).toHaveAttribute('type', 'button');
-  expect(await form.evaluate((el) => el.tagName)).not.toBe('FORM');
+  const contact = page.getByRole('region', { name: 'Demo contact' });
+  await expect(
+    contact.getByRole('link', { name: 'Email Manuel to request a demo' }),
+  ).toHaveAttribute('href', 'mailto:mrodriguez@oaisinc.com?subject=BidXchange%20demo%20request');
+  await expect(contact).toContainText('clicking this link does not send a request or save it');
+  await expect(page.getByRole('form', { name: 'Request a demo' })).toHaveCount(0);
+  await expect(page.getByText('Demo requests are opening soon.')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
-  const requests: string[] = [];
-  page.on('request', (req) => {
-    if (req.method() === 'POST') requests.push(req.url());
-  });
-  await form.getByRole('button').dispatchEvent('click');
-  expect(requests).toEqual([]);
   await expect(page.getByText('Privacy — pending', { exact: true })).toBeVisible();
   await expect(page.getByText('Terms — pending', { exact: true })).toBeVisible();
 });
@@ -98,7 +90,7 @@ test('responsive content is contained, rather than hidden by overflow clipping',
     for (const locator of [
       page.locator('h1'),
       page.locator('figure'),
-      page.getByRole('form', { name: 'Demo request preview' }),
+      page.getByRole('region', { name: 'Demo contact' }),
     ]) {
       const bounds = await locator.boundingBox();
       expect(bounds).not.toBeNull();

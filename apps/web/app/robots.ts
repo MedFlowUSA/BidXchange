@@ -15,6 +15,7 @@ export default function robots(): MetadataRoute.Robots {
         '/documents',
         '/reports',
         '/settings',
+        '/operations',
         '/login',
         '/auth/',
         '/*?*',

@@ -1,6 +1,6 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
-export async function localTestDatabase() {
+export async function localTestDatabase({ includeCompanySeed = true } = {}) {
   const pg = new PGlite();
   await pg.exec(`create role anon; create role authenticated;
     create schema auth; create schema storage;
@@ -11,7 +11,7 @@ export async function localTestDatabase() {
     create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
   for (const name of [
     '20260919000100_tenant_foundation.sql',
-    '20260919000200_ges_onboarding.sql',
+    ...(includeCompanySeed ? ['20260919000200_ges_onboarding.sql'] : []),
     '20260919000300_admin_mutation_limit.sql',
     '20260919000400_organization_identity.sql',
   ])
