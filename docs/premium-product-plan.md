@@ -24,6 +24,10 @@ Validation: 13 evidence/readiness/tenant-record regressions pass, as do type che
 
 ## Remaining acceptance criteria
 
+### Private document foundation
+
+Versioned PDF upload, private authorized downloads, scanner integration and exact requirement references are implemented behind a disabled production flag. Migration 012 is staged. A new private scanner host requires the user's cost approval and real ClamAV validation before production activation. See [the document foundation release](document-foundation-release.md).
+
 ### Human-entered amendment review
 
 Capture users can compare and revise one requirement against a cited amendment. Saving resets follow-up and invalidates prior review context through the existing version checks. This begins amendment handling without claiming automatic document ingestion or a retained source-version ledger. See [the amendment review report](amendment-review.md).

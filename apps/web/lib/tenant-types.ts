@@ -47,6 +47,23 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  documentsEnabled?: boolean;
+  documentLibraries?: { id: string; title: string }[];
+  documentVersions?: {
+    id: string;
+    document_id: string;
+    version: number;
+    sha256: string;
+    byte_size: number;
+    scan_status: string;
+    created_at: string;
+  }[];
+  documentLinks?: {
+    id: string;
+    requirement_id: string;
+    document_version_id: string;
+    source_reference: string;
+  }[];
   resolutionsEnabled?: boolean;
   resolutions?: RequirementResolution[];
   resolutionHistory?: RequirementResolution[];

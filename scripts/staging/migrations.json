@@ -56,7 +56,12 @@
       "file": "20260920001100_requirement_resolutions.sql",
       "sha256": "2a220d6a1ee6ebaf3063feaab352bd6a56233bb4384b583607835bbc35250743",
       "action": "include-schema"
+    },
+    {
+      "file": "20260920001200_document_versions.sql",
+      "sha256": "69106267ec8f5ad397b959a663b0f8e2cc6b0936ef078f0983df38df0030afe5",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 7
+  "packageRevision": 8
 }

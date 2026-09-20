@@ -1,0 +1,36 @@
+# Review and pin an official supported image digest before the first deployment.
+services:
+  clamav:
+    image: ${CLAMAV_IMAGE:?Set a reviewed official clamav/clamav image digest}
+    restart: unless-stopped
+    environment:
+      TZ: UTC
+    volumes:
+      - signatures:/var/lib/clamav
+      - ./clamd.conf:/etc/clamav/clamd.conf:ro
+    mem_limit: 5g
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '3'
+    # No host ports: only the worker can reach the scanner on this Docker network.
+  worker:
+    build:
+      context: ../..
+      dockerfile: scripts/documents/Dockerfile
+    restart: unless-stopped
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL:?Set the intended project URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?Supply through the host secret environment}
+    depends_on:
+      - clamav
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '3'
+volumes:
+  signatures:

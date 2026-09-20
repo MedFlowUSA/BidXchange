@@ -2420,6 +2420,19 @@ a.nav-item {
     grid-template-columns: 1fr;
   }
 }
+.document-library {
+  overflow-wrap: anywhere;
+}
+.document-library code {
+  word-break: break-all;
+}
+.document-library summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.document-library input[type='file'] {
+  max-width: 100%;
+}
 .decision-brief {
   overflow-wrap: anywhere;
 }

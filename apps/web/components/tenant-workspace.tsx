@@ -11,6 +11,7 @@ import EvidenceStressTest from './evidence-stress-test';
 import PursuitDecision from './pursuit-decision';
 import RequirementResolution from './requirement-resolution';
 import RequirementAmendment from './requirement-amendment';
+import { DocumentLibrary, RequirementDocuments } from './document-library';
 import TodayTaskQueue from './today-task-queue';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
@@ -338,6 +339,9 @@ export default function TenantWorkspace({
                         <RequirementResolution data={data} requirement={requirement} />
                       )}
                       {capture && <RequirementAmendment data={data} requirement={requirement} />}
+                      {data.documentsEnabled && (
+                        <RequirementDocuments data={data} requirement={requirement} />
+                      )}
                       {data.evidenceReviewsEnabled && (
                         <EvidenceUseReview data={data} requirement={requirement} />
                       )}
@@ -678,7 +682,10 @@ export default function TenantWorkspace({
             )}
           </div>
         )}
-        {!recordId && page === 'Documents' && (
+        {!recordId && page === 'Documents' && data.documentsEnabled && (
+          <DocumentLibrary data={data} />
+        )}
+        {!recordId && page === 'Documents' && !data.documentsEnabled && (
           <section className="panel">
             <h2>Private company library</h2>
             <p>

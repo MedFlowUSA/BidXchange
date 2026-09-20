@@ -132,6 +132,39 @@ export async function loadTenant(
     data.resolutions = recordContext.resolutions;
     data.resolutionHistory = recordContext.resolutionHistory;
   }
+  data.documentsEnabled = process.env.BIDXCHANGE_DOCUMENTS_ENABLED === 'true';
+  if (data.documentsEnabled && (next.startsWith('/documents') || record?.kind === 'pursuit')) {
+    const [libraries, versions, links] = await Promise.all([
+      db
+        .from('document_libraries')
+        .select('id,title')
+        .eq('organization_id', id)
+        .order('created_at', { ascending: false })
+        .limit(501),
+      db
+        .from('document_versions')
+        .select('id,document_id,version,sha256,byte_size,scan_status,created_at')
+        .eq('organization_id', id)
+        .order('created_at', { ascending: false })
+        .limit(501),
+      record?.kind === 'pursuit' && data.requirements?.length
+        ? db
+            .from('requirement_document_links')
+            .select('id,requirement_id,document_version_id,source_reference')
+            .eq('organization_id', id)
+            .in(
+              'requirement_id',
+              data.requirements.map((r) => r.id),
+            )
+            .limit(501)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (libraries.error || versions.error || links.error)
+      throw new Error('Document records unavailable. Retry.');
+    data.documentLibraries = libraries.data ?? [];
+    data.documentVersions = versions.data ?? [];
+    data.documentLinks = links.data ?? [];
+  }
   return { account, data };
 }
 export async function requireAdmin(organizationId: string) {
