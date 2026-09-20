@@ -42,6 +42,8 @@ Ten focused brief and tenant-loading tests pass, along with type checking, lint,
 
 ### Remaining decision model
 
+The next operational increment adds a Today task queue and direct saved-record links. Attributed bid/no-bid/reopen decision recording is implemented and validated in staging, with production migration 010 awaiting named approval. See [the pursuit workflow release](pursuit-decision-release.md) for authority boundaries, context-change handling and remaining work.
+
 The next increment is implemented and staged: evidence applicability and proposal-use reviews for a specific fact version and pursuit requirement. Production migrations and feature-flag activation have been approved, and migrations are installed; see [the release report](evidence-use-release.md). This provides pair-level approval and invalidation, not whole-proposal authorization or complete contextual qualification.
 
 - Typed repeatable claims, applicability decisions and explicit field-level requiredness by pursuit context.

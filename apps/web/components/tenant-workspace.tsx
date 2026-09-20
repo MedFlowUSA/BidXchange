@@ -7,6 +7,8 @@ import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import PursuitDecisionBrief from './pursuit-decision-brief';
+import PursuitDecision from './pursuit-decision';
+import TodayTaskQueue from './today-task-queue';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
 import EvidenceUseReview from './evidence-use-review';
@@ -257,6 +259,11 @@ export default function TenantWorkspace({
                 deadline={deadline}
                 timezone={opportunity.deadline_timezone}
                 opportunityHref={href('/opportunities/' + opportunity.id)}
+                decisionPanel={
+                  data.decisionsEnabled && pursuit ? (
+                    <PursuitDecision data={data} pursuit={pursuit} />
+                  ) : undefined
+                }
               >
                 {pursuit && <PursuitDecisionBrief data={data} pursuitId={pursuit.id} />}
                 <section className="panel" aria-labelledby="requirements-heading">
@@ -322,7 +329,7 @@ export default function TenantWorkspace({
                   {data.tasks
                     .filter((t) => t.pursuit_id === recordId)
                     .map((t) => (
-                      <div className="panel" key={t.id}>
+                      <div className="panel" key={t.id} id={`task-${t.id}`}>
                         <h3>{t.title}</h3>
                         <p>
                           {t.status.replaceAll('_', ' ')} · Owner:{' '}
@@ -376,6 +383,7 @@ export default function TenantWorkspace({
         ) : null}
         {!recordId && page === 'Today' && (
           <>
+            <TodayTaskQueue data={data} />
             <section className="panel" aria-labelledby="readiness-next-action">
               <div className="eyebrow">YOUR NEXT STEP</div>
               <h2 id="readiness-next-action">

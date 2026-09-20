@@ -16,12 +16,13 @@ await local.query(
 await local.query(
   readFileSync('supabase/migrations/20260919000900_evidence_review_conflict.sql', 'utf8'),
 );
+await local.query(readFileSync('supabase/migrations/20260920001000_pursuit_decisions.sql', 'utf8'));
 const queries = {
   views: `select c.relname,c.reloptions,pg_get_viewdef(c.oid) definition from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='v' order by c.relname`,
-  columnGrants: `select table_name,column_name,grantee,privilege_type from information_schema.column_privileges where table_schema='public' and table_name='evidence_use_reviews' and grantee in ('anon','authenticated','PUBLIC') order by column_name,grantee,privilege_type`,
+  columnGrants: `select table_name,column_name,grantee,privilege_type from information_schema.column_privileges where table_schema='public' and table_name in ('evidence_use_reviews','pursuits','pursuit_decision_history') and grantee in ('anon','authenticated','PUBLIC') order by table_name,column_name,grantee,privilege_type`,
   columns: `select table_name,column_name,data_type,is_nullable,column_default from information_schema.columns where table_schema='public' order by table_name,ordinal_position`,
   policies: `select tablename,policyname,roles::text,cmd,qual,with_check from pg_policies where schemaname='public' order by tablename,policyname`,
-  functions: `select n.nspname,p.proname,pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' or (n.nspname='public' and p.proname in ('reserve_ai_request','ai_feedback','is_demo_operator','submit_demo_request','review_demo_request','erase_demo_request')) order by p.proname`,
+  functions: `select n.nspname,p.proname,pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' or (n.nspname='public' and p.proname in ('reserve_ai_request','ai_feedback','is_demo_operator','submit_demo_request','review_demo_request','erase_demo_request','pursuit_decision_context','record_pursuit_decision')) order by p.proname`,
   constraints: `select c.relname,k.conname,pg_get_constraintdef(k.oid) definition from pg_constraint k join pg_class c on c.oid=k.conrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and k.contype <> 'n' order by c.relname,k.conname`,
   grants: `select table_name,grantee,privilege_type from information_schema.role_table_grants where table_schema='public' and grantee in ('anon','authenticated','PUBLIC') order by table_name,grantee,privilege_type`,
   triggers: `select c.relname,t.tgname,pg_get_triggerdef(t.oid) definition from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and not t.tgisinternal order by c.relname,t.tgname`,
@@ -48,6 +49,7 @@ try {
       '20260919000700',
       '20260919000800',
       '20260919000900',
+      '20260920001000',
     ],
   );
   assert.deepEqual(

@@ -4,7 +4,7 @@ import type { LiveOpportunity, LivePursuit, TenantData } from './tenant-types';
 
 export const opportunityFields =
   'id,title,solicitation_number,buyer,source_url,source_note,official_deadline,deadline_timezone,summary,estimated_value,status,updated_at';
-export const pursuitFields = 'id,title,opportunity_id,decision,status';
+export const pursuitFields = 'id,title,opportunity_id,decision,status,updated_at';
 export const taskFields =
   'id,pursuit_id,title,status,updated_at,assigned_user_id,due_at,due_timezone';
 const selectionSchema = z
@@ -19,6 +19,9 @@ type RecordContext = Pick<
   | 'requirements'
   | 'evidenceReviews'
   | 'evidenceReviewsEnabled'
+  | 'decisionsEnabled'
+  | 'decisionContext'
+  | 'decisions'
 >;
 
 // The caller supplies its validated user-session client; never use an operator client here.
@@ -31,6 +34,17 @@ export async function loadRecordContext(
     return null;
   const scoped = <Fields extends string>(table: string, fields: Fields) =>
     db.from(table).select(fields).eq('organization_id', organizationId);
+  const decisionsEnabled = process.env.BIDXCHANGE_DECISIONS_ENABLED === 'true';
+  let decisionContext: string | undefined;
+  if (decisionsEnabled && selection.kind === 'pursuit') {
+    const context = await db.rpc('pursuit_decision_context', {
+      org: organizationId,
+      pursuit: selection.id,
+    });
+    if (context.error || typeof context.data !== 'string')
+      throw new Error('Decision context could not be loaded. Please retry.');
+    decisionContext = context.data;
+  }
   const readOpportunity = async (id: string) => {
     const { data, error } = await scoped('opportunities', opportunityFields)
       .eq('id', id)
@@ -85,7 +99,22 @@ export async function loadRecordContext(
     if (reviews.error) throw new Error('Evidence reviews could not be loaded. Please retry.');
     evidenceReviews = (reviews.data ?? []) as NonNullable<TenantData['evidenceReviews']>;
   }
+  let decisions: NonNullable<TenantData['decisions']> = [];
+  if (decisionsEnabled) {
+    const history = await scoped(
+      'pursuit_decision_history',
+      'id,decision,reason,conditions,context_token,decided_by,decided_at',
+    )
+      .eq('pursuit_id', pursuit.id)
+      .order('decided_at', { ascending: false })
+      .limit(20);
+    if (history.error) throw new Error('Decision history could not be loaded. Please retry.');
+    decisions = (history.data ?? []) as NonNullable<TenantData['decisions']>;
+  }
   return {
+    decisionsEnabled,
+    decisionContext,
+    decisions,
     evidenceReviewsEnabled,
     evidenceReviews,
     opportunities: [opportunity],

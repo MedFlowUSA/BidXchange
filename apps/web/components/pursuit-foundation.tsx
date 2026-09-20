@@ -18,6 +18,7 @@ export default function PursuitFoundation({
   opportunityHref,
   demo = false,
   children,
+  decisionPanel,
 }: {
   source: string;
   deadline: string;
@@ -25,6 +26,7 @@ export default function PursuitFoundation({
   opportunityHref: string;
   demo?: boolean;
   children?: React.ReactNode;
+  decisionPanel?: React.ReactNode;
 }) {
   return (
     <section className="pursuit-foundation">
@@ -46,15 +48,17 @@ export default function PursuitFoundation({
             {deadline} · {timezone}
           </p>
         </section>
-        <section className="panel">
-          <h2>Bid/no-bid decision</h2>
-          <p>
-            {demo
-              ? 'Demo workflow stage only. No real bid authority is recorded.'
-              : 'Pending. A named authorized human approver and decision workflow are required.'}
-          </p>
-          <span className="fit amber">Live decision workflow not enabled</span>
-        </section>
+        {decisionPanel ?? (
+          <section className="panel">
+            <h2>Bid/no-bid decision</h2>
+            <p>
+              {demo
+                ? 'Demo workflow stage only. No real bid authority is recorded.'
+                : 'Pending. A named authorized human approver and decision workflow are required.'}
+            </p>
+            <span className="fit amber">Live decision workflow not enabled</span>
+          </section>
+        )}
       </div>
       {children}
       <details className="panel" open={demo}>

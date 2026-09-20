@@ -121,6 +121,7 @@ export async function saveOpportunity(
     return {
       success: true,
       message: 'Opportunity saved. Qualification and bid decision still require review.',
+      href: `/opportunities/${result.data[0].id}?organization=${organization_id}`,
     };
   } catch {
     return unavailable;
@@ -149,7 +150,10 @@ export async function startPursuit(_state: MutationState, form: FormData): Promi
       .limit(1);
     if (existing.error) return unavailable;
     if (existing.data?.length)
-      return { message: 'A pursuit already exists. Open its link on this opportunity.' };
+      return {
+        message: 'A pursuit already exists. Continue in its workspace.',
+        href: `/pursuits/${existing.data[0].id}?organization=${organization_id}`,
+      };
     const result = await db
       .from('pursuits')
       .insert({
@@ -165,6 +169,7 @@ export async function startPursuit(_state: MutationState, form: FormData): Promi
     return {
       success: true,
       message: 'Planning workspace created. Open the pursuit below. Bid decision remains pending.',
+      href: `/pursuits/${result.data[0].id}?organization=${organization_id}`,
     };
   } catch {
     return unavailable;

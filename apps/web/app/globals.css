@@ -2263,6 +2263,10 @@ a.nav-item {
   min-width: 0;
   max-width: 100%;
 }
+.company-record-editor input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+}
 .fact-card details {
   margin-top: 18px;
 }

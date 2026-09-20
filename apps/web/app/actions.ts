@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '../lib/tenant';
-export type MutationState = { message: string; success?: boolean };
+export type MutationState = { message: string; success?: boolean; href?: string };
 const roles = z.enum([
   'organization_admin',
   'executive_approver',

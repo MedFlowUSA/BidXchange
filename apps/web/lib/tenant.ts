@@ -125,6 +125,9 @@ export async function loadTenant(
     data.requirements = recordContext.requirements ?? [];
     data.evidenceReviewsEnabled = recordContext.evidenceReviewsEnabled;
     data.evidenceReviews = recordContext.evidenceReviews;
+    data.decisionsEnabled = recordContext.decisionsEnabled;
+    data.decisionContext = recordContext.decisionContext;
+    data.decisions = recordContext.decisions;
   }
   return { account, data };
 }

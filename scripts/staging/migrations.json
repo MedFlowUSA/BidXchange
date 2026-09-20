@@ -46,7 +46,12 @@
       "file": "20260919000900_evidence_review_conflict.sql",
       "sha256": "1a7b4f9fb95bb4f02ffeddcb7906102abac397fb705e833be9601f00d5c5f7ba",
       "action": "include-schema"
+    },
+    {
+      "file": "20260920001000_pursuit_decisions.sql",
+      "sha256": "a949d82f677e1891973bc53f300e355e6650cbaf4e74180df631f35bf5d15d9b",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 5
+  "packageRevision": 6
 }

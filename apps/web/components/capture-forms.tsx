@@ -1,5 +1,6 @@
 'use client';
 import { useActionState, useState } from 'react';
+import Link from 'next/link';
 import {
   saveOpportunity,
   savePursuitTask,
@@ -33,7 +34,7 @@ function CaptureForm({
   fields: Field[];
   note: string;
 }) {
-  const [state, submit, pending] = useActionState(action, { message: '' });
+  const [state, submit, pending] = useActionState(action, { message: '' } as MutationState);
   const [expanded, setExpanded] = useState(false);
   const [draft, setDraft] = useState(initial);
   // A refreshed parent must not pair an old draft with a newer write version.
@@ -89,7 +90,12 @@ function CaptureForm({
             </button>
           </fieldset>
           {state.message && <p role="status">{state.message}</p>}
-          {state.success && (
+          {state.href && (
+            <Link href={state.href} className="button secondary">
+              Open workspace record
+            </Link>
+          )}
+          {state.success && !state.href && (
             <button
               type="button"
               className="button secondary"

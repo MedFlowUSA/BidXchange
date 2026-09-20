@@ -38,6 +38,7 @@ export type LiveOpportunity = {
   status: string;
 };
 export type LivePursuit = {
+  updated_at?: string;
   id: string;
   title: string;
   opportunity_id: string;
@@ -45,6 +46,17 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  decisionsEnabled?: boolean;
+  decisionContext?: string;
+  decisions?: {
+    id: string;
+    decision: string;
+    reason: string;
+    conditions: string;
+    context_token: string;
+    decided_by: string;
+    decided_at: string;
+  }[];
   evidenceReviewsEnabled?: boolean;
   evidenceReviews?: {
     id: string;
