@@ -24,6 +24,7 @@ export type Fact = {
   updated_at: string;
 };
 export type LiveOpportunity = {
+  updated_at?: string;
   id: string;
   title: string;
   solicitation_number: string | null;
@@ -63,5 +64,14 @@ export type TenantData = {
     created_at: string;
     actor_user_id: string | null;
   }[];
-  tasks: { id: string; pursuit_id: string; title: string; status: string }[];
+  tasks: {
+    id: string;
+    pursuit_id: string;
+    title: string;
+    status: string;
+    updated_at?: string;
+    assigned_user_id?: string | null;
+    due_at?: string | null;
+    due_timezone?: string | null;
+  }[];
 };

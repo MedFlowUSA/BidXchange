@@ -7,6 +7,7 @@ import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import CompanyRecordForm from './company-record-form';
+import { OpportunityForm, StartPursuitForm, TaskForm } from './capture-forms';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData, Fact } from '../lib/tenant-types';
 import { companyReadiness, reviewStatus } from '../lib/company-readiness';
@@ -147,6 +148,7 @@ export default function TenantWorkspace({
 }) {
   const { organization: org } = data;
   const admin = org.role === 'organization_admin';
+  const capture = admin || org.role === 'capture_manager';
   const href = (path: string) => workspaceHref(path, org.id);
   const [query, setQuery] = useState('');
   const [notice, setNotice] = useState('');
@@ -256,15 +258,22 @@ export default function TenantWorkspace({
                   {data.tasks
                     .filter((t) => t.pursuit_id === recordId)
                     .map((t) => (
-                      <p key={t.id}>
-                        {t.title} · {t.status}
-                      </p>
+                      <div className="panel" key={t.id}>
+                        <h3>{t.title}</h3>
+                        <p>
+                          {t.status.replaceAll('_', ' ')} · Owner:{' '}
+                          {t.assigned_user_id === data.userId
+                            ? 'You'
+                            : (t.assigned_user_id ?? 'Unassigned')}
+                        </p>
+                        <p>Due: {displayDate(t.due_at, t.due_timezone ?? org.default_timezone)}</p>
+                        {capture && <TaskForm data={data} pursuitId={recordId} task={t} />}
+                      </div>
                     ))}
                   {!data.tasks.some((t) => t.pursuit_id === recordId) && (
-                    <p>
-                      No tasks assigned yet. Task editing is coming in the pursuit workflow phase.
-                    </p>
+                    <p>No tasks assigned yet. Add the next action with an owner and deadline.</p>
                   )}
+                  {capture && <TaskForm data={data} pursuitId={recordId} />}
                 </section>
               </PursuitFoundation>
             </>
@@ -287,6 +296,10 @@ export default function TenantWorkspace({
                 Qualification has not been performed. No eligibility or bid recommendation is
                 implied.
               </div>
+              {capture && <OpportunityForm data={data} opportunity={opportunity} />}
+              {capture && !data.pursuits.some((p) => p.opportunity_id === opportunity.id) && (
+                <StartPursuitForm organizationId={org.id} opportunityId={opportunity.id} />
+              )}
               {data.pursuits
                 .filter((p) => p.opportunity_id === opportunity.id)
                 .map((p) => (
@@ -503,6 +516,12 @@ export default function TenantWorkspace({
         )}
         {!recordId && page === 'Opportunities' && (
           <>
+            {capture && (
+              <section className="panel">
+                <h2>Record an opportunity</h2>
+                <OpportunityForm data={data} />
+              </section>
+            )}
             <label className="search-field">
               <input
                 aria-label="Search opportunities"
@@ -535,7 +554,8 @@ export default function TenantWorkspace({
               <div className="panel empty-state">
                 <h2>No opportunities yet</h2>
                 <p>
-                  No fictional notices were imported. Secure live intake is the next workflow phase.
+                  Record an opportunity from an official notice or a traceable source. An
+                  administrator or capture manager can add it here.
                 </p>
               </div>
             )}
