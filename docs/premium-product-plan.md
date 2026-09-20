@@ -24,6 +24,10 @@ Validation: 13 evidence/readiness/tenant-record regressions pass, as do type che
 
 ## Remaining acceptance criteria
 
+### Human-entered amendment review
+
+Capture users can compare and revise one requirement against a cited amendment. Saving resets follow-up and invalidates prior review context through the existing version checks. This begins amendment handling without claiming automatic document ingestion or a retained source-version ledger. See [the amendment review report](amendment-review.md).
+
 ### Evidence stress test
 
 Pursuit pages now offer a temporary scenario for losing one or several evidence records. Users can identify shared dependencies, see which affected requirements retain another loaded current approval, and return to the requirement register for follow-up. The feature uses authorized snapshots without changing saved reviews or decisions. See [the evidence stress-test report](evidence-stress-test.md) for validation, visibility limits and proposed extensions.

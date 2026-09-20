@@ -261,6 +261,58 @@ try {
     .getByLabel('Approved evidence for this requirement', { exact: true })
     .selectOption(evidence);
   await save();
+  await card.getByText('Review an amendment', { exact: true }).click();
+  const amendment = card.getByRole('form', { name: 'Review an amendment', exact: true });
+  await amendment
+    .getByLabel('Revised requirement', { exact: true })
+    .fill('Synthetic revised license requirement');
+  await amendment
+    .getByLabel('Amendment citation', { exact: true })
+    .fill('Synthetic amendment 3, section 2');
+  await expect(amendment.getByRole('button', { name: 'Save amended requirement' })).toBeDisabled();
+  await amendment.getByRole('checkbox').check();
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await amendment.getByRole('button', { name: 'Save amended requirement' }).click();
+  await expect(amendment.getByRole('status')).toContainText('Requirement saved');
+  await amendment.getByRole('button', { name: 'Review affected records' }).click();
+  await expect(
+    card.getByRole('heading', { name: 'Synthetic revised license requirement', exact: true }),
+  ).toBeVisible();
+  await expect(resolution).toContainText('Needs another review');
+  assert.equal(
+    (
+      await client
+        .from('current_evidence_use_reviews')
+        .select('approval_current')
+        .eq('id', evidence)
+        .single()
+    ).data.approval_current,
+    false,
+  );
+  await card.getByText('Review an amendment', { exact: true }).click();
+  await amendment
+    .getByLabel('Revised requirement', { exact: true })
+    .fill('Draft to preserve after conflict');
+  await amendment.getByLabel('Amendment citation', { exact: true }).fill('Synthetic amendment 4');
+  await amendment.getByRole('checkbox').check();
+  assert(
+    !(
+      await client
+        .from('pursuit_requirements')
+        .update({ citation: 'Concurrent synthetic amendment citation' })
+        .eq('id', requirement)
+    ).error,
+  );
+  await amendment.getByRole('button', { name: 'Save amended requirement' }).click();
+  await expect(amendment.getByRole('status')).toContainText('record changed');
+  await expect(amendment.getByLabel('Revised requirement', { exact: true })).toHaveValue(
+    'Draft to preserve after conflict',
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+  console.log(
+    'PASS amendment save invalidates requirement/evidence reviews; stale draft retained and mobile layout contained',
+  );
   assert(
     !(await client.from('profile_facts').update({ source_note: 'Corrected source' }).eq('id', fact))
       .error,
@@ -301,6 +353,7 @@ try {
   await expect(resolution).toContainText('Needs another review');
   await expect(resolution.getByText('Resolve requirement', { exact: true })).toHaveCount(0);
   await expect(card).not.toContainText('Private synthetic evidence notes');
+  await expect(card.getByText('Review an amendment', { exact: true })).toHaveCount(0);
   await stress.getByText('Open evidence stress test', { exact: true }).click();
   await expect(stress.getByRole('checkbox')).toHaveCount(0);
   await expect(stress).not.toContainText(label);

@@ -2383,6 +2383,43 @@ a.nav-item {
   margin: 16px 0;
   border-radius: 4px;
 }
+.amendment-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.amendment-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.amendment-diff {
+  border: 1px solid #dce2ec;
+  border-radius: 8px;
+  padding: 16px;
+}
+.amendment-diff del {
+  background: #fff0ef;
+  color: #922f29;
+}
+.amendment-diff ins {
+  background: #e8f6eb;
+  color: #20552e;
+}
+.amendment-confirm {
+  display: flex !important;
+  gap: 12px;
+  align-items: flex-start;
+}
+.amendment-confirm input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+@media (max-width: 760px) {
+  .amendment-comparison {
+    grid-template-columns: 1fr;
+  }
+}
 .decision-brief {
   overflow-wrap: anywhere;
 }

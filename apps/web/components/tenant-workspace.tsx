@@ -10,6 +10,7 @@ import PursuitDecisionBrief from './pursuit-decision-brief';
 import EvidenceStressTest from './evidence-stress-test';
 import PursuitDecision from './pursuit-decision';
 import RequirementResolution from './requirement-resolution';
+import RequirementAmendment from './requirement-amendment';
 import TodayTaskQueue from './today-task-queue';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
@@ -336,6 +337,7 @@ export default function TenantWorkspace({
                       {data.resolutionsEnabled && (
                         <RequirementResolution data={data} requirement={requirement} />
                       )}
+                      {capture && <RequirementAmendment data={data} requirement={requirement} />}
                       {data.evidenceReviewsEnabled && (
                         <EvidenceUseReview data={data} requirement={requirement} />
                       )}
