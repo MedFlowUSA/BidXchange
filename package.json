@@ -14,6 +14,11 @@
     "test:security": "node scripts/test-database.mjs",
     "test:ai:database": "node scripts/test-ai-database.mjs",
     "test:security:local": "node scripts/test-database.mjs --local",
+    "staging:prepare": "node scripts/staging/prepare.mjs",
+    "test:staging": "node --test scripts/staging/prepare.test.mjs",
+    "test:staging:hosted": "node scripts/staging/hosted.mjs --mock",
+    "test:staging:parity": "node scripts/staging/parity.mjs",
+    "test:diagnostic": "node --test scripts/provider-diagnostic/*.test.mjs",
     "ges:assign-admin": "node scripts/assign-ges-admin.mjs",
     "test:secrets": "node scripts/scan-secrets.mjs",
     "test:auth": "node scripts/test-auth.mjs"

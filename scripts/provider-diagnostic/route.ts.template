@@ -1,0 +1,5 @@
+// Copy ONLY into the separately approved diagnostic deployment checkout.
+// apps/web/app/api/operator/provider-check/route.ts
+export { POST } from '../../../../../../scripts/provider-diagnostic/handler.mjs';
+export const runtime = 'nodejs';
+export const maxDuration = 30;

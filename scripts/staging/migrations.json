@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "hashFormat": "sha256-utf8-lf",
+  "migrations": [
+    {
+      "file": "20260919000100_tenant_foundation.sql",
+      "sha256": "b6475ebea6c6aa056a179e7e2b0df321f6b856ba5dd5abfa4b1b0fab5b8caa64",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260919000200_ges_onboarding.sql",
+      "sha256": "1ab264c9447334edd07dd5e6c179a12cad55f980e770e7d19869156f59b52043",
+      "action": "exclude-data-seed"
+    },
+    {
+      "file": "20260919000300_admin_mutation_limit.sql",
+      "sha256": "1cbad1dbe52fe150f60c8426a5281225eb32c331bf169198edcba8f352fb6700",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260919000400_organization_identity.sql",
+      "sha256": "0e6da117a5d17add723c171916f28bfd2b2a24449fcfa76a94376247260d49e9",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260919000500_ai_readonly.sql",
+      "sha256": "12d89864cc831d7f5ffa819a38a5d01c7c38aa1903f4974d102f46c81911c0ca",
+      "action": "include-schema"
+    }
+  ]
+}
