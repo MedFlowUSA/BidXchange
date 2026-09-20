@@ -4,7 +4,7 @@
 
 The Today page now lists open pursuit tasks by deadline, flags overdue work, filters assignments to the signed-in user, and links to the task inside its pursuit. Completed tasks disappear on refresh. The list discloses its 20-row display and 500-record authorized-view limits. Saved opportunities and new or existing planning workspaces provide a direct scoped record link.
 
-The next decision workflow is implemented behind `BIDXCHANGE_DECISIONS_ENABLED`, which defaults off. It supports **Pursue bid**, **Do not bid**, and **Reopen review**, with a reason, conditions, actual actor and time, and the latest 20 historical entries. These are historical intent records, not pricing, certification, compliance or submission approvals. Reasons and conditions are explicitly shared with active workspace members; restricted evidence should not be pasted into them.
+The decision workflow is implemented behind `BIDXCHANGE_DECISIONS_ENABLED`, enabled in the approved Vercel release. Local development defaults off. It supports **Pursue bid**, **Do not bid**, and **Reopen review**, with a reason, conditions, actual actor and time, and the latest 20 historical entries. These are historical intent records, not pricing, certification, compliance or submission approvals. Reasons and conditions are explicitly shared with active workspace members; restricted evidence should not be pasted into them.
 
 ## Migration 010 — production approval required
 
@@ -14,7 +14,7 @@ The RPC locks the pursuit and checks its version, then compares an opaque contex
 
 A changed token shows “Review again” while preserving the historical decision. A recorded decision is not advertised as continuing authority. Changes that commit after the decision snapshot will be detected on the next page load; this does not freeze the workspace. Reasons and conditions remain the decision maker's responsibility. No current bid eligibility is inferred from missing or role-filtered records.
 
-Migration 010 is installed in **staging only**. Its canonical checksum is pinned in staging package revision 6, excluding the real-company seed. `node scripts/decision-release.mjs migrate-staging` checks the staging target and applied SQL before performing a transactional migration. Production requires the separately named migration approval retained from the prior release gate in `docs/demo-intake-release.md`.
+The user explicitly approved migration 010 and decision activation. Migration 010 is now installed in **staging and production**; production checksum and permission checks passed transactionally. Its canonical checksum is pinned in staging package revision 6, excluding the real-company seed. `node scripts/decision-release.mjs migrate-staging` checks the staging target and applied SQL before performing a transactional migration. The approved `migrate-production` mode verifies the production project and host, rejects test database overrides and verifies read/write/RPC grants before commit.
 
 ## Validation
 
@@ -24,9 +24,9 @@ Validation passed: seven migration/package test cases, fourteen focused brief/ta
 
 ## Release and rollback
 
-The Today queue and navigation improvements work without migration 010. Decision recording stays disabled until its production migration and flag are approved. After approval, apply the exact pinned migration, verify grants and function definitions, set `BIDXCHANGE_DECISIONS_ENABLED=true` in the deployment configuration and deploy.
+The Today queue and navigation improvements work without migration 010. Decision recording is approved for production and enabled by `BIDXCHANGE_DECISIONS_ENABLED=true` in `vercel.json`. Migration installation and grant verification preceded deployment.
 
-Disable the decision flag and redeploy to stop offering the UI. Preserve decision history and tighter grants. Do not drop history or restore the original pending-only guard: existing recorded decisions would then prevent unrelated pursuit updates. The flag is an application rollout switch, not database revocation; emergency suspension of RPC access requires revoking its authenticated EXECUTE grant as a separate operator action.
+Set the decision flag to `false` in `vercel.json` and redeploy to stop offering the UI. Preserve decision history and tighter grants. Do not drop history or restore the original pending-only guard: existing recorded decisions would then prevent unrelated pursuit updates. The flag is an application rollout switch, not database revocation; emergency suspension of RPC access requires revoking its authenticated EXECUTE grant as a separate operator action.
 
 ## Remaining product work
 
