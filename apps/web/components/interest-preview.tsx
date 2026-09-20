@@ -7,18 +7,21 @@ export default function InterestPreview() {
   return (
     <section id="request-demo" className={styles.requestSection} aria-labelledby="request-title">
       <div className={styles.requestIntro}>
-        <span className={styles.eyebrow}>LET’S TALK ABOUT YOUR NEXT STEP</span>
-        <h2 id="request-title">A better-organized pursuit starts here.</h2>
-        <p>Walk through BidXchange with Manuel Rodriguez and see how it could fit your team.</p>
+        <span className={styles.eyebrow}>SEE A SAMPLE BID WORKFLOW</span>
+        <h2 id="request-title">Walk through a notice with us.</h2>
+        <p>
+          Manuel Rodriguez will show you how to record a solicitation, list its requirements, and
+          assign the follow-up work using a sample opportunity.
+        </p>
       </div>
       {demoIntakeConfig() ? (
         <DemoRequestForm />
       ) : (
         <div className={styles.interestForm} role="region" aria-label="Demo contact">
-          <h3>Tell us about your company.</h3>
+          <h3>What kind of work do you bid?</h3>
           <p>
-            Share your company name and what you would like help with. Leave out confidential
-            records.
+            Send your company name, trade or service, and the agencies you want to work with. Leave
+            out confidential records.
           </p>
           <a className={styles.primary} href={demoContactHref}>
             Email Manuel to request a demo

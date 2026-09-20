@@ -10,7 +10,7 @@ import styles from '../components/marketing.module.css';
 import clean from '../components/landing.module.css';
 const title = 'BidXchange | Find and Qualify Government Contract Opportunities';
 const description =
-  'Organize company evidence, public-sector opportunities, requirements, and pursuit tasks in one focused workspace with BidXchange.';
+  'Track solicitation requirements, company registrations, bid deadlines, and assigned tasks with BidXchange. Prepare your team before committing to a government bid.';
 const publicMetadata: Metadata = {
   title,
   description,
@@ -73,13 +73,13 @@ export default async function Home() {
                 <span /> YOUR PUBLIC-SECTOR CONTRACT DESK
               </div>
               <h1 id="hero-title">
-                Your next contract.
+                Before you bid,
                 <br />
-                <span>A clearer path.</span>
+                <span>know what’s required.</span>
               </h1>
               <p className={styles.heroDescription}>
-                Bring your company evidence, opportunities, and pursuit tasks into one focused
-                workspace. Know what needs attention before you commit to a bid.
+                A bid can hinge on a license, a registration, or a deadline. Record what the notice
+                requires, what your company can document, and who needs to follow up.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -90,7 +90,8 @@ export default async function Home() {
                 </Link>
               </div>
               <p className={clean.heroNote}>
-                For contractors, service providers, and suppliers pursuing public-sector work.
+                For teams bidding on public works, facility services, and government supply
+                contracts.
               </p>
             </div>
             <div className={`${styles.heroVisual} ${clean.visual}`}>
@@ -101,16 +102,16 @@ export default async function Home() {
         <section id="capabilities" className={clean.workspace} aria-labelledby="capabilities-title">
           <div className={clean.sectionIntro}>
             <div>
-              <span className={styles.eyebrow}>LESS SCATTERED WORK. MORE CLARITY.</span>
+              <span className={styles.eyebrow}>FROM SOLICITATION TO ASSIGNED WORK</span>
               <h2 id="capabilities-title">
-                Keep the important
+                The notice. The evidence.
                 <br />
-                details together.
+                The work still to do.
               </h2>
             </div>
             <p>
-              A practical starting point for teams that have the expertise to do the job and need a
-              better way to organize the pursuit.
+              Give your estimator, company administrator, and bid lead a place to record the
+              requirements and track unanswered questions before preparing a response.
             </p>
           </div>
           <div className={clean.features}>
@@ -118,20 +119,20 @@ export default async function Home() {
               {
                 icon: FolderCheck,
                 number: '01',
-                title: 'Know your company.',
-                text: 'Capture capabilities, registrations, and supporting facts with sources and owners. See what needs human review.',
+                title: 'Document your qualifications.',
+                text: 'Record licenses, SAM registration, insurance, and past project experience. Keep source references, expiration dates, and review status with each company record.',
               },
               {
                 icon: FileSearch,
                 number: '02',
-                title: 'Keep the source in sight.',
-                text: 'Record an opportunity with its original notice, buyer, and deadline. Build a useful shortlist from the work you find.',
+                title: 'Start with the actual notice.',
+                text: 'Save the issuing agency, solicitation number, source link, and bid deadline with its time zone. Give the team a reference to check against the original notice.',
               },
               {
                 icon: ListChecks,
                 number: '03',
-                title: 'Make the next step clear.',
-                text: 'Open a pursuit, cite its requirements, flag missing information, and assign tasks so the next action has an owner.',
+                title: 'Put a name on the follow-up.',
+                text: 'Cite the section requiring a bid bond or site visit. Flag missing information, assign someone to investigate, and set a task deadline. The bid decision stays with your team.',
               },
             ].map((feature) => (
               <article key={feature.number}>
@@ -154,28 +155,28 @@ export default async function Home() {
         </section>
         <section id="questions" className={clean.questions} aria-labelledby="questions-title">
           <div>
-            <span className={styles.eyebrow}>A FEW THINGS TO KNOW</span>
+            <span className={styles.eyebrow}>BEFORE YOU TRY IT</span>
             <h2 id="questions-title">
-              Clear expectations.
+              Your team.
               <br />
-              From the start.
+              Your bid process.
             </h2>
           </div>
           <div className={clean.faq}>
             <details>
               <summary>Who is BidXchange for?</summary>
               <p>
-                Established contractors, specialty trades, facilities teams, professional-service
-                firms, and suppliers that want a more organized approach to government
-                opportunities.
+                Contractors, specialty trades, facilities firms, professional-service providers, and
+                suppliers preparing government bids—especially when estimating, collecting company
+                records, and coordinating the response fall to the same small team.
               </p>
             </details>
             <details>
               <summary>What will I see in the demo?</summary>
               <p>
-                A fictional company and sample opportunities that let you explore the workflow. Demo
-                scores and eligibility examples are illustrative, not assessments of your business
-                or live contracts.
+                Sample company records and a fictional municipal energy retrofit opportunity. You
+                can explore requirements and pursuit tasks without entering company data. Demo
+                scores and eligibility examples do not assess your business or a live contract.
               </p>
             </details>
             <details id="security">
@@ -189,9 +190,9 @@ export default async function Home() {
             <details id="pricing">
               <summary>How does pricing work?</summary>
               <p>
-                Early-access plans and managed support are being developed. A walkthrough helps us
-                understand your team and discuss fit; pricing and service terms are not yet
-                finalized.
+                Plans are not priced yet. Tell us who prepares your bids, how many notices you
+                review, and where the work gets held up. We’ll discuss software access and potential
+                support; service scope and commercial terms are still being developed.
               </p>
             </details>
           </div>

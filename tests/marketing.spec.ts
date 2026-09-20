@@ -5,7 +5,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Your next contract.A clearer path.',
+    'Before you bid,know what’s required.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
@@ -18,7 +18,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
     page.getByText(/Live procurement feeds, AI answers, and proposal submission are not enabled/),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: /Keep the important\s*details together\./ }),
+    page.getByRole('heading', { name: /The notice\. The evidence\.\s*The work still to do\./ }),
   ).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
   await page.getByRole('link', { name: 'Explore the Demo', exact: true }).first().click();

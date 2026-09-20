@@ -41,9 +41,9 @@ export default function ProductPreview() {
           </div>
           <div className={styles.previewTitle}>
             <h2>
-              A clearer path to your
+              Review the notice.
               <br />
-              next pursuit.
+              Assign the next task.
             </h2>
             <span className={styles.previewAdd}>+ Opportunity</span>
           </div>
@@ -83,7 +83,7 @@ export default function ProductPreview() {
           </div>
           <div className={styles.previewFooter}>
             <span>
-              <i /> Keep the opportunity. Lose the guesswork.
+              <i /> Requirements recorded. Evidence to review.
             </span>
             <span>Human review</span>
           </div>
