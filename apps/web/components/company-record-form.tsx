@@ -10,21 +10,23 @@ export default function CompanyRecordForm({
   members,
   userId,
   fact,
+  suggestion,
 }: {
   organizationId: string;
   types: readonly string[];
   members: TenantData['members'];
   userId: string;
   fact?: Fact;
+  suggestion?: { type: string; label: string; prompt: string };
 }) {
   const [state, action, pending] = useActionState(saveCompanyRecord, { message: '' });
   const [expanded, setExpanded] = useState(false);
-  const [type, setType] = useState(fact?.fact_type ?? types[0]);
+  const [type, setType] = useState(fact?.fact_type ?? suggestion?.type ?? types[0]);
   const [sensitivity, setSensitivity] = useState(
     fact?.sensitivity === 'workspace' ? 'workspace' : 'restricted',
   );
   const [draft, setDraft] = useState({
-    label: fact?.label ?? '',
+    label: fact?.label ?? suggestion?.label ?? '',
     value: fact?.value ?? '',
     source_reference: fact?.source_reference ?? '',
     source_note: fact?.source_note ?? '',
@@ -38,24 +40,29 @@ export default function CompanyRecordForm({
   });
   const change = (field: keyof typeof draft, value: string) =>
     setDraft((current) => ({ ...current, [field]: value }));
+  const [draftVersion] = useState(fact?.updated_at ?? '');
+  const editorName = fact
+    ? `Edit ${fact.label}`
+    : suggestion
+      ? `Add ${suggestion.label}`
+      : `Add ${types[0]} evidence`;
   if (fact && !companyRecordTypes.includes(fact.fact_type)) return null;
   return (
     <details
       className="company-record-editor"
-      aria-label={fact ? `Edit ${fact.label}` : `Add ${types[0]} evidence`}
+      aria-label={editorName}
       onToggle={(event) => setExpanded(event.currentTarget.open)}
     >
-      <summary>{fact ? 'Edit saved evidence' : 'Add an evidence record'}</summary>
+      <summary>
+        {fact ? 'Edit saved evidence' : suggestion ? suggestion.label : 'Add an evidence record'}
+      </summary>
       {expanded && (
-        <form
-          action={action}
-          className="opportunity-form admin-form"
-          aria-label={fact ? `Edit ${fact.label}` : `Add ${types[0]} evidence`}
-        >
+        <form action={action} className="opportunity-form admin-form" aria-label={editorName}>
           <input type="hidden" name="organization_id" value={organizationId} />
           <input type="hidden" name="fact_id" value={fact?.id ?? ''} />
-          <input type="hidden" name="updated_at" value={fact?.updated_at ?? ''} />
-          <fieldset disabled={pending || (!fact && state.success)}>
+          <input type="hidden" name="updated_at" value={draftVersion} />
+          {suggestion && <p>{suggestion.prompt}</p>}
+          <fieldset disabled={pending || state.success}>
             <legend>
               {fact
                 ? 'Correct the saved record'
@@ -192,13 +199,13 @@ export default function CompanyRecordForm({
             </button>
           </fieldset>
           <p role="status">{state.message}</p>
-          {!fact && state.success && (
+          {state.success && (
             <button
               type="button"
               className="button secondary"
               onClick={() => window.location.reload()}
             >
-              Add another record
+              {fact ? 'Continue with saved evidence' : 'Add another record'}
             </button>
           )}
         </form>

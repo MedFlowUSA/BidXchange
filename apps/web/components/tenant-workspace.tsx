@@ -7,6 +7,7 @@ import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import CompanyRecordForm from './company-record-form';
+import CompanyPassport from './company-passport';
 import { OpportunityForm, StartPursuitForm, TaskForm, RequirementForm } from './capture-forms';
 import { requirementStatuses } from '../lib/capture-input';
 import { workspaceHref } from '../lib/routes';
@@ -457,7 +458,7 @@ export default function TenantWorkspace({
                   .toUpperCase()}
               </span>
               <div>
-                <div className="eyebrow">COMPANY READINESS</div>
+                <div className="eyebrow">COMPANY PASSPORT</div>
                 <h2>{org.operating_name}</h2>
                 <p>{org.legal_name}</p>
               </div>
@@ -467,8 +468,9 @@ export default function TenantWorkspace({
               Pending facts are working research, not approved proposal evidence. CSLB and SAM
               status are not assumed active. Unknown values remain unfilled.
             </div>
+            <CompanyPassport key={org.id} data={data} />
             <section className="panel" id="company-readiness">
-              <h2>Work through your company readiness</h2>
+              <h2>Review your saved company evidence</h2>
               <p>
                 Start with the company basics, then review the areas relevant to your work. Your
                 representative supplies the records; an authorized reviewer checks the evidence.

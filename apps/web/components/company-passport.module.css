@@ -1,0 +1,71 @@
+.passport > h2 {
+  max-width: 720px;
+}
+.passport > p {
+  max-width: 850px;
+}
+.steps {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+.steps a {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid #d8dfeb;
+  border-radius: 8px;
+  color: #344158;
+  font-size: 12px;
+}
+.steps a[aria-current='step'] {
+  background: #193fb9;
+  color: white;
+  border-color: #193fb9;
+}
+.step {
+  scroll-margin-top: 100px;
+}
+.step h3 {
+  font-size: 22px;
+  margin: 12px 0;
+}
+.item {
+  border-top: 1px solid #e2e7ef;
+  padding: 16px 0;
+}
+.item h4 {
+  margin: 0 0 8px;
+}
+.item > a {
+  text-decoration: underline;
+  color: #244dc3;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0 14px;
+}
+.passport .note {
+  font-size: 12px;
+  color: #56647a;
+  line-height: 1.7;
+}
+.passport a:focus-visible {
+  outline: 3px solid #315cff;
+  outline-offset: 4px;
+}
+@media (max-width: 600px) {
+  .steps {
+    gap: 6px;
+  }
+  .steps a {
+    padding: 8px;
+  }
+  .controls > a {
+    width: 100%;
+  }
+}
