@@ -29,9 +29,34 @@ async function denied(sql, args, label) {
 }
 try {
   await db.query('begin');
+  if (!process.argv.includes('--linked'))
+    await db.query(
+      'grant all on public.organizations,public.organization_memberships to authenticated',
+    );
   const applied = await db.query("select to_regclass('public.ai_usage_events') as table_name");
   if (!applied.rows[0].table_name)
     await db.query(readFileSync('supabase/migrations/20260919000500_ai_readonly.sql', 'utf8'));
+  for (const table of ['organizations', 'organization_memberships']) {
+    for (const privilege of ['TRUNCATE', 'TRIGGER', 'REFERENCES'])
+      check(
+        !(
+          await db.query('select has_table_privilege($1,$2,$3) allowed', [
+            'authenticated',
+            'public.' + table,
+            privilege,
+          ])
+        ).rows[0].allowed,
+        `${table} removes inherited ${privilege} privilege`,
+      );
+  }
+  check(
+    !(
+      await db.query(
+        "select has_table_privilege('authenticated','public.organizations','INSERT') or has_table_privilege('authenticated','public.organizations','DELETE') allowed",
+      )
+    ).rows[0].allowed,
+    'Organization creation and deletion have no browser grant',
+  );
   const users = Array.from({ length: 4 }, () => randomUUID()),
     orgs = [randomUUID(), randomUUID()],
     profiles = [randomUUID(), randomUUID()];

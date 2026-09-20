@@ -20,6 +20,8 @@ Schedule a reviewed operator task to remove usage metadata older than 30 days; r
 
 Rollback application code or turn off feature switches while preserving additive tables and tightened fact RLS. Do not roll back to broader fact reads as an application rollback shortcut. Classifications remain pending human review; private document storage remains closed.
 
+Migration 005 also removes excess hosted identity-table grants. Keep those revocations during rollback. If application compatibility fails after migration, leave AI disabled and redeploy the last reviewed application build; do not drop AI tables or restore TRUNCATE privileges. Investigate under read-only access before issuing a separate corrective migration. No data restoration is needed for this permissions/additive-schema change.
+
 ## Release gates
 
 Run formatting, lint, types, unit/browser tests, both isolated database suites, build, secret scan and dependency audit. Then run explicitly authorized hosted staging checks: real sessions for all roles, revoked membership, classified facts, concurrent quotas, context/citation links, selected-model streaming, cancellation, provider outage and cost totals. Apply migration 005 and activation only under an approved change. No production user creation is needed for local validation.

@@ -1,4 +1,10 @@
 -- Forward-only: no users, organizations, document access or model activation.
+-- Hosted default grants can exceed the intended foundation permissions.
+-- TRUNCATE is not governed by row policies. Preserve only application grants.
+revoke all on public.organizations,public.organization_memberships from anon,authenticated;
+grant select,update on public.organizations to authenticated;
+grant select,insert,update,delete on public.organization_memberships to authenticated;
+
 alter table public.profile_facts add column sensitivity text not null default 'unknown'
   check (sensitivity in ('unknown','workspace','restricted'));
 -- Classification covers the entire fact, including evidence and notes. Unknown fails closed.

@@ -2,6 +2,8 @@
 
 Migration `20260919000500_ai_readonly.sql` is additive except for tightening the `profile_facts` SELECT policy. It creates no production identities, organizations, seed opportunities or document access.
 
+The production preflight also found eight excess authenticated grants on the identity tables inherited from hosted defaults. Migration 005 resets those tables to the intended foundation grants: SELECT/UPDATE on organizations and SELECT/INSERT/UPDATE/DELETE on memberships. This removes TRUNCATE, TRIGGER and REFERENCES on both, plus INSERT/DELETE on organizations. RLS and mutation guards still apply. The isolated AI suite reproduces the broader grants before migration and checks their removal.
+
 `profile_facts.sensitivity` defaults to `unknown`. Unknown/restricted records remain readable for administrator/executive/estimator review; lower roles require `workspace` classification plus an approved nonsensitive fact type. AI excludes unknown facts for all roles. No existing record is silently reclassified. Classification covers the whole row, including notes, and is separate from human verification.
 
 `ai_organization_settings` contains organization UUID, disabled-by-default activation, per-day database ceilings and update time. Members can read; ordinary clients cannot write. Operators manage activation through protected database tooling.
