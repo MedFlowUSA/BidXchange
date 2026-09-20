@@ -8,11 +8,8 @@ import styles from './marketing.module.css';
 import PublicWorkspaceAccess from './public-workspace-access';
 
 const links = [
-  ['How It Works', '#how-it-works'],
   ['Capabilities', '#capabilities'],
-  ['Who It’s For', '#who-its-for'],
-  ['Security', '#security'],
-  ['Pricing', '#pricing'],
+  ['Questions', '#questions'],
 ];
 
 export default function MarketingHeader({ signedIn }: { signedIn: boolean }) {

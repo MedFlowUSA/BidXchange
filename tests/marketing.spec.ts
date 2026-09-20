@@ -5,7 +5,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Stop Searching.Start Pursuingthe Right Contracts.',
+    'Your next contract.A clearer path.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
@@ -15,14 +15,11 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.getByRole('link', { name: 'Open Workspace', exact: true })).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText('Green Energy Solutions');
   await expect(
-    page.getByText('Coming in a later phase — no live AI analysis enabled.'),
+    page.getByText(/Live procurement feeds, AI answers, and proposal submission are not enabled/),
   ).toBeVisible();
-  for (const name of [
-    'Available in the current beta',
-    'Foundation implemented',
-    'Planned functionality',
-  ])
-    await expect(page.getByRole('region', { name, exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: /Keep the important\s*details together\./ }),
+  ).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
   await page.getByRole('link', { name: 'Explore the Demo', exact: true }).first().click();
   await expect(page).toHaveURL(/\/dashboard\?workspace=demo$/);
@@ -41,7 +38,7 @@ test('request CTAs offer the approved business contact without claiming delivery
   await expect(
     contact.getByRole('link', { name: 'Email Manuel to request a demo' }),
   ).toHaveAttribute('href', 'mailto:mrodriguez@oaisinc.com?subject=BidXchange%20demo%20request');
-  await expect(contact).toContainText('clicking this link does not send a request or save it');
+  await expect(contact).toContainText('send the message there to request a walkthrough');
   await expect(page.getByRole('form', { name: 'Request a demo' })).toHaveCount(0);
   await expect(page.getByText('Demo requests are opening soon.')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
@@ -73,6 +70,11 @@ test('public navigation supports keyboard, mobile escape and section links', asy
   await expect(page).toHaveURL(/#capabilities$/);
   if (await toggle.isVisible()) await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const pricing = page.locator('#pricing summary');
+  await pricing.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#pricing')).toHaveAttribute('open', '');
+  await expect(page.locator('#pricing p')).toBeVisible();
   for (const width of [768, 1024]) {
     await page.setViewportSize({ width, height: 1024 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(

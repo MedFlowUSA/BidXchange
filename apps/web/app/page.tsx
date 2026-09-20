@@ -1,41 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  Search,
-  ShieldCheck,
-  Compass,
-  ListChecks,
-  BarChart3,
-  Sparkles,
-  LockKeyhole,
-  UserCheck,
-  FileCheck2,
-  Layers,
-  Clock3,
-  Building2,
-  HardHat,
-  Zap,
-  Wrench,
-  Landmark,
-  BriefcaseBusiness,
-  Package,
-  CircleCheck,
-  MoveUpRight,
-} from 'lucide-react';
+import { ArrowRight, ArrowUpRight, FolderCheck, ListChecks, FileSearch } from 'lucide-react';
 import MarketingHeader from '../components/marketing-header';
 import ProductPreview from '../components/product-preview';
 import InterestPreview from '../components/interest-preview';
-import { demoContactHref } from '../lib/operations-contact';
 import { createSupabaseServer } from '../lib/supabase/server';
 import styles from '../components/marketing.module.css';
-
+import clean from '../components/landing.module.css';
 const title = 'BidXchange | Find and Qualify Government Contract Opportunities';
 const description =
-  'BidXchange helps contractors discover public-sector opportunities, evaluate fit, identify disqualifiers, and organize compliant bid pursuits.';
+  'Organize company evidence, public-sector opportunities, requirements, and pursuit tasks in one focused workspace with BidXchange.';
 const publicMetadata: Metadata = {
   title,
   description,
@@ -73,108 +48,6 @@ export async function generateMetadata({
   return { ...publicMetadata, robots: { index: Object.keys(query).length === 0, follow: true } };
 }
 
-const steps = [
-  {
-    name: 'Find',
-    icon: Search,
-    text: 'Monitor relevant procurement sources and organize potential opportunities.',
-    now: 'Now: manual intake in the fictional demo. Live source monitoring is planned.',
-  },
-  {
-    name: 'Qualify',
-    icon: Compass,
-    text: 'Compare solicitation requirements with your company’s verified capabilities.',
-    now: 'Now: illustrative demo gates and scoring. Real company-aware matching is planned.',
-  },
-  {
-    name: 'Pursue',
-    icon: ListChecks,
-    text: 'Bring requirements, documents, deadlines, tasks, reviews, and approvals into one place.',
-    now: 'Now: pursuit workspace foundations and demo checklists. Full workflows are in development.',
-  },
-  {
-    name: 'Learn',
-    icon: BarChart3,
-    text: 'Use decisions, submissions, wins, losses, and readiness gaps to inform your next move.',
-    now: 'Now: basic pipeline reports and company-readiness facts. Outcome analytics are planned.',
-  },
-];
-
-const capabilityGroups = [
-  {
-    name: 'Available in the current beta',
-    label: 'Available',
-    className: styles.available,
-    intro: 'Try the demo. Begin company onboarding.',
-    items: [
-      [
-        'Fatal-disqualifier checks',
-        'Fictional demo only: failed or unknown eligibility blocks advancement.',
-      ],
-      [
-        'Explainable fit scoring',
-        'Fictional demo only: inspect illustrative factors and score breakdowns.',
-      ],
-      [
-        'Company-readiness management',
-        'Authenticated company facts, source notes, verification states, and missing-information lists.',
-      ],
-      [
-        'Reports and pipeline visibility',
-        'Basic recorded pipeline views, brief export, and role-permitted activity.',
-      ],
-    ],
-  },
-  {
-    name: 'Foundation implemented',
-    label: 'Foundation',
-    className: styles.foundation,
-    intro: 'The structure is here. Workflows are growing.',
-    items: [
-      [
-        'Bid/no-bid decision support',
-        'Decision sections and human-control boundaries. Live decisions are not enabled.',
-      ],
-      [
-        'Pursuit workspaces',
-        'Dedicated opportunity and pursuit pages. Full operational editing is in development.',
-      ],
-      [
-        'Compliance matrices',
-        'Structured sections and data foundation. The compliance review workflow is not enabled.',
-      ],
-      [
-        'Document organization',
-        'Private-library foundation. Uploads and downloads await validation and scanning.',
-      ],
-    ],
-  },
-  {
-    name: 'Planned functionality',
-    label: 'Planned',
-    className: styles.planned,
-    intro: 'Our direction, with clear limits today.',
-    items: [
-      [
-        'Opportunity discovery',
-        'Authorized live procurement-source integrations. Current demo intake is manual.',
-      ],
-      [
-        'Company-aware matching',
-        'Evaluate official requirements against a verified company profile.',
-      ],
-      [
-        'Deadline and addendum tracking',
-        'Source-linked change monitoring and reminders. Dates can be displayed today.',
-      ],
-      [
-        'Grounded procurement assistant',
-        'Evidence-linked assistance using company and solicitation records. No live AI answers today.',
-      ],
-    ],
-  },
-];
-
 export default async function Home() {
   let signedIn = false;
   try {
@@ -184,36 +57,29 @@ export default async function Home() {
       signedIn = !error && !!data.user;
     }
   } catch {
-    // The public homepage remains available when the identity provider is unavailable.
+    // Keep the public page available if the identity provider is unavailable.
   }
   return (
-    <div className={styles.site}>
+    <div className={`${styles.site} ${clean.landing}`}>
       <a href="#main-content" className={styles.skipLink}>
         Skip to content
       </a>
       <MarketingHeader signedIn={signedIn} />
       <main id="main-content" tabIndex={-1}>
-        <section className={styles.hero} aria-labelledby="hero-title">
+        <section className={`${styles.hero} ${clean.hero}`} aria-labelledby="hero-title">
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
               <div className={styles.heroEyebrow}>
-                <span /> A SMARTER PATH TO PUBLIC-SECTOR WORK
+                <span /> YOUR PUBLIC-SECTOR CONTRACT DESK
               </div>
               <h1 id="hero-title">
-                Stop Searching.
+                Your next contract.
                 <br />
-                Start Pursuing
-                <br />
-                <span>the Right Contracts.</span>
+                <span>A clearer path.</span>
               </h1>
               <p className={styles.heroDescription}>
-                BidXchange helps contractors find public-sector opportunities, determine which
-                contracts fit their verified capabilities, identify potential disqualifiers, and
-                manage the bid process from discovery through submission.
-              </p>
-              <p className={styles.phaseNote}>
-                Our vision, delivered in phases. Explore the current beta below; live integrations,
-                AI, and submission workflows are not enabled.
+                Bring your company evidence, opportunities, and pursuit tasks into one focused
+                workspace. Know what needs attention before you commit to a bid.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -223,440 +89,148 @@ export default async function Home() {
                   Explore the Demo <ArrowRight size={18} aria-hidden="true" />
                 </Link>
               </div>
-              <div className={styles.tagline}>
-                We Find. <span>We Qualify.</span> You Win.
-              </div>
-              <p className={styles.smallNote}>
-                Built for better pursuit decisions. No contract awards guaranteed.
+              <p className={clean.heroNote}>
+                For contractors, service providers, and suppliers pursuing public-sector work.
               </p>
             </div>
-            <div className={styles.heroVisual}>
-              <div className={styles.visualOrbit} aria-hidden="true" />
+            <div className={`${styles.heroVisual} ${clean.visual}`}>
               <ProductPreview />
-              <div className={styles.evidenceNote}>
-                <span>
-                  <ShieldCheck size={22} aria-hidden="true" />
-                </span>
-                <div>
-                  <strong>Opportunity is only the beginning.</strong>
-                  <p>Know what fits. Know what needs proof.</p>
-                </div>
-              </div>
             </div>
           </div>
-          <div className={styles.sectorStrip}>
-            <p>DESIGNED FOR THE PUBLIC-SECTOR OPPORTUNITY LANDSCAPE</p>
-            <ul>
-              {[
-                'Federal',
-                'State',
-                'Municipal',
-                'School districts',
-                'Utilities',
-                'Public works',
-                'Prime-contractor opportunities',
-              ].map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ul>
-            <small>Independent software. No government affiliation or endorsement.</small>
-          </div>
         </section>
-
-        <section className={`${styles.section} ${styles.problem}`} aria-labelledby="problem-title">
-          <div className={styles.problemIntro}>
-            <span className={styles.eyebrow}>THE WORK BEFORE THE WORK</span>
-            <h2 id="problem-title">
-              You can do the job.
-              <br />
-              Finding the right one
-              <br />
-              <em>shouldn’t be a job.</em>
-            </h2>
-            <p>
-              Your estimating time is valuable. Spend it on opportunities that deserve a closer
-              look.
-            </p>
-          </div>
-          <div className={styles.problemList}>
-            {[
-              [
-                'Too many portals. Too little clarity.',
-                'Opportunities are scattered across procurement systems, inboxes, and spreadsheets.',
-                Layers,
-              ],
-              [
-                'The right scope. The wrong requirements.',
-                'Eligibility takes careful reading. A missed requirement can turn estimating effort into a dead end.',
-                FileCheck2,
-              ],
-              [
-                'One missed detail can change everything.',
-                'Deadlines, job walks, addenda, forms, and approvals need a place to be tracked together.',
-                Clock3,
-              ],
-              [
-                'A capable team, stretched thin.',
-                'Established contractors often lack a dedicated capture and proposal department.',
-                Building2,
-              ],
-            ].map(([heading, copy, Icon]) => {
-              const I = Icon as typeof Layers;
-              return (
-                <article key={heading as string}>
-                  <I size={22} aria-hidden="true" />
-                  <div>
-                    <h3>{heading as string}</h3>
-                    <p>{copy as string}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section
-          id="how-it-works"
-          className={styles.processSection}
-          aria-labelledby="process-title"
-        >
-          <div className={styles.sectionHeading}>
+        <section id="capabilities" className={clean.workspace} aria-labelledby="capabilities-title">
+          <div className={clean.sectionIntro}>
             <div>
-              <span className={styles.eyebrow}>FROM OPPORTUNITY TO AN INFORMED DECISION</span>
-              <h2 id="process-title">One connected pursuit process.</h2>
-            </div>
-            <p>
-              A clear operating model for public-sector growth.
-              <br />
-              Built step by step, with people in control.
-            </p>
-          </div>
-          <div className={styles.steps}>
-            {steps.map((s, i) => (
-              <article key={s.name}>
-                <div className={styles.stepTop}>
-                  <span>0{i + 1}</span>
-                  <s.icon size={25} aria-hidden="true" />
-                </div>
-                <h3>
-                  {s.name}
-                  <ArrowUpRight size={20} aria-hidden="true" />
-                </h3>
-                <p>{s.text}</p>
-                <div className={styles.stepStatus}>{s.now}</div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section id="capabilities" className={styles.section} aria-labelledby="capabilities-title">
-          <div className={styles.sectionHeading}>
-            <div>
-              <span className={styles.eyebrow}>BUILT WITH PURPOSE. CLEAR ABOUT PROGRESS.</span>
+              <span className={styles.eyebrow}>LESS SCATTERED WORK. MORE CLARITY.</span>
               <h2 id="capabilities-title">
-                A contract desk.
+                Keep the important
                 <br />
-                Not another overflowing inbox.
+                details together.
               </h2>
             </div>
             <p>
-              Know what you can use now—and what we’re building next. Demo capabilities are clearly
-              separated from real company workflows.
+              A practical starting point for teams that have the expertise to do the job and need a
+              better way to organize the pursuit.
             </p>
           </div>
-          <div className={styles.capabilityGrid}>
-            {capabilityGroups.map((g) => (
-              <section key={g.label} className={styles.capabilityColumn} aria-label={g.name}>
-                <div className={styles.capabilityIntro}>
-                  <span className={`${styles.status} ${g.className}`}>{g.name}</span>
-                  <p>{g.intro}</p>
+          <div className={clean.features}>
+            {[
+              {
+                icon: FolderCheck,
+                number: '01',
+                title: 'Know your company.',
+                text: 'Capture capabilities, registrations, and supporting facts with sources and owners. See what needs human review.',
+              },
+              {
+                icon: FileSearch,
+                number: '02',
+                title: 'Keep the source in sight.',
+                text: 'Record an opportunity with its original notice, buyer, and deadline. Build a useful shortlist from the work you find.',
+              },
+              {
+                icon: ListChecks,
+                number: '03',
+                title: 'Make the next step clear.',
+                text: 'Open a pursuit, cite its requirements, flag missing information, and assign tasks so the next action has an owner.',
+              },
+            ].map((feature) => (
+              <article key={feature.number}>
+                <div className={clean.featureTop}>
+                  <feature.icon size={27} strokeWidth={1.5} aria-hidden="true" />
+                  <span>{feature.number}</span>
                 </div>
-                {g.items.map(([name, text]) => (
-                  <article key={name}>
-                    <CircleCheck size={18} aria-hidden="true" />
-                    <div>
-                      <h3>{name}</h3>
-                      <p>{text}</p>
-                    </div>
-                  </article>
-                ))}
-              </section>
+                <h3>{feature.title}</h3>
+                <p>{feature.text}</p>
+              </article>
             ))}
           </div>
+          <div className={clean.availability}>
+            <span>AVAILABLE TODAY</span>
+            <p>
+              Company records, manual opportunity intake, requirements, and tasks. Live procurement
+              feeds, AI answers, and proposal submission are not enabled.
+            </p>
+          </div>
         </section>
-
-        <section className={styles.assistantSection} aria-labelledby="assistant-title">
+        <section id="questions" className={clean.questions} aria-labelledby="questions-title">
           <div>
-            <span className={styles.darkEyebrow}>
-              <Sparkles size={16} aria-hidden="true" /> THE BIDXCHANGE ASSISTANT · PLANNED
-            </span>
-            <h2 id="assistant-title">
-              Better questions.
+            <span className={styles.eyebrow}>A FEW THINGS TO KNOW</span>
+            <h2 id="questions-title">
+              Clear expectations.
               <br />
-              <span>Answers with evidence.</span>
+              From the start.
             </h2>
-            <p>
-              The planned procurement assistant will ground answers in verified company information
-              and official solicitation records, so your team can review the source behind a
-              recommendation.
-            </p>
-            <strong className={styles.aiDisclosure}>
-              Coming in a later phase — no live AI analysis enabled.
-            </strong>
           </div>
-          <div className={styles.questionPanel}>
-            <div className={styles.questionPanelHeader}>
-              <Image
-                src="/brand/bidxchange-icon.png?v=2"
-                width="32"
-                height="32"
-                alt=""
-                loading="lazy"
-              />
-              <span>Ask BidXchange</span>
-              <small>Preview</small>
-            </div>
-            <p>QUESTIONS WORTH ASKING</p>
-            {[
-              'What new contracts fit our company today?',
-              'Why does this opportunity match?',
-              'What could disqualify us?',
-              'What changed in the latest addendum?',
-              'Which documents and signatures are required?',
-            ].map((q) => (
-              <div key={q} className={styles.exampleQuestion}>
-                <span>{q}</span>
-                <ArrowUpRight size={16} aria-hidden="true" />
-              </div>
-            ))}
-            <div className={styles.questionFooter}>
-              <LockKeyhole size={14} aria-hidden="true" /> Illustrative questions. No answers are
-              generated.
-            </div>
-          </div>
-        </section>
-
-        <section id="who-its-for" className={styles.section} aria-labelledby="audience-title">
-          <div className={styles.centerHeading}>
-            <span className={styles.eyebrow}>YOU BRING THE CAPABILITY</span>
-            <h2 id="audience-title">
-              Built for businesses ready
-              <br />
-              to do the work.
-            </h2>
-            <p>
-              For established companies with the expertise to perform—and without a full internal
-              government-contracting department.
-            </p>
-          </div>
-          <div className={styles.audiences}>
-            {[
-              ['General contractors', 'From renovations to complex building projects.', HardHat],
-              ['Specialty contractors', 'A focused trade. A clearer pursuit strategy.', Wrench],
-              [
-                'Energy and utility contractors',
-                'Efficiency, infrastructure, and program delivery.',
-                Zap,
-              ],
-              [
-                'Facilities and maintenance firms',
-                'Supporting the places communities rely on.',
-                Building2,
-              ],
-              [
-                'Public works vendors',
-                'The services and infrastructure behind daily life.',
-                Landmark,
-              ],
-              [
-                'Professional-service providers',
-                'Specialist expertise for public-sector needs.',
-                BriefcaseBusiness,
-              ],
-              [
-                'Suppliers pursuing government business',
-                'Products and materials matched to real requirements.',
-                Package,
-              ],
-            ].map(([name, copy, Icon]) => {
-              const I = Icon as typeof HardHat;
-              return (
-                <article key={name as string}>
-                  <I size={24} aria-hidden="true" />
-                  <h3>{name as string}</h3>
-                  <p>{copy as string}</p>
-                </article>
-              );
-            })}
-          </div>
-          <div className={styles.managedService}>
-            <div className={styles.managedMark} aria-hidden="true">
-              <MoveUpRight size={42} />
-            </div>
-            <div>
-              <span className={styles.eyebrow}>SOFTWARE + EXPERT-SUPPORTED OPERATIONS</span>
-              <h3>More than a bid board.</h3>
+          <div className={clean.faq}>
+            <details>
+              <summary>Who is BidXchange for?</summary>
               <p>
-                BidXchange is being built as a technology-powered outsourced government-contracting
-                department—not another database that sends contractors hundreds of irrelevant
-                listings.
+                Established contractors, specialty trades, facilities teams, professional-service
+                firms, and suppliers that want a more organized approach to government
+                opportunities.
               </p>
+            </details>
+            <details>
+              <summary>What will I see in the demo?</summary>
               <p>
-                Designed to reduce noise, identify actionable opportunities, and help organize
-                compliant pursuits. Managed-service scope is being developed; contract awards are
-                never guaranteed.
+                A fictional company and sample opportunities that let you explore the workflow. Demo
+                scores and eligibility examples are illustrative, not assessments of your business
+                or live contracts.
               </p>
-            </div>
+            </details>
+            <details id="security">
+              <summary>Who can access our company information?</summary>
+              <p>
+                Authenticated workspaces use organization membership and role-based access. Company
+                records can be restricted, while pursuit requirements are shared with workspace
+                members. Verification and bid authority remain with people.
+              </p>
+            </details>
+            <details id="pricing">
+              <summary>How does pricing work?</summary>
+              <p>
+                Early-access plans and managed support are being developed. A walkthrough helps us
+                understand your team and discuss fit; pricing and service terms are not yet
+                finalized.
+              </p>
+            </details>
           </div>
         </section>
-
-        <section id="security" className={styles.securitySection} aria-labelledby="security-title">
-          <div>
-            <span className={styles.eyebrow}>CONFIDENCE COMES FROM CONTROL</span>
-            <h2 id="security-title">
-              Your company.
-              <br />
-              Your information.
-              <br />
-              <span>Your decisions.</span>
-            </h2>
-            <p>
-              A good pursuit starts with trustworthy information. Important claims and actions need
-              evidence, ownership, and a human decision.
-            </p>
-            <Link href="/login" className={styles.inlineLink}>
-              Existing user? Sign in <ArrowRight size={17} aria-hidden="true" />
-            </Link>
-          </div>
-          <div className={styles.securityGrid}>
-            {[
-              [
-                'Organization-level separation',
-                'Authenticated workspaces use organization-scoped access controls.',
-                LockKeyhole,
-              ],
-              [
-                'Access with a defined role',
-                'Roles limit who can view information and make important changes.',
-                UserCheck,
-              ],
-              [
-                'Claims need human verification',
-                'Company facts carry verification states and source references.',
-                ShieldCheck,
-              ],
-              [
-                'Information with provenance',
-                'Source-supported records are the basis for review; no live feeds are connected today.',
-                FileCheck2,
-              ],
-              [
-                'People authorize commitments',
-                'Pricing and submission authorization remain human-controlled. No automatic bid submission.',
-                ListChecks,
-              ],
-              [
-                'A record of important changes',
-                'Administrative changes are recorded for authorized review.',
-                Layers,
-              ],
-            ].map(([name, text, Icon]) => {
-              const I = Icon as typeof LockKeyhole;
-              return (
-                <article key={name as string}>
-                  <I size={23} aria-hidden="true" />
-                  <h3>{name as string}</h3>
-                  <p>{text as string}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section id="pricing" className={styles.pricingSection} aria-labelledby="pricing-title">
-          <div>
-            <span className={styles.darkEyebrow}>EARLY ACCESS. A THOUGHTFUL FIT.</span>
-            <h2 id="pricing-title">
-              The right support
-              <br />
-              for your next stage.
-            </h2>
-            <p>Founding customer plans are being finalized.</p>
-            <p>
-              Pricing may combine onboarding, managed service, and software access. Final plans,
-              availability, and commercial terms have not been established.
-            </p>
-          </div>
-          <div className={styles.pricingCard}>
-            <span className={styles.pricingLabel}>FOUNDING CUSTOMER PLANS</span>
-            <h3>Start with your business.</h3>
-            <ul>
-              <li>
-                <Check size={17} aria-hidden="true" /> Company readiness and onboarding
-              </li>
-              <li>
-                <Check size={17} aria-hidden="true" /> Software access for your team
-              </li>
-              <li>
-                <Check size={17} aria-hidden="true" /> Managed support suited to your needs
-              </li>
-            </ul>
-            <p>Potential plan components—not current service commitments.</p>
-            <a href="#request-demo" className={styles.goldButton}>
-              Discuss Your Needs <ArrowUpRight size={18} aria-hidden="true" />
-            </a>
-            <small>Contact Manuel Rodriguez for a walkthrough</small>
-          </div>
-        </section>
-
-        <InterestPreview />
+        <div className={clean.contact}>
+          <InterestPreview />
+        </div>
       </main>
-      <footer className={styles.footer}>
-        <div className={styles.footerTop}>
+      <footer className={clean.footer}>
+        <div className={clean.footerTop}>
           <div>
             <Link href="/" aria-label="BidXchange home">
               <Image
                 src="/brand/bidxchange-logo.png?v=2"
-                width="2172"
-                height="724"
-                sizes="185px"
+                width={2172}
+                height={724}
+                sizes="160px"
                 alt="BidXchange"
-                loading="lazy"
               />
             </Link>
             <p>We Find. We Qualify. You Win.</p>
           </div>
-          <nav aria-label="Footer product links">
-            <strong>Product</strong>
-            <a href="#capabilities">Capabilities</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#security">Security</a>
-          </nav>
           <nav aria-label="Footer access links">
-            <strong>Get started</strong>
-            <a href="#request-demo">Request a Demo</a>
-            <Link href="/dashboard?workspace=demo">Explore the Demo</Link>
             <Link href="/login">Sign In</Link>
-          </nav>
-          <nav aria-label="Footer company links">
-            <strong>Company</strong>
             <a href="#legal-notices">Privacy — pending</a>
             <a href="#legal-notices">Terms — pending</a>
-            <a href={demoContactHref}>Contact Manuel</a>
           </nav>
         </div>
-        <section id="legal-notices" className={styles.legalNotices} aria-labelledby="legal-title">
-          <h2 id="legal-title">Before public access opens</h2>
+        <details id="legal-notices" className={clean.legal}>
+          <summary>Privacy and terms are being finalized</summary>
           <p>
-            The full Privacy notice and Terms of service are being finalized; these links are not
-            published legal terms. For a demo or a question about information you have shared,
-            contact Manuel Rodriguez at mrodriguez@oaisinc.com. Please do not send confidential
-            company records through the public contact channel.
+            Published legal terms are not yet available. For questions about information you have
+            shared, contact mrodriguez@oaisinc.com. Please do not send confidential records through
+            the public contact channel.
           </p>
-        </section>
-        <div className={styles.footerBottom}>
-          <span>© {new Date().getFullYear()} BidXchange. All rights reserved.</span>
-          <span>Not affiliated with or endorsed by any government agency.</span>
+        </details>
+        <div className={clean.footerBottom}>
+          <span>© {new Date().getFullYear()} BidXchange</span>
+          <span>Independent software. No government affiliation or guaranteed awards.</span>
         </div>
       </footer>
     </div>
