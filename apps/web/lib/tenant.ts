@@ -58,7 +58,7 @@ export async function loadTenant(
     db
       .from('profile_facts')
       .select(
-        'id,fact_type,label,value,verification_status,source_reference,source_note,verified_by,verified_at,effective_date,expiration_date,updated_at',
+        'id,fact_type,label,value,verification_status,source_reference,source_note,verified_by,verified_at,effective_date,expiration_date,updated_at,owner_user_id,sensitivity',
       )
       .eq('organization_id', id)
       .order('created_at')

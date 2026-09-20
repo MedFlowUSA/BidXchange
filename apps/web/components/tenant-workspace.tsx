@@ -6,6 +6,7 @@ import Assistant from './assistant';
 import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
+import CompanyRecordForm from './company-record-form';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData, Fact } from '../lib/tenant-types';
 import { companyReadiness, reviewStatus } from '../lib/company-readiness';
@@ -41,11 +42,15 @@ function FactCard({
   admin,
   org,
   asOf,
+  members,
+  userId,
 }: {
   fact: Fact;
   admin: boolean;
   org: string;
   asOf: string;
+  members: TenantData['members'];
+  userId: string;
 }) {
   const status = reviewStatus(fact, asOf);
   const verified = status === 'reviewed';
@@ -68,7 +73,25 @@ function FactCard({
           </p>
         )}
         {fact.expiration_date && <p>Expires: {fact.expiration_date}</p>}
+        {fact.effective_date && <p>Effective: {fact.effective_date}</p>}
+        {fact.owner_user_id && (
+          <p>Record owner: {fact.owner_user_id === userId ? 'You' : fact.owner_user_id}</p>
+        )}
+        {fact.sensitivity && (
+          <p>
+            Visibility: {fact.sensitivity === 'workspace' ? 'Company members' : 'Restricted review'}
+          </p>
+        )}
       </div>
+      {admin && (
+        <CompanyRecordForm
+          organizationId={org}
+          types={[fact.fact_type]}
+          members={members}
+          userId={userId}
+          fact={fact}
+        />
+      )}
       {admin && (
         <details>
           <summary>Review verification</summary>
@@ -404,6 +427,14 @@ export default function TenantWorkspace({
                   {area.title} · {area.facts.length} visible records
                 </summary>
                 <p>{area.why}</p>
+                {admin && (
+                  <CompanyRecordForm
+                    organizationId={org.id}
+                    types={area.types}
+                    members={data.members}
+                    userId={data.userId}
+                  />
+                )}
                 <p>
                   {area.facts.length} visible records ·{' '}
                   {area.facts.filter((f) => reviewStatus(f, data.reviewAsOf) !== 'reviewed').length}{' '}
@@ -414,6 +445,8 @@ export default function TenantWorkspace({
                     {area.facts.map((f) => (
                       <FactCard
                         fact={f}
+                        members={data.members}
+                        userId={data.userId}
                         org={org.id}
                         admin={admin}
                         asOf={data.reviewAsOf}
@@ -436,6 +469,8 @@ export default function TenantWorkspace({
                   {readiness.other.map((f) => (
                     <FactCard
                       fact={f}
+                      members={data.members}
+                      userId={data.userId}
                       org={org.id}
                       admin={admin}
                       asOf={data.reviewAsOf}

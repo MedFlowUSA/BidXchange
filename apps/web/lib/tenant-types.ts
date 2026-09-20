@@ -19,6 +19,8 @@ export type Fact = {
   verified_at: string | null;
   expiration_date: string | null;
   effective_date?: string | null;
+  owner_user_id?: string | null;
+  sensitivity?: string;
   updated_at: string;
 };
 export type LiveOpportunity = {
