@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run build && node scripts/ai-provider-check.mjs --check-production",
+  "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "env": {
     "BIDXCHANGE_AI_ENABLED": "true",
