@@ -2335,6 +2335,29 @@ a.nav-item {
 .evidence-use-note p {
   margin: 8px 0 0;
 }
+.decision-brief {
+  overflow-wrap: anywhere;
+}
+.decision-brief > p {
+  margin: 12px 0;
+}
+.decision-brief-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+}
+.decision-brief-list li {
+  padding: 16px 0;
+  border-top: 1px solid #dce2ec;
+}
+.decision-brief-list a {
+  font-weight: 600;
+  color: #2456c9;
+}
+.decision-brief-list p {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
 .auth-card code {
   overflow-wrap: anywhere;
 }

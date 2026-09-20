@@ -32,7 +32,15 @@ Date comparisons use UTC calendar dates, disclosed in the UI. The expiration dat
 
 Eight focused readiness/input tests pass, covering the 60/61-day boundary, expiration day, invalid dates, ordering and preservation of unknown verification. The staging-backed Passport browser test also checks the 30-day reminder and removal of a restricted item from the renewal view after role revocation.
 
-### Data model and decision workflow still required
+### Pursuit decision-review brief
+
+Authenticated pursuit pages now summarize visible requirements for the bid/no-bid discussion. Blocked follow-up comes first, followed by stale evidence approvals and other unresolved items. Each entry links to its requirement and identifies missing citation, owner, information or current visible evidence approval. Current evidence approvals are counted only as supporting reviews, never as compliance or eligibility. “Not applicable” reviews do not waive requirements.
+
+The brief uses the existing tenant-scoped records without new queries or migrations. It discloses the review date, restricted visibility and record limits, and gives explicit guidance for an empty register. Human bid-decision recording remains disabled by the existing database guard; this is preparation for that workflow, not a substitute for an attributed decision record.
+
+Ten focused brief and tenant-loading tests pass, along with type checking, lint, production build and secret scanning. The staging browser test exercises current approvals, stale-source invalidation, direct requirement links, missing owners, restricted-view changes and mobile containment.
+
+### Remaining decision model
 
 The next increment is implemented and staged: evidence applicability and proposal-use reviews for a specific fact version and pursuit requirement. Production migrations and feature-flag activation have been approved, and migrations are installed; see [the release report](evidence-use-release.md). This provides pair-level approval and invalidation, not whole-proposal authorization or complete contextual qualification.
 

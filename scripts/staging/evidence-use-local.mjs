@@ -147,6 +147,13 @@ try {
   await expect(form.getByRole('status')).toContainText('Review saved', { timeout: 20000 });
   await page.reload();
   await expect(card).toContainText('Approved for this requirement');
+  const brief = page.getByRole('region', { name: 'What still needs a decision?' });
+  await expect(brief).toContainText('1 current evidence approval visible');
+  await expect(brief).toContainText('Review owner missing');
+  await expect(brief.getByRole('link', { name: 'Synthetic license requirement' })).toHaveAttribute(
+    'href',
+    `#requirement-${requirement}`,
+  );
   const saved = await client
     .from('current_evidence_use_reviews')
     .select('*')
@@ -187,6 +194,7 @@ try {
   );
   await page.reload();
   await expect(card).toContainText('Previous approval needs review');
+  await expect(brief).toContainText('Previous evidence approval needs review');
   assert.equal(
     (await client.from('profile_facts').select('verification_status').eq('id', fact).single()).data
       .verification_status,
@@ -204,6 +212,8 @@ try {
   await page.reload();
   await expect(card.getByRole('form', { name: 'Review evidence use' })).toHaveCount(0);
   await expect(card).not.toContainText('Synthetic reviewer confirms');
+  await expect(brief).not.toContainText('1 current evidence approval visible');
+  await expect(brief).toContainText('No current evidence approval visible');
   const hidden = await client
     .from('evidence_use_reviews')
     .select('id')

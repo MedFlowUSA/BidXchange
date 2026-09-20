@@ -6,6 +6,7 @@ import Assistant from './assistant';
 import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
+import PursuitDecisionBrief from './pursuit-decision-brief';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
 import EvidenceUseReview from './evidence-use-review';
@@ -257,6 +258,7 @@ export default function TenantWorkspace({
                 timezone={opportunity.deadline_timezone}
                 opportunityHref={href('/opportunities/' + opportunity.id)}
               >
+                {pursuit && <PursuitDecisionBrief data={data} pursuitId={pursuit.id} />}
                 <section className="panel" aria-labelledby="requirements-heading">
                   <h2 id="requirements-heading">Requirements and gaps</h2>
                   <p>
