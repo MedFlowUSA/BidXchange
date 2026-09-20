@@ -1,13 +1,26 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { connectDatabase } from './db.mjs';
 import { stagingDatabase } from './staging/connection.mjs';
 import { validateMigrations } from './staging/prepare.mjs';
-assert.equal(process.argv[2], 'migrate-staging');
+const mode = process.argv[2];
+assert(['migrate-staging', 'migrate-production'].includes(mode));
+const production = mode === 'migrate-production';
+if (production) {
+  assert.equal(readFileSync('supabase/.temp/project-ref', 'utf8').trim(), 'bcrxejydosltquspsutw');
+  assert(!process.env.BIDXCHANGE_TEST_DATABASE_URL);
+}
 const migration = validateMigrations('supabase/migrations').find(
   (m) => m.file === '20260920001100_requirement_resolutions.sql',
 );
 assert(migration);
-const db = await stagingDatabase();
+const db = production ? await connectDatabase() : await stagingDatabase();
 try {
+  if (production)
+    assert(
+      db.connectionParameters.host === 'db.bcrxejydosltquspsutw.supabase.co' ||
+        db.connectionParameters.user.endsWith('.bcrxejydosltquspsutw'),
+    );
   await db.query('begin');
   await db.query("set local lock_timeout='5s'; set local statement_timeout='30s'");
   const prior = await db.query(
@@ -34,11 +47,17 @@ try {
   });
   await db.query('commit');
   console.log(
-    'Staging migration 011 installed; checksum and permission checks passed. Production unchanged.',
+    JSON.stringify({
+      target: production ? 'production' : 'staging',
+      migration: '011',
+      installed: true,
+      checksumVerified: true,
+      permissionChecksPassed: true,
+    }),
   );
 } catch (error) {
   await db.query('rollback').catch(() => {});
-  console.error('Resolution staging release failed:', error.code ?? error.name);
+  console.error('Resolution release failed:', error.code ?? error.name);
   process.exitCode = 1;
 } finally {
   await db.end();

@@ -2,7 +2,7 @@
 
 ## Outcome and status
 
-Implemented and validated against hosted staging. Production remains on the existing workflow until the named migration and activation are approved. The application gate is `BIDXCHANGE_RESOLUTIONS_ENABLED`, disabled unless explicitly set to `true`.
+Implemented and validated against hosted staging. The user approved production migration 011 and activation on September 20, 2026. The migration is installed in production, and the release configuration sets `BIDXCHANGE_RESOLUTIONS_ENABLED=true`.
 
 Each requirement can receive an attributed human disposition: **Needs review**, **Supported by reviewed evidence**, **Blocked**, **Awaiting clarification**, or **Documented buyer waiver**. A reason is mandatory. Administrators and executive approvers may review requirements; only executive approvers may record a documented waiver, and must identify its issuing authority and source/scope. Recording a waiver does not give the workspace user authority to waive a buyer requirement or authenticate the buyer's document.
 
@@ -24,7 +24,7 @@ Resolution changes and validity changes are included in the bid/no-bid context t
 
 `20260920001100_requirement_resolutions.sql` creates the resolution history table, column-level read grants, row policies, a security-invoker current-resolution view, a membership-checked private validity function and the attributed write RPC. It updates the existing pursuit decision-context function to include resolution state. It does not modify pricing, certification or submission authorization.
 
-Migration 011 is installed in staging only. Staging package revision 7 pins the canonical UTF-8/LF checksum and continues excluding the real-company seed. `node scripts/resolution-release.mjs migrate-staging` verifies the target, checksum and applied SQL, uses a transaction with bounded timeouts, and checks grants before commit.
+Migration 011 is installed in staging and production. Staging package revision 7 pins the canonical UTF-8/LF checksum and continues excluding the real-company seed. `node scripts/resolution-release.mjs migrate-staging` and `migrate-production` verify the target, checksum and applied SQL, use a transaction with bounded timeouts, and check grants before commit. The production release passed those checks.
 
 ## Validation
 
@@ -36,9 +36,9 @@ Hosted schema parity passes for view definitions/security, column grants, polici
 
 ## Production activation and rollback
 
-The existing gate in `docs/demo-intake-release.md` requires named production migration approval. Request approval for migration 011 and `BIDXCHANGE_RESOLUTIONS_ENABLED=true` only after the tested implementation is ready. No production migration attempt has been made for this release.
+The existing gate in `docs/demo-intake-release.md` requires named production migration approval. The user explicitly approved migration 011 and `BIDXCHANGE_RESOLUTIONS_ENABLED=true`; the approved migration was applied transactionally to the verified production project.
 
-After approval, apply the pinned migration transactionally to the verified production project, verify permissions and function definitions, enable the flag in the deployment configuration, and deploy. Check the signed-in requirement workflow using an authorized account when available; do not create production fixture users or business records as part of this release.
+The activation flag is enabled in the deployment configuration. Signed-in workflow validation was performed in staging; production checks verify the installed migration and permissions without creating fixture users or business records. A signed-in production end-to-end test is not claimed.
 
 For application rollback, disable the flag and redeploy. Preserve shared review history, evidence links and tightened grants. Do not remove history or revert the context calculation as a routine application rollback. The flag hides the UI and prevents the server action; database RPC access must be revoked separately if an emergency requires stopping all authorized API writes.
 

@@ -42,7 +42,7 @@ Ten focused brief and tenant-loading tests pass, along with type checking, lint,
 
 ### Remaining decision model
 
-Requirement resolution is now implemented and validated in staging: evidence-backed support, blockers, clarification, documented executive-reviewed buyer waivers, history and invalidation. The brief uses the current disposition, and changes trigger another bid-decision review. Production migration 011 and activation await named approval. See [the requirement-resolution release](requirement-resolution-release.md) for exact scope and limits.
+Requirement resolution is implemented and validated in staging: evidence-backed support, blockers, clarification, documented executive-reviewed buyer waivers, history and invalidation. The brief uses the current disposition, and changes trigger another bid-decision review. Production migration 011 and activation are explicitly approved; the migration is installed and the activation flag is enabled in the release configuration. See [the requirement-resolution release](requirement-resolution-release.md) for exact scope and limits.
 
 The next operational increment adds a Today task queue and direct saved-record links. Attributed bid/no-bid/reopen decision recording is implemented and validated in staging, with production migration 010 explicitly approved and installed and activation enabled in the release configuration. See [the pursuit workflow release](pursuit-decision-release.md) for authority boundaries, context-change handling and remaining work.
 

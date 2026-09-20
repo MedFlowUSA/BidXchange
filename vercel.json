@@ -5,7 +5,8 @@
   "installCommand": "npm ci",
   "env": {
     "BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED": "true",
-    "BIDXCHANGE_DECISIONS_ENABLED": "true"
+    "BIDXCHANGE_DECISIONS_ENABLED": "true",
+    "BIDXCHANGE_RESOLUTIONS_ENABLED": "true"
   },
   "outputDirectory": "apps/web/.next"
 }
