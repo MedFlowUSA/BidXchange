@@ -1,7 +1,7 @@
 'use server';
 import { revalidatePath } from 'next/cache';
 import { accountContext } from '../lib/tenant';
-import { opportunityInput, pursuitInput, taskInput } from '../lib/capture-input';
+import { opportunityInput, pursuitInput, taskInput, requirementInput } from '../lib/capture-input';
 import type { MutationState } from './actions';
 
 async function captureAccess(organizationId: string) {
@@ -27,6 +27,63 @@ const changed = {
   message:
     'The record changed or is unavailable. Refresh before editing again. Your text has been kept.',
 };
+
+export async function saveRequirement(
+  _state: MutationState,
+  form: FormData,
+): Promise<MutationState> {
+  const parsed = requirementInput.safeParse(Object.fromEntries(form));
+  if (!parsed.success)
+    return { message: parsed.error.issues[0]?.message ?? 'Check the requirement fields.' };
+  try {
+    const { organization_id, record_id, updated_at, ...input } = parsed.data;
+    const db = await captureAccess(organization_id);
+    const parent = await db
+      .from('pursuits')
+      .select('id')
+      .eq('organization_id', organization_id)
+      .eq('id', input.pursuit_id)
+      .single();
+    if (parent.error) return unavailable;
+    if (input.owner_user_id) {
+      const owner = await db
+        .from('organization_memberships')
+        .select('user_id')
+        .eq('organization_id', organization_id)
+        .eq('user_id', input.owner_user_id)
+        .eq('status', 'active')
+        .maybeSingle();
+      if (owner.error || !owner.data)
+        return {
+          message: 'Choose an active organization member or leave the requirement unassigned.',
+        };
+    }
+    const values = { ...input, owner_user_id: input.owner_user_id || null };
+    const result = record_id
+      ? await db
+          .from('pursuit_requirements')
+          .update(values)
+          .eq('organization_id', organization_id)
+          .eq('pursuit_id', input.pursuit_id)
+          .eq('id', record_id)
+          .eq('updated_at', updated_at)
+          .select('id')
+      : await db
+          .from('pursuit_requirements')
+          .insert({ ...values, organization_id })
+          .select('id');
+    if (result.error) return unavailable;
+    if (!result.data?.length) return changed;
+    revalidatePath('/', 'layout');
+    return {
+      success: true,
+      message:
+        'Requirement saved for follow-up. Compliance and eligibility have not been verified.',
+    };
+  } catch {
+    return unavailable;
+  }
+}
 
 export async function saveOpportunity(
   _state: MutationState,

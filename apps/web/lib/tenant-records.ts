@@ -11,7 +11,7 @@ const selectionSchema = z
   .object({ kind: z.enum(['opportunity', 'pursuit']), id: z.uuid() })
   .strict();
 export type TenantRecordSelection = z.infer<typeof selectionSchema>;
-type RecordContext = Pick<TenantData, 'opportunities' | 'pursuits' | 'tasks'>;
+type RecordContext = Pick<TenantData, 'opportunities' | 'pursuits' | 'tasks' | 'requirements'>;
 
 // The caller supplies its validated user-session client; never use an operator client here.
 export async function loadRecordContext(
@@ -53,9 +53,18 @@ export async function loadRecordContext(
     .order('id')
     .limit(500);
   if (tasks.error) throw new Error('Record data could not be loaded. Please retry.');
+  const requirements = await scoped(
+    'pursuit_requirements',
+    'id,pursuit_id,requirement,citation,status,owner_user_id,updated_at',
+  )
+    .eq('pursuit_id', pursuit.id)
+    .order('id')
+    .limit(501);
+  if (requirements.error) throw new Error('Record data could not be loaded. Please retry.');
   return {
     opportunities: [opportunity],
     pursuits: [pursuit],
     tasks: (tasks.data ?? []) as TenantData['tasks'],
+    requirements: (requirements.data ?? []) as TenantData['requirements'],
   };
 }

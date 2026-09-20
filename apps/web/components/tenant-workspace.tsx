@@ -7,7 +7,8 @@ import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import CompanyRecordForm from './company-record-form';
-import { OpportunityForm, StartPursuitForm, TaskForm } from './capture-forms';
+import { OpportunityForm, StartPursuitForm, TaskForm, RequirementForm } from './capture-forms';
+import { requirementStatuses } from '../lib/capture-input';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData, Fact } from '../lib/tenant-types';
 import { companyReadiness, reviewStatus } from '../lib/company-readiness';
@@ -253,6 +254,61 @@ export default function TenantWorkspace({
                 timezone={opportunity.deadline_timezone}
                 opportunityHref={href('/opportunities/' + opportunity.id)}
               >
+                <section className="panel" aria-labelledby="requirements-heading">
+                  <h2 id="requirements-heading">Requirements and gaps</h2>
+                  <p>
+                    Capture the notice requirements and assign the next review. This register does
+                    not verify compliance or determine eligibility.
+                  </p>
+                  <Link href={href('/company')}>Review company evidence</Link>
+                  {!(data.requirements ?? []).length && (
+                    <p>
+                      No requirements recorded for this pursuit yet. This does not mean the notice
+                      has no requirements.
+                    </p>
+                  )}
+                  {(data.requirements ?? []).length > 500 && (
+                    <p role="status">
+                      Showing the first 500 requirements. This is a partial register; additional
+                      records are not shown.
+                    </p>
+                  )}
+                  {(data.requirements ?? []).slice(0, 500).map((requirement) => (
+                    <article
+                      className="panel"
+                      key={requirement.id}
+                      id={`requirement-${requirement.id}`}
+                    >
+                      <h3>{requirement.requirement}</h3>
+                      <p>
+                        Notice citation:{' '}
+                        {requirement.citation || 'Not recorded; source review needed'}
+                      </p>
+                      <p>
+                        Follow-up:{' '}
+                        {Object.hasOwn(requirementStatuses, requirement.status)
+                          ? requirementStatuses[
+                              requirement.status as keyof typeof requirementStatuses
+                            ]
+                          : 'Needs review'}
+                      </p>
+                      <p>
+                        Owner:{' '}
+                        {requirement.owner_user_id === data.userId
+                          ? 'You'
+                          : (requirement.owner_user_id ?? 'Unassigned')}
+                      </p>
+                      {capture && (
+                        <RequirementForm
+                          data={data}
+                          pursuitId={recordId}
+                          requirement={requirement}
+                        />
+                      )}
+                    </article>
+                  ))}
+                  {capture && <RequirementForm data={data} pursuitId={recordId} />}
+                </section>
                 <section className="panel">
                   <h2>Tasks</h2>
                   {data.tasks

@@ -1,6 +1,12 @@
 'use client';
 import { useActionState, useState } from 'react';
-import { saveOpportunity, savePursuitTask, startPursuit } from '../app/capture-actions';
+import {
+  saveOpportunity,
+  savePursuitTask,
+  startPursuit,
+  saveRequirement,
+} from '../app/capture-actions';
+import { requirementStatuses } from '../lib/capture-input';
 import type { MutationState } from '../app/actions';
 import type { LiveOpportunity, TenantData } from '../lib/tenant-types';
 
@@ -30,6 +36,8 @@ function CaptureForm({
   const [state, submit, pending] = useActionState(action, { message: '' });
   const [expanded, setExpanded] = useState(false);
   const [draft, setDraft] = useState(initial);
+  // A refreshed parent must not pair an old draft with a newer write version.
+  const [draftIdentity] = useState(hidden);
   return (
     <details
       className="company-record-editor"
@@ -39,7 +47,7 @@ function CaptureForm({
       <summary>{label}</summary>
       {expanded && (
         <form action={submit} className="opportunity-form admin-form" aria-label={label}>
-          {Object.entries(hidden).map(([name, value]) => (
+          {Object.entries(draftIdentity).map(([name, value]) => (
             <input key={name} type="hidden" name={name} value={value} />
           ))}
           <p>{note}</p>
@@ -97,6 +105,69 @@ function CaptureForm({
 }
 const deadlineNote =
   'Enter timestamps with an explicit UTC offset, for example 2026-10-15T14:00:00-07:00. The offset fixes the instant; the time zone controls display. Leave unknown dates blank.';
+export function RequirementForm({
+  data,
+  pursuitId,
+  requirement,
+}: {
+  data: TenantData;
+  pursuitId: string;
+  requirement?: NonNullable<TenantData['requirements']>[number];
+}) {
+  return (
+    <CaptureForm
+      label={requirement ? 'Edit requirement' : 'Add requirement'}
+      action={saveRequirement}
+      hidden={{
+        organization_id: data.organization.id,
+        pursuit_id: pursuitId,
+        record_id: requirement?.id ?? '',
+        updated_at: requirement?.updated_at ?? '',
+      }}
+      initial={{
+        requirement: requirement?.requirement ?? '',
+        citation: requirement?.citation ?? '',
+        owner_user_id: requirement?.owner_user_id ?? '',
+        status:
+          requirement?.status && Object.hasOwn(requirementStatuses, requirement.status)
+            ? requirement.status
+            : 'needs_review',
+      }}
+      note="Record one requirement and its exact notice section or buyer clarification. All workspace members can read this register; keep restricted company evidence in Company. These follow-up states do not certify compliance."
+      fields={[
+        {
+          name: 'requirement',
+          label: 'Requirement text',
+          required: true,
+          max: 4000,
+          multiline: true,
+        },
+        { name: 'citation', label: 'Notice citation', required: true, max: 2000, multiline: true },
+        {
+          name: 'status',
+          label: 'Follow-up status',
+          options: Object.entries(requirementStatuses).map(([value, label]) => ({ value, label })),
+        },
+        {
+          name: 'owner_user_id',
+          label: 'Requirement owner',
+          options: [
+            { value: '', label: 'Unassigned' },
+            ...data.members
+              .filter((member) => member.status === 'active')
+              .map((member) => ({
+                value: member.user_id,
+                label:
+                  member.user_id === data.userId
+                    ? 'You'
+                    : `${member.role.replaceAll('_', ' ')}: ${member.user_id}`,
+              })),
+          ],
+        },
+      ]}
+    />
+  );
+}
 export function OpportunityForm({
   data,
   opportunity,

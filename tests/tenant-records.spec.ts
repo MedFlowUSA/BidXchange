@@ -91,11 +91,20 @@ test('direct pursuit resolves its parent and tasks beyond unrelated workspace sa
       { id: 'own-task', organization_id: org, pursuit_id: id },
       { id: 'foreign-task', organization_id: foreign, pursuit_id: id },
     ],
+    pursuit_requirements: [
+      ...unrelated,
+      { id: 'own-requirement', organization_id: org, pursuit_id: id, requirement: 'Bond required' },
+      { id: 'foreign-requirement', organization_id: foreign, pursuit_id: id },
+      { id: 'other-pursuit', organization_id: org, pursuit_id: parent },
+    ],
   });
   const result = await loadRecordContext(source.db, org, { kind: 'pursuit', id });
   expect(result?.pursuits).toMatchObject([{ id }]);
   expect(result?.opportunities).toMatchObject([{ id: parent }]);
   expect(result?.tasks).toMatchObject([{ id: 'own-task' }]);
+  expect(result?.requirements).toMatchObject([
+    { id: 'own-requirement', requirement: 'Bond required' },
+  ]);
   expect(source.queries.filter((q) => q.single)).toHaveLength(2);
   expect(
     source.queries.every((q) => q.filters.some(([k, v]) => k === 'organization_id' && v === org)),

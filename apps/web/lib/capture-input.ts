@@ -40,6 +40,27 @@ export const opportunityInput = z
     'Provide a source URL or source note.',
   );
 export const pursuitInput = z.object({ organization_id: z.uuid(), opportunity_id: z.uuid() });
+export const requirementStatuses = {
+  needs_review: 'Needs review',
+  missing_information: 'Missing information',
+  blocked: 'Blocker identified',
+} as const;
+export const requirementInput = z
+  .object({
+    organization_id: z.uuid(),
+    record_id: blankUuid,
+    updated_at: timestamp,
+    pursuit_id: z.uuid(),
+    requirement: z.string().trim().min(1, 'Enter the requirement.').max(4000),
+    citation: z
+      .string()
+      .trim()
+      .min(1, 'Cite the notice, section or buyer clarification.')
+      .max(2000),
+    owner_user_id: blankUuid,
+    status: z.enum(['needs_review', 'missing_information', 'blocked']),
+  })
+  .refine(versionPair, 'Refresh the requirement before editing.');
 export const taskInput = z
   .object({
     ...edit,

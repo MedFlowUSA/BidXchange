@@ -45,6 +45,15 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  requirements?: {
+    id: string;
+    pursuit_id: string;
+    requirement: string;
+    citation: string | null;
+    status: string;
+    owner_user_id: string | null;
+    updated_at: string;
+  }[];
   reviewAsOf: string;
   organization: Organization;
   choices: OrganizationChoice[];

@@ -76,8 +76,8 @@ try {
   ]);
   const page = await context.newPage();
   const open = async (page, label) => {
-    await page.locator(`details[aria-label="${label}"] > summary`).click();
-    return page.locator(`form[aria-label="${label}"]`);
+    await page.locator(`details[aria-label="${label}"] > summary`).first().click();
+    return page.locator(`form[aria-label="${label}"]`).first();
   };
   const save = async (form, label, message) => {
     await form.getByRole('button', { name: label, exact: true }).click();
@@ -167,12 +167,102 @@ try {
   console.log(
     'PASS pending pursuit links to source; assigned tasks persist and complete; stale edits and bid authorization rejected',
   );
+  await page.reload();
+  form = await open(page, 'Add requirement');
+  await form.getByLabel('Requirement text', { exact: true }).fill('Synthetic bid bond requirement');
+  await form
+    .getByLabel('Notice citation', { exact: true })
+    .fill('Synthetic notice section 4.2, page 18');
+  await form.getByLabel('Requirement owner', { exact: true }).selectOption(user);
+  await form.getByLabel('Follow-up status', { exact: true }).selectOption('missing_information');
+  await save(form, 'Add requirement', 'Requirement saved');
+  const getRequirement = async () =>
+    (
+      await db.query(
+        'select * from public.pursuit_requirements where organization_id=$1 and pursuit_id=$2',
+        [org, pursuit.id],
+      )
+    ).rows[0];
+  const requirement = await getRequirement();
+  assert(requirement);
+  assert.equal(requirement.owner_user_id, user);
+  assert.equal(requirement.status, 'missing_information');
+  await page.reload();
+  await expect(page.locator(`#requirement-${requirement.id}`)).toContainText(
+    'Synthetic notice section 4.2, page 18',
+  );
+  await stale.reload();
+  const staleRequirement = await open(stale, 'Edit requirement');
+  await staleRequirement
+    .getByLabel('Requirement text', { exact: true })
+    .fill('Stale requirement must not win');
+  form = await open(page, 'Edit requirement');
+  await form.getByLabel('Follow-up status', { exact: true }).selectOption('blocked');
+  await save(form, 'Edit requirement', 'Requirement saved');
+  const refreshForm = await open(stale, 'Add task');
+  await refreshForm.getByLabel('Task title', { exact: true }).fill('Synthetic refresh task');
+  await save(refreshForm, 'Add task', 'Task saved');
+  await save(staleRequirement, 'Edit requirement', 'record changed');
+  await expect(staleRequirement.getByLabel('Requirement text', { exact: true })).toHaveValue(
+    'Stale requirement must not win',
+  );
+  assert.equal((await getRequirement()).status, 'blocked');
+  assert.equal((await getRequirement()).requirement, 'Synthetic bid bond requirement');
+  form = await open(page, 'Add requirement');
+  await form.getByLabel('Requirement text', { exact: true }).fill('Rejected owner');
+  await form.getByLabel('Notice citation', { exact: true }).fill('Synthetic citation');
+  const foreignOwner = randomUUID();
+  await form
+    .getByLabel('Requirement owner', { exact: true })
+    .evaluate(
+      (element, value) => element.add(new Option('Unavailable owner', value)),
+      foreignOwner,
+    );
+  await form.getByLabel('Requirement owner', { exact: true }).selectOption(foreignOwner);
+  await save(form, 'Add requirement', 'Choose an active organization member');
+  await form.getByLabel('Requirement owner', { exact: true }).selectOption(user);
+  await form.locator('input[name="pursuit_id"]').evaluate((element, value) => {
+    element.value = value;
+  }, randomUUID());
+  await save(form, 'Add requirement', 'Could not save');
+  assert.equal(
+    (
+      await db.query(
+        'select count(*)::int as n from public.pursuit_requirements where organization_id=$1 and pursuit_id=$2',
+        [org, pursuit.id],
+      )
+    ).rows[0].n,
+    1,
+  );
+  await db.query("update public.pursuit_requirements set status='compliant' where id=$1", [
+    requirement.id,
+  ]);
+  await page.reload();
+  await expect(page.locator(`#requirement-${requirement.id}`)).toContainText(
+    'Follow-up: Needs review',
+  );
+  await expect(page.locator(`#requirement-${requirement.id}`)).not.toContainText('compliant');
+  console.log(
+    'PASS cited requirements persist with owners; stale edits, invalid owners and unavailable parents rejected; arbitrary legacy status cannot claim compliance',
+  );
+  await open(stale, 'Edit task');
   await db.query(
     "update public.organization_memberships set role='viewer' where organization_id=$1 and user_id=$2",
     [org, user],
   );
   await save(staleTask, 'Edit task', 'Check capture access');
+  await save(staleRequirement, 'Edit requirement', 'Check capture access');
   await page.reload();
+  await expect(page.locator('details[aria-label="Add requirement"]')).toHaveCount(0);
+  await expect(page.locator('details[aria-label="Edit requirement"]')).toHaveCount(0);
+  await expect(page.locator(`#requirement-${requirement.id}`)).toBeVisible();
+  assert(
+    (
+      await client
+        .from('pursuit_requirements')
+        .insert({ organization_id: org, pursuit_id: pursuit.id, requirement: 'forbidden' })
+    ).error,
+  );
   await expect(page.locator('details[aria-label="Add task"]')).toHaveCount(0);
   await expect(page.locator('details[aria-label="Edit task"]')).toHaveCount(0);
   assert((await client.from('opportunities').insert({ organization_id: org, title: label })).error);
@@ -190,6 +280,10 @@ try {
   );
 } finally {
   if (browser) await browser.close();
+  await db.query(
+    'delete from public.pursuit_requirements where organization_id=$1 and pursuit_id in (select p.id from public.pursuits p join public.opportunities o on o.id=p.opportunity_id and o.organization_id=p.organization_id where o.organization_id=$1 and o.title=$2)',
+    [org, label],
+  );
   await db.query(
     'delete from public.pursuit_tasks where organization_id=$1 and pursuit_id in (select p.id from public.pursuits p join public.opportunities o on o.id=p.opportunity_id and o.organization_id=p.organization_id where o.organization_id=$1 and o.title=$2)',
     [org, label],

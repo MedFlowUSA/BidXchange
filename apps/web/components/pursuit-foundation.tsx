@@ -66,7 +66,11 @@ export default function PursuitFoundation({
         <div className="company-grid">
           {pursuitSections.map((title) => (
             <section className="panel" key={title}>
-              <h3>{title}</h3>
+              <h3>
+                {!demo && title === 'Compliance matrix'
+                  ? 'Evidence-linked compliance decisions'
+                  : title}
+              </h3>
               <p>
                 {title === 'Submission record'
                   ? 'Not submitted. No automatic submission action.'

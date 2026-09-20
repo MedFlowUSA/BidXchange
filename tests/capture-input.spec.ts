@@ -1,6 +1,35 @@
 import { expect, test } from '@playwright/test';
-import { opportunityInput, taskInput, pursuitInput } from '../apps/web/lib/capture-input';
+import {
+  opportunityInput,
+  taskInput,
+  pursuitInput,
+  requirementInput,
+} from '../apps/web/lib/capture-input';
 const org = '10000000-0000-4000-8000-000000000001';
+test('requirements need citations and versioned edits; no approved state or browser authority is accepted', () => {
+  const record = {
+    organization_id: org,
+    pursuit_id: org,
+    record_id: '',
+    updated_at: '',
+    requirement: 'Provide a bid bond',
+    citation: 'Notice section 4.2, page 18',
+    owner_user_id: '',
+    status: 'missing_information',
+  };
+  expect(requirementInput.parse({ ...record, verified_by: org, decision: 'bid' })).toEqual(record);
+  for (const change of [
+    { citation: ' ' },
+    { requirement: '' },
+    { requirement: 'x'.repeat(4001) },
+    { status: 'compliant' },
+    { status: 'approved' },
+    { record_id: org },
+    { owner_user_id: 'foreign' },
+    { pursuit_id: '' },
+  ])
+    expect(requirementInput.safeParse({ ...record, ...change }).success).toBe(false);
+});
 const opportunity = {
   organization_id: org,
   record_id: '',

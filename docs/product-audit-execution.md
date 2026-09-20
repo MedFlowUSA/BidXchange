@@ -61,3 +61,7 @@ Real staging administrator/browser tests passed creation/reload, verification st
 ## Manual intake and task workflow
 
 Administrators and capture managers can now save source-backed opportunities, correct records with stale-write protection, open a pending pursuit planning workspace, and create/assign/update tasks. The hosted staging journey passed with a real synthetic capture-manager session, including role revocation and database rejection of bid authorization. The regression suite passed all 97 tests. See [capture workflow](capture-workflow.md) for permissions, validation and remaining scope. This increment requires no migration and does not enable the human decision, proposal submission or AI activation workflows.
+
+## Requirements register
+
+Pursuit pages now support cited requirements, active-member owners and explicit review/missing-information/blocker states. Saved requirements are scoped to their pursuit and tenant, and edits compare the original record version. Capture forms now preserve the version associated with their draft across unrelated page refreshes. No status certifies compliance or authorizes a bid. See [requirements register](requirements-register.md) for scope and validation; evidence-linked qualification and human decisions remain next-stage work.

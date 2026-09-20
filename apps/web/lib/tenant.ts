@@ -122,6 +122,7 @@ export async function loadTenant(
     data.opportunities = merge(data.opportunities, recordContext.opportunities);
     data.pursuits = merge(data.pursuits, recordContext.pursuits);
     data.tasks = merge(data.tasks, recordContext.tasks);
+    data.requirements = recordContext.requirements ?? [];
   }
   return { account, data };
 }
