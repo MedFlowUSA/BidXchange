@@ -7,6 +7,7 @@ import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import PursuitDecisionBrief from './pursuit-decision-brief';
+import EvidenceStressTest from './evidence-stress-test';
 import PursuitDecision from './pursuit-decision';
 import RequirementResolution from './requirement-resolution';
 import TodayTaskQueue from './today-task-queue';
@@ -267,6 +268,13 @@ export default function TenantWorkspace({
                 }
               >
                 {pursuit && <PursuitDecisionBrief data={data} pursuitId={pursuit.id} />}
+                {pursuit && (
+                  <EvidenceStressTest
+                    key={`${data.organization.id}:${pursuit.id}`}
+                    data={data}
+                    pursuitId={pursuit.id}
+                  />
+                )}
                 <section className="panel" aria-labelledby="requirements-heading">
                   <h2 id="requirements-heading">Requirements and gaps</h2>
                   <p>

@@ -198,6 +198,23 @@ try {
   await save();
   await expect(resolution).toContainText('Supported by reviewed evidence');
   await expect(brief).toContainText('Requirement review: Supported by reviewed evidence');
+  const stress = page.getByRole('region', { name: 'What if your evidence falls through?' });
+  await stress.getByText('Open evidence stress test', { exact: true }).click();
+  await stress.getByRole('checkbox').check();
+  await expect(stress.getByRole('status')).toContainText(
+    'Affected requirements: 1. Without other loaded, currently approved evidence in this scenario: 1.',
+  );
+  await expect(stress.getByRole('link')).toHaveAttribute('href', `#requirement-${requirement}`);
+  await expect(resolution).toContainText('Supported by reviewed evidence');
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await stress.getByRole('button', { name: 'Reset scenario' }).click();
+  await expect(stress.getByRole('status')).toContainText('Select evidence');
+  await stress.getByRole('checkbox').check();
+  await page.reload();
+  await stress.getByText('Open evidence stress test', { exact: true }).click();
+  await expect(stress.getByRole('checkbox')).not.toBeChecked();
+  await page.setViewportSize({ width: 1440, height: 900 });
   await expect(
     page.getByRole('region', { name: 'Bid/no-bid decision', exact: true }),
   ).toContainText('Review again:');
@@ -284,6 +301,9 @@ try {
   await expect(resolution).toContainText('Needs another review');
   await expect(resolution.getByText('Resolve requirement', { exact: true })).toHaveCount(0);
   await expect(card).not.toContainText('Private synthetic evidence notes');
+  await stress.getByText('Open evidence stress test', { exact: true }).click();
+  await expect(stress.getByRole('checkbox')).toHaveCount(0);
+  await expect(stress).not.toContainText(label);
   assert(
     (
       await client

@@ -2339,6 +2339,50 @@ a.nav-item {
 .evidence-use-note p {
   margin: 8px 0 0;
 }
+.evidence-stress {
+  overflow-wrap: anywhere;
+}
+.evidence-stress p {
+  margin: 12px 0;
+}
+.evidence-stress summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.stress-choices {
+  border: 1px solid #dce2ec;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  min-width: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.stress-choices label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+}
+.stress-choices input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin-top: 3px;
+}
+.stress-choices small {
+  display: block;
+  color: #526078;
+  margin-top: 4px;
+}
+.stress-result {
+  background: #edf3ff;
+  color: #15396b;
+  border-left: 3px solid #2456c9;
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 4px;
+}
 .decision-brief {
   overflow-wrap: anywhere;
 }

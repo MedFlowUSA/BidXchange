@@ -24,6 +24,10 @@ Validation: 13 evidence/readiness/tenant-record regressions pass, as do type che
 
 ## Remaining acceptance criteria
 
+### Evidence stress test
+
+Pursuit pages now offer a temporary scenario for losing one or several evidence records. Users can identify shared dependencies, see which affected requirements retain another loaded current approval, and return to the requirement register for follow-up. The feature uses authorized snapshots without changing saved reviews or decisions. See [the evidence stress-test report](evidence-stress-test.md) for validation, visibility limits and proposed extensions.
+
 ### Renewal follow-up increment
 
 Today and Company now show an authorized-view renewal queue for expired evidence and dates within 60 days, with owners and direct evidence-review links. Verified, otherwise supported claims automatically display as expiring within that window; missing verification still displays as needing review. Saved verification is never rewritten by these reminders. Urgent renewal dates are ordered before undated review work, and equal-priority evidence is sorted by expiration date.
