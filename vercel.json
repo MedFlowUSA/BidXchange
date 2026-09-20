@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run build && node scripts/ai-provider-check.mjs",
+  "buildCommand": "npm run build && node scripts/ai-provider-check.mjs --check-production",
   "installCommand": "npm ci",
   "env": {
     "BIDXCHANGE_AI_ENABLED": "true",
@@ -9,7 +9,6 @@
     "BIDXCHANGE_AI_DAILY_ORG_LIMIT": "50",
     "BIDXCHANGE_AI_DAILY_USER_LIMIT": "10",
     "OPENAI_MODEL": "gpt-5.6-luna",
-    "BIDXCHANGE_AI_PROVIDER_CHECK": "true",
     "BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED": "true",
     "BIDXCHANGE_DECISIONS_ENABLED": "true",
     "BIDXCHANGE_RESOLUTIONS_ENABLED": "true"

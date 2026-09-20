@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 // Temporary opt-in deployment check. Never logs keys, prompts or tenant data.
-if (process.env.BIDXCHANGE_AI_PROVIDER_CHECK === 'true') {
+if (process.argv.includes('--check-production')) {
   try {
     if (process.env.VERCEL_ENV !== 'production' || !process.env.OPENAI_API_KEY)
       throw new Error('configuration');
