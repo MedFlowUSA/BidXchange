@@ -3,5 +3,8 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
+  "env": {
+    "BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED": "true"
+  },
   "outputDirectory": "apps/web/.next"
 }

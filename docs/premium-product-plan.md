@@ -34,7 +34,7 @@ Eight focused readiness/input tests pass, covering the 60/61-day boundary, expir
 
 ### Data model and decision workflow still required
 
-The next increment is implemented and staged: evidence applicability and proposal-use reviews for a specific fact version and pursuit requirement. Production activation awaits the named migrations and feature-flag approval; see [the release report](evidence-use-release.md). This provides pair-level approval and invalidation, not whole-proposal authorization or complete contextual qualification.
+The next increment is implemented and staged: evidence applicability and proposal-use reviews for a specific fact version and pursuit requirement. Production migrations and feature-flag activation have been approved, and migrations are installed; see [the release report](evidence-use-release.md). This provides pair-level approval and invalidation, not whole-proposal authorization or complete contextual qualification.
 
 - Typed repeatable claims, applicability decisions and explicit field-level requiredness by pursuit context.
 - Supporting-document relationships, scanned uploads, version history and authorized downloads.
