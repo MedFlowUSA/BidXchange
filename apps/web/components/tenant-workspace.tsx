@@ -9,6 +9,7 @@ import PursuitFoundation from './pursuit-foundation';
 import PursuitDecisionBrief from './pursuit-decision-brief';
 import BidReview from './bid-review';
 import NoticeExcerptReview from './notice-excerpt-review';
+import ResponsePackages from './response-package';
 import EvidenceStressTest from './evidence-stress-test';
 import PursuitDecision from './pursuit-decision';
 import RequirementResolution from './requirement-resolution';
@@ -302,14 +303,14 @@ export default function TenantWorkspace({
                 {pursuit && <PursuitDecisionBrief data={data} pursuitId={pursuit.id} />}
                 {pursuit && (
                   <EvidenceStressTest
-                    key={`${data.organization.id}:${pursuit.id}`}
+                    key={`stress:${data.organization.id}:${pursuit.id}`}
                     data={data}
                     pursuitId={pursuit.id}
                   />
                 )}
                 {capture && (
                   <NoticeExcerptReview
-                    key={`${org.id}:${recordId}`}
+                    key={`notice:${org.id}:${recordId}`}
                     data={data}
                     pursuitId={recordId}
                   />
@@ -386,6 +387,11 @@ export default function TenantWorkspace({
                   ))}
                   {capture && <RequirementForm data={data} pursuitId={recordId} />}
                 </section>
+                <ResponsePackages
+                  key={`response:${org.id}:${recordId}`}
+                  data={data}
+                  pursuitId={recordId}
+                />
                 <section className="panel" id="pursuit-tasks">
                   <h2>Tasks</h2>
                   {data.tasks

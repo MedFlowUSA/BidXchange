@@ -36,6 +36,7 @@ export default function BidReview({ data, pursuitId }: { data: TenantData; pursu
         <Link href="#decision-brief-heading">2. Evidence and gaps</Link>
         <Link href="#pursuit-tasks">3. Assigned actions</Link>
         <Link href="#bid-decision">4. Human decision</Link>
+        <Link href="#response-packages">5. Response package</Link>
       </nav>
       <p>
         <strong>{review.rows.length}</strong> visible requirements ·{' '}

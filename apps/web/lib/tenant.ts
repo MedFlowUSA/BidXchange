@@ -133,6 +133,18 @@ export async function loadTenant(
     data.resolutionHistory = recordContext.resolutionHistory;
   }
   data.documentsEnabled = process.env.BIDXCHANGE_DOCUMENTS_ENABLED === 'true';
+  if (record?.kind === 'pursuit') {
+    const packages = await db
+      .from('proposal_sections')
+      .select('id,title,content,status,updated_at')
+      .eq('organization_id', id)
+      .eq('pursuit_id', record.id)
+      .like('title', 'RFI response:%')
+      .order('updated_at', { ascending: false })
+      .limit(21);
+    if (packages.error) throw new Error('Response drafts could not be loaded. Please retry.');
+    data.responsePackages = packages.data;
+  }
   if (
     process.env.BIDXCHANGE_SOURCES_ENABLED === 'true' &&
     (next.startsWith('/opportunities') || next.startsWith('/dashboard'))

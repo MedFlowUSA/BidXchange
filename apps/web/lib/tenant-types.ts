@@ -47,6 +47,7 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  responsePackages?: import('./response-package').SavedResponsePackage[];
   sourceAttention?: number;
   sourceIssue?: boolean;
   sourceProvenance?: { opportunity_id: string; change_pending: boolean }[];

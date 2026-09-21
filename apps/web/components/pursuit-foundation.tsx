@@ -68,23 +68,25 @@ export default function PursuitFoundation({
           first; an authorized human must confirm the decision and submission process.
         </p>
         <div className="company-grid">
-          {pursuitSections.map((title) => (
-            <section className="panel" key={title}>
-              <h3>
-                {!demo && title === 'Compliance matrix'
-                  ? 'Evidence-linked compliance decisions'
-                  : title}
-              </h3>
-              <p>
-                {title === 'Submission record'
-                  ? 'Not submitted. No automatic submission action.'
-                  : title === 'Activity history'
-                    ? 'Workflow activity is shown below when available.'
-                    : 'Assignment and review controls are planned. This section does not report whether saved records exist.'}
-              </p>
-              <span className="outline-tag">Foundation</span>
-            </section>
-          ))}
+          {pursuitSections
+            .filter((title) => demo || title !== 'Proposal sections')
+            .map((title) => (
+              <section className="panel" key={title}>
+                <h3>
+                  {!demo && title === 'Compliance matrix'
+                    ? 'Evidence-linked compliance decisions'
+                    : title}
+                </h3>
+                <p>
+                  {title === 'Submission record'
+                    ? 'Not submitted. No automatic submission action.'
+                    : title === 'Activity history'
+                      ? 'Workflow activity is shown below when available.'
+                      : 'Assignment and review controls are planned. This section does not report whether saved records exist.'}
+                </p>
+                <span className="outline-tag">Foundation</span>
+              </section>
+            ))}
         </div>
       </details>
     </section>

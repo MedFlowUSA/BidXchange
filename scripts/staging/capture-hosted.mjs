@@ -60,6 +60,7 @@ try {
   assert(local || bypass);
   browser = await chromium.launch({ channel: 'msedge', headless: true });
   const context = await browser.newContext();
+  context.setDefaultTimeout(30000);
   await context.addCookies([
     ...(bypass
       ? [
@@ -281,6 +282,83 @@ try {
   console.log(
     'PASS cited requirements persist with owners; stale edits, invalid owners and unavailable parents rejected; arbitrary legacy status cannot claim compliance',
   );
+  await page.getByRole('button', { name: 'Create RFI response draft' }).click();
+  let responseForm = page.getByRole('form', { name: 'Edit RFI response' });
+  await responseForm.getByLabel('Draft name', { exact: true }).fill('Synthetic response');
+  await responseForm
+    .getByLabel('Response overview', { exact: true })
+    .fill('Synthetic internal overview — not a submission.');
+  await responseForm
+    .getByLabel('Response to requirement 1', { exact: true })
+    .fill('Synthetic answer preserves the notice conditions.');
+  await save(responseForm, 'Save RFI draft', 'Response draft saved');
+  const getResponse = async () =>
+    (
+      await db.query(
+        "select * from public.proposal_sections where organization_id=$1 and pursuit_id=$2 and title='RFI response: Synthetic response'",
+        [org, pursuit.id],
+      )
+    ).rows[0];
+  const savedResponse = await getResponse();
+  assert(savedResponse);
+  await page.reload();
+  await page.getByRole('button', { name: 'Edit this draft' }).click();
+  responseForm = page.getByRole('form', { name: 'Edit RFI response' });
+  await expect(responseForm.getByLabel('Response to requirement 1', { exact: true })).toHaveValue(
+    'Synthetic answer preserves the notice conditions.',
+    { timeout: 20000 },
+  );
+  for (const format of ['PDF', 'Word']) {
+    const downloadEvent = page.waitForEvent('download');
+    await page.getByRole('button', { name: `Download saved draft ${format}` }).click();
+    const downloaded = await downloadEvent;
+    const stream = await downloaded.createReadStream();
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    const bytes = Buffer.concat(chunks);
+    assert(
+      bytes.subarray(0, format === 'PDF' ? 4 : 2).toString() === (format === 'PDF' ? '%PDF' : 'PK'),
+    );
+  }
+  const exportUrl = new URL('/api/response-packages/export', base);
+  console.log('PASS response save/reload and actual PDF/Word browser downloads');
+  // Use the exact PostgREST timestamp representation used by the application.
+  const exportRecord = (
+    await client.from('proposal_sections').select('updated_at').eq('id', savedResponse.id).single()
+  ).data;
+  assert(exportRecord);
+  exportUrl.search = new URLSearchParams({
+    organization: org,
+    pursuit: pursuit.id,
+    package: savedResponse.id,
+    version: exportRecord.updated_at,
+    format: 'pdf',
+  }).toString();
+  if (local) assert.equal((await fetch(exportUrl)).status, 401);
+  const foreignUrl = new URL(exportUrl);
+  foreignUrl.searchParams.set('organization', randomUUID());
+  assert.equal((await page.request.get(foreignUrl.toString())).status(), 404);
+  const responseStale = await context.newPage();
+  await responseStale.goto(pursuitUrl);
+  await responseStale.getByRole('button', { name: 'Edit this draft' }).click();
+  const staleResponseForm = responseStale.getByRole('form', { name: 'Edit RFI response' });
+  await staleResponseForm
+    .getByLabel('Response overview', { exact: true })
+    .fill('Stale response must not overwrite');
+  await responseForm
+    .getByLabel('Response overview', { exact: true })
+    .fill('Updated synthetic overview');
+  await save(responseForm, 'Save RFI draft', 'Response draft saved');
+  await save(staleResponseForm, 'Save RFI draft', 'saved draft changed');
+  await expect(staleResponseForm.getByLabel('Response overview', { exact: true })).toHaveValue(
+    'Stale response must not overwrite',
+  );
+  assert.equal((await page.request.get(exportUrl.toString())).status(), 409);
+  assert.equal(JSON.parse((await getResponse()).content).summary, 'Updated synthetic overview');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  console.log(
+    'PASS response save/reload, PDF and Word downloads, anonymous/foreign denial, stale exports/edits and mobile layout',
+  );
   await open(stale, 'Edit task');
   await db.query(
     "update public.organization_memberships set role='viewer' where organization_id=$1 and user_id=$2",
@@ -288,10 +366,12 @@ try {
   );
   await save(staleTask, 'Edit task', 'Check capture access');
   await save(staleRequirement, 'Edit requirement', 'Check capture access');
+  await save(staleResponseForm, 'Save RFI draft', 'Capture or administrator access');
   await page.reload();
   await expect(page.locator('details[aria-label="Add requirement"]')).toHaveCount(0);
   await expect(page.locator('details[aria-label="Edit requirement"]')).toHaveCount(0);
   await expect(page.locator('#notice-intake')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Create RFI response draft' })).toHaveCount(0);
   await expect(page.locator(`#requirement-${requirement.id}`)).toBeVisible();
   assert(
     (
@@ -317,6 +397,10 @@ try {
   );
 } finally {
   if (browser) await browser.close();
+  await db.query(
+    'delete from public.proposal_sections where organization_id=$1 and pursuit_id in (select p.id from public.pursuits p join public.opportunities o on o.id=p.opportunity_id and o.organization_id=p.organization_id where o.organization_id=$1 and o.title=$2)',
+    [org, label],
+  );
   await db.query(
     'delete from public.pursuit_requirements where organization_id=$1 and pursuit_id in (select p.id from public.pursuits p join public.opportunities o on o.id=p.opportunity_id and o.organization_id=p.organization_id where o.organization_id=$1 and o.title=$2)',
     [org, label],

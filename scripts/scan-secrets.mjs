@@ -18,7 +18,7 @@ const patterns = [
 const failures = [];
 for (const file of new Set(files)) {
   if (
-    /\.(png|jpg|ico|woff2?|pdf)$/.test(file) ||
+    /\.(png|jpg|ico|woff2?|ttf|otf|pdf)$/.test(file) ||
     file === 'scripts/scan-secrets.mjs' ||
     file === 'package-lock.json'
   )
