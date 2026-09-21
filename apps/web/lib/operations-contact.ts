@@ -4,4 +4,4 @@ export const operationsContact = {
   email: 'mrodriguez@oaisinc.com',
 } as const;
 
-export const demoContactHref = `mailto:${operationsContact.email}?subject=${encodeURIComponent('BidXchange demo request')}`;
+export const demoContactHref = `mailto:${operationsContact.email}?subject=${encodeURIComponent('BidXchange bid review request')}`;

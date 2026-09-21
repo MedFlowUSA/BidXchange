@@ -48,16 +48,16 @@ try {
   ]);
   const page = await context.newPage();
   await page.goto(base);
-  const form = page.getByRole('form', { name: 'Request a demo' });
+  const form = page.getByRole('form', { name: 'Request a bid review' });
   await expect(form).toBeVisible();
   await form.getByLabel('Full name', { exact: true }).fill('Synthetic Intake Test');
   await form.getByLabel('Work email', { exact: true }).fill(email);
   await form.getByLabel('Company name', { exact: true }).fill(`Synthetic ${run}`);
   await form
-    .getByLabel('What would you like help with?', { exact: false })
+    .getByLabel('Trade, geographic market, agencies or opportunity link', { exact: false })
     .fill('Synthetic staging request. No email should be sent.');
   await form.getByRole('checkbox').check();
-  await form.getByRole('button', { name: 'Request a demo' }).click();
+  await form.getByRole('button', { name: 'Request a bid review' }).click();
   await expect(form.getByRole('status')).toContainText('Your request was saved', {
     timeout: 20000,
   });

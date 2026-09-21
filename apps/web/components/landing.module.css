@@ -11,17 +11,18 @@
   grid-template-columns: 1.1fr 1fr;
 }
 .hero h1 {
-  font-size: clamp(42px, 4.3vw, 62px);
+  font-size: clamp(40px, 3.8vw, 54px);
   line-height: 1.08;
   letter-spacing: -2.8px;
+  text-wrap: balance;
 }
 .hero p {
   max-width: 460px;
 }
 .landing .heroNote {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.7;
-  max-width: 340px;
+  max-width: 460px;
   margin-top: 26px;
 }
 .hero .visual {
@@ -33,7 +34,7 @@
 .visual figure figcaption {
   position: static;
   padding: 12px 18px;
-  font-size: 10px;
+  font-size: 12px;
   border-top: 1px solid #e7ebf1;
   line-height: 1.6;
   color: #bac9df;
@@ -44,6 +45,111 @@
   max-width: 1160px;
   margin: auto;
   padding: 88px 32px;
+}
+.definition,
+.passport {
+  max-width: 1160px;
+  margin: auto;
+  padding: 44px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+}
+.definition {
+  border-bottom: 1px solid #dbe1eb;
+}
+.definition p {
+  font-size: 16px;
+}
+.definition strong {
+  color: #101b36;
+}
+.passport {
+  background: #f3f5f9;
+  border-radius: 12px;
+  padding-block: 48px;
+}
+.passport h2 {
+  margin-block: 16px 22px;
+}
+.passport p,
+.questions > div > p {
+  font-size: 15px;
+  margin-block: 18px;
+}
+.questions > div > h3 {
+  margin-top: 32px;
+}
+.recordList {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+.recordList li {
+  padding: 9px 0 9px 5px;
+}
+.recordList li::marker {
+  color: #315cff;
+}
+.expandable {
+  border-top: 1px solid #cdd5e2;
+  padding: 20px 0;
+  font-size: 14px;
+}
+.expandable summary {
+  cursor: pointer;
+  font-weight: 650;
+  line-height: 1.6;
+}
+.expandable p {
+  margin-top: 16px;
+}
+.problemGrid,
+.steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 44px;
+  margin-top: 28px;
+}
+.problemGrid h3 {
+  font-size: 18px;
+}
+.steps {
+  list-style: none;
+  padding: 0;
+  counter-reset: none;
+}
+.steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.steps li > span {
+  color: #315cff;
+  font-size: 14px;
+  font-weight: 700;
+  padding-top: 3px;
+}
+.steps p {
+  margin-top: 8px;
+  font-size: 14px;
+}
+.boundary {
+  padding: 20px 24px;
+  border-left: 3px solid #bd8732;
+  background: #f7f5ee;
+  margin-top: 32px;
+  font-size: 14px;
+}
+.statusGroup {
+  margin-top: 24px;
+}
+.statusGroup summary {
+  font-size: 16px;
+}
+.passport + .questions {
+  padding-top: 72px;
 }
 .sectionIntro {
   display: flex;
@@ -237,7 +343,7 @@
   font-size: 12px;
 }
 .legal {
-  font-size: 11px;
+  font-size: 12px;
   color: #697588;
   margin: 24px 0;
 }
@@ -254,7 +360,7 @@
   gap: 20px;
   border-top: 1px solid #e7ebf1;
   padding-top: 18px;
-  font-size: 10px;
+  font-size: 12px;
   color: #697588;
 }
 @media (max-width: 1020px) {
@@ -271,7 +377,7 @@
     margin-inline: auto;
   }
   .hero h1 {
-    font-size: 56px;
+    font-size: 48px;
   }
   .hero .visual {
     max-width: 560px;
@@ -293,7 +399,19 @@
     transform: none;
   }
   .visual figure figcaption {
-    font-size: 9px;
+    font-size: 12px;
+  }
+  .definition,
+  .passport {
+    grid-template-columns: 1fr;
+    padding: 36px 6%;
+    gap: 20px;
+    border-radius: 0;
+  }
+  .problemGrid,
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
   .workspace,
   .questions,

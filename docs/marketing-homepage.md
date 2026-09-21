@@ -1,5 +1,7 @@
 # Public marketing homepage — implementation and launch requirements
 
+Current public copy and feature-status report: [September 21 landing-page revision](landing-page-specificity-2026-09-21.md). The sections below retain historical implementation and launch context; their old disabled-feature and contact statements are superseded by current release reports.
+
 ## Outcome
 
 `/` now renders a public BidXchange marketing homepage instead of redirecting to the fictional demo. The existing logo and icon, authenticated routes, demo local storage, tenant loaders, Supabase policies, authentication redirects and old-domain redirect are preserved.

@@ -14,7 +14,7 @@
   gap: 12px;
   padding: 19px 24px;
   border-bottom: 1px solid #ffffff18;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 1.2px;
   color: #c4cfdf;
 }
@@ -54,7 +54,7 @@
 .columns {
   display: flex;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 1px;
   color: #657185;
   padding: 19px 0 12px;
@@ -75,7 +75,7 @@
 }
 .row small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   color: #677487;
   margin-top: 5px;
   line-height: 1.5;
@@ -84,7 +84,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 9px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .reviewed {
@@ -158,7 +158,7 @@
 @media (max-width: 450px) {
   .top {
     padding-inline: 16px;
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 0.5px;
   }
   .heading {
@@ -170,16 +170,17 @@
   }
   .row {
     gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
   }
   .row strong {
-    font-size: 11px;
+    font-size: 14px;
   }
   .row small {
-    font-size: 9px;
-    max-width: 155px;
+    font-size: 12px;
   }
   .row > span {
-    font-size: 8px;
+    font-size: 12px;
   }
   .decision {
     padding: 20px 18px;

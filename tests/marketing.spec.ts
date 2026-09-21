@@ -1,11 +1,65 @@
 import { test, expect } from '@playwright/test';
 
+test('specific deliverables and manual boundaries are discoverable by keyboard', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: 'What BidXchange is' })).toContainText(
+    'A bid board shows you opportunities.',
+  );
+  await expect(page.locator('#capabilities')).toContainText('potential-disqualifier review');
+  await expect(page.locator('#capabilities')).toContainText('PDF or Word working draft');
+  await expect(page.locator('#company-passport')).toContainText('Insurance, bonding');
+  await expect(page.locator('#workflow ol > li')).toHaveCount(6);
+  await expect(page.locator('#workflow')).toContainText(
+    'BidXchange does not automatically submit bids.',
+  );
+  for (const label of ['Available now', 'Limited or manual', 'Not currently enabled']) {
+    const summary = page.locator('summary').filter({ hasText: label });
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(summary.locator('..')).toHaveAttribute('open', '');
+  }
+  await expect(page.getByText(/The SAM.gov connector is implemented/)).toBeVisible();
+  await expect(page.locator('#workflow')).toContainText('production intake remains manual');
+  await expect(page.locator('#ai-assistance')).toContainText(
+    'General mode does not attach private company records.',
+  );
+  await expect(page.locator('#ai-assistance')).toContainText('AI cannot approve pricing');
+  await expect(page.locator('#ai-assistance')).toContainText(
+    'Create a response outline for this solicitation.',
+  );
+  await expect(page.locator('#ai-assistance')).not.toContainText('Create an RFP');
+  await expect(page.locator('#questions')).toContainText(
+    'without a full internal capture, compliance and proposal department',
+  );
+  for (const summary of await page.locator('#questions summary').all()) {
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(summary.locator('..')).toHaveAttribute('open', '');
+  }
+  await expect(page.locator('#security')).toContainText(
+    'organization membership and role-based access',
+  );
+  await expect(page.locator('#questions')).toContainText('does not guarantee eligibility');
+  await expect(page.locator('#request-demo')).toContainText(
+    'Bring one opportunity. See the decision process.',
+  );
+  await expect(page.locator('#request-demo')).toContainText('Do not email confidential records.');
+  for (const href of ['#capabilities', '#workflow', '#questions', '#request-demo']) {
+    await expect(page.locator(href)).toHaveCount(1);
+    await expect(page.locator(`a[href="${href}"]`).first()).toHaveAttribute('href', href);
+  }
+  await expect(page.locator('main')).not.toContainText('A decision you can defend.');
+  await expect(page.locator('main')).not.toContainText('Less chasing.');
+});
+
 test('root is public, accurate and separate from demo and sign-in', async ({ page }) => {
   const response = await page.goto('/');
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'A bid worth pursuing.A decision you can defend.',
+    'Know whether a government bid fits—before your team spends days preparing it.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
@@ -15,11 +69,9 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.getByRole('link', { name: 'Open Workspace', exact: true })).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText('Green Energy Solutions');
   await expect(
-    page.getByText(/Live procurement feeds\s+and proposal submission are not enabled/),
+    page.getByRole('heading', { name: 'What BidXchange organizes for each bid' }),
   ).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: /Don’t start from scratch\s*with every solicitation\./ }),
-  ).toBeVisible();
+  await expect(page.getByRole('region', { name: 'What BidXchange is' })).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
   await page.getByRole('link', { name: 'Explore the Demo', exact: true }).first().click();
   await expect(page).toHaveURL(/\/dashboard\?workspace=demo$/);
@@ -32,14 +84,20 @@ test('request CTAs offer the approved business contact without claiming delivery
   page,
 }) => {
   await page.goto('/');
-  await page.locator('main').getByRole('link', { name: 'Request a Demo', exact: true }).click();
+  await page
+    .locator('main')
+    .getByRole('link', { name: 'Request a Bid Review', exact: true })
+    .click();
   await expect(page).toHaveURL(/#request-demo$/);
   const contact = page.getByRole('region', { name: 'Demo contact' });
   await expect(
-    contact.getByRole('link', { name: 'Email Manuel to request a demo' }),
-  ).toHaveAttribute('href', 'mailto:mrodriguez@oaisinc.com?subject=BidXchange%20demo%20request');
+    contact.getByRole('link', { name: 'Email Manuel for a Bid Review' }),
+  ).toHaveAttribute(
+    'href',
+    'mailto:mrodriguez@oaisinc.com?subject=BidXchange%20bid%20review%20request',
+  );
   await expect(contact).toContainText('send the message there to request a walkthrough');
-  await expect(page.getByRole('form', { name: 'Request a demo' })).toHaveCount(0);
+  await expect(page.getByRole('form', { name: 'Request a bid review' })).toHaveCount(0);
   await expect(page.getByText('Demo requests are opening soon.')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
   await expect(page.getByText('Privacy — pending', { exact: true })).toBeVisible();
@@ -107,7 +165,18 @@ test('public SEO is canonical and workspace/demo pages remain noindex', async ({
   request,
 }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle('BidXchange | A Clearer Decision Before You Bid');
+  await expect(page).toHaveTitle('BidXchange | Government Bid Qualification and Pursuit Workspace');
+  const description =
+    'BidXchange helps contractors connect solicitation requirements with company qualifications, identify missing evidence, assign follow-up work and document bid/no-bid decisions.';
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', description);
+  await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
+    'content',
+    description,
+  );
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    'content',
+    await page.title(),
+  );
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     'https://bidxapp.vercel.app/',

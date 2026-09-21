@@ -9,6 +9,7 @@ import PublicWorkspaceAccess from './public-workspace-access';
 
 const links = [
   ['Capabilities', '#capabilities'],
+  ['Workflow', '#workflow'],
   ['Questions', '#questions'],
 ];
 
@@ -68,7 +69,7 @@ export default function MarketingHeader({ signedIn }: { signedIn: boolean }) {
               onClick={close}
             />
             <a href="#request-demo" className={styles.primary} onClick={close}>
-              Request a Demo <ArrowUpRight size={16} aria-hidden="true" />
+              Request a Bid Review <ArrowUpRight size={16} aria-hidden="true" />
             </a>
           </div>
         </nav>

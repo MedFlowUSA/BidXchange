@@ -7,24 +7,26 @@ export default function InterestPreview() {
   return (
     <section id="request-demo" className={styles.requestSection} aria-labelledby="request-title">
       <div className={styles.requestIntro}>
-        <span className={styles.eyebrow}>PUT THE WORKFLOW TO THE TEST</span>
-        <h2 id="request-title">From “should we bid?” to a documented decision.</h2>
+        <span className={styles.eyebrow}>REQUEST A BID REVIEW</span>
+        <h2 id="request-title">Bring one opportunity. See the decision process.</h2>
         <p>
-          Walk through a sample solicitation with Manuel Rodriguez. See how a requirement connects
-          to company evidence, an open question gets an owner, and your team records its decision.
+          Bring a public-sector opportunity your company is considering. Manuel Rodriguez will show
+          you how BidXchange organizes its requirements, connects relevant company evidence,
+          identifies unanswered questions and creates a documented next-action plan.
         </p>
       </div>
       {demoIntakeConfig() ? (
         <DemoRequestForm />
       ) : (
         <div className={styles.interestForm} role="region" aria-label="Demo contact">
-          <h3>What kind of work do you bid?</h3>
+          <h3>Arrange a walkthrough with Manuel</h3>
           <p>
-            Send your company name, trade or service, and the agencies you want to work with. Leave
-            out confidential records.
+            Send your name, company, work email, trade or service, geographic market and the
+            agencies or public entities you pursue. An opportunity link and a message are optional.
+            Do not email confidential records.
           </p>
           <a className={styles.primary} href={demoContactHref}>
-            Email Manuel to request a demo
+            Email Manuel for a Bid Review
           </a>
           <p>Opens your email app; send the message there to request a walkthrough.</p>
           <a href={demoContactHref}>{operationsContact.email}</a>

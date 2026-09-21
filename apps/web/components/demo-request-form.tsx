@@ -10,7 +10,7 @@ export default function DemoRequestForm() {
     <form
       action={action}
       className={styles.interestForm}
-      aria-label="Request a demo"
+      aria-label="Request a bid review"
       aria-describedby="demo-data-notice"
     >
       <fieldset disabled={pending || state.success}>
@@ -29,7 +29,7 @@ export default function DemoRequestForm() {
             <input name="company" autoComplete="organization" required maxLength={200} />
           </label>
           <label className={styles.fullField}>
-            What would you like help with? <span>(optional)</span>
+            Trade, geographic market, agencies or opportunity link <span>(optional)</span>
             <textarea name="message" rows={4} maxLength={1500} />
           </label>
         </div>
@@ -49,7 +49,7 @@ export default function DemoRequestForm() {
           this request.
         </label>
         <button type="submit" className={styles.primary}>
-          {pending ? 'Saving…' : state.success ? 'Request saved' : 'Request a demo'}
+          {pending ? 'Saving…' : state.success ? 'Request saved' : 'Request a bid review'}
         </button>
       </fieldset>
       <p role="status" aria-live="polite">
