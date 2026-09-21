@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { passportSteps } from '../lib/company-passport';
 import { reviewStatus } from '../lib/company-readiness';
+import { passportRecords } from '../lib/passport-records';
 import type { TenantData } from '../lib/tenant-types';
 import CompanyRecordForm from './company-record-form';
 import styles from './company-passport.module.css';
@@ -66,23 +67,24 @@ export default function CompanyPassport({ data }: { data: TenantData }) {
             </p>
           )}
           {step.items.map((suggestion) => {
-            const saved = data.facts.find(
-              (fact) =>
-                fact.fact_type === suggestion.type &&
-                fact.label.trim().toLowerCase() === suggestion.label.toLowerCase(),
-            );
+            const saved = passportRecords(data.facts, suggestion);
             return (
               <div key={suggestion.label} className={styles.item}>
-                {saved ? (
+                {saved.length ? (
                   <>
                     <h4>{suggestion.label}</h4>
                     <p>
-                      {reviewStatus(saved, data.reviewAsOf) === 'reviewed'
-                        ? 'Evidence reviewed'
-                        : 'Needs review'}{' '}
-                      · Saved company information
+                      {saved.length} related saved {saved.length === 1 ? 'record' : 'records'}.
+                      Confirm the scope and missing fields before relying on them.
                     </p>
-                    <Link href={`#fact-${saved.id}`}>Review saved information</Link>
+                    <ul>
+                      {saved.map((fact) => (
+                        <li key={fact.id}>
+                          <Link href={`#fact-${fact.id}`}>{fact.label}</Link> —{' '}
+                          {reviewStatus(fact, data.reviewAsOf).replaceAll('_', ' ')}
+                        </li>
+                      ))}
+                    </ul>
                   </>
                 ) : admin ? (
                   <CompanyRecordForm

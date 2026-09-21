@@ -16,6 +16,14 @@ export default function PursuitDecisionBrief({
       <div className="eyebrow">Before the bid/no-bid discussion</div>
       <h2 id="decision-brief-heading">What still needs a decision?</h2>
       <p>
+        <Link
+          className="button secondary"
+          href={`/pursuits/${pursuitId}/qualification?organization=${data.organization.id}`}
+        >
+          Open qualification workspace
+        </Link>
+      </p>
+      <p>
         Resolve the notice requirements below with the responsible reviewer. An evidence approval
         supports one requirement; it does not establish eligibility or authorize a bid.
       </p>

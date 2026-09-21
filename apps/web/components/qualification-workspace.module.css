@@ -1,0 +1,92 @@
+.workspace {
+  display: grid;
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.metrics > div {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  background: #f2f5fb;
+  border-radius: 12px;
+}
+.metrics strong {
+  font-size: 2rem;
+  color: #152646;
+}
+.metrics span,
+.note {
+  font-size: 0.875rem;
+  color: #53627b;
+}
+.links {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.select {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #9daec8;
+  border-radius: 8px;
+  background: white;
+  color: #152646;
+}
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+.rows {
+  display: grid;
+  gap: 20px;
+}
+.row {
+  border: 1px solid #dae2ee;
+  border-left: 4px solid #3459cc;
+  border-radius: 10px;
+  padding: 20px;
+  overflow-wrap: anywhere;
+}
+.row h3 {
+  margin-top: 0;
+}
+.row details {
+  border-top: 1px solid #dae2ee;
+  padding-top: 14px;
+  margin-top: 18px;
+}
+.row summary {
+  cursor: pointer;
+  color: #173e9d;
+  font-weight: 600;
+}
+.actions {
+  padding-left: 22px;
+}
+.actions li {
+  padding-left: 6px;
+  margin: 14px 0;
+}
+.actions p {
+  margin: 5px 0;
+}
+@media (max-width: 600px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+  .row {
+    padding: 14px;
+  }
+}
