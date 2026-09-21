@@ -4,6 +4,7 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "env": {
+    "BIDXCHANGE_RELEASES_ENABLED": "false",
     "BIDXCHANGE_AI_ENABLED": "true",
     "BIDXCHANGE_AI_DEMO_ENABLED": "false",
     "BIDXCHANGE_AI_DAILY_ORG_LIMIT": "50",

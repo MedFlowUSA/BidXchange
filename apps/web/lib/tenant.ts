@@ -133,17 +133,92 @@ export async function loadTenant(
     data.resolutionHistory = recordContext.resolutionHistory;
   }
   data.documentsEnabled = process.env.BIDXCHANGE_DOCUMENTS_ENABLED === 'true';
+  data.releaseWorkflow = {
+    enabled: process.env.BIDXCHANGE_RELEASES_ENABLED === 'true',
+    versions: [],
+    approvals: [],
+    submissions: [],
+    followups: [],
+  };
   if (record?.kind === 'pursuit') {
     const packages = await db
       .from('proposal_sections')
       .select('id,title,content,status,updated_at')
       .eq('organization_id', id)
       .eq('pursuit_id', record.id)
-      .or('title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%')
+      .or(
+        'title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%,title.like.BID response:%,title.like.SOURCES_SOUGHT response:%,title.like.CAPABILITY response:%',
+      )
       .order('updated_at', { ascending: false })
       .limit(21);
     if (packages.error) throw new Error('Response drafts could not be loaded. Please retry.');
     data.responsePackages = packages.data;
+    if (data.releaseWorkflow.enabled) {
+      const [versions, context] = await Promise.all([
+        db
+          .from('response_release_versions')
+          .select('*')
+          .eq('organization_id', id)
+          .eq('pursuit_id', record.id)
+          .order('sequence', { ascending: false })
+          .limit(21),
+        db.rpc('response_release_context', { org: id, pursuit: record.id }),
+      ]);
+      if (versions.error || context.error)
+        throw new Error('Response release workflow unavailable. Retry.');
+      const ids = versions.data.map((v) => v.id);
+      data.releaseWorkflow.context = context.data;
+      if (ids.length) {
+        const [approvals, submissions, followups, statuses] = await Promise.all([
+          db
+            .from('response_approval_history')
+            .select('*')
+            .eq('organization_id', id)
+            .in('release_id', ids)
+            .order('sequence', { ascending: false })
+            .limit(501),
+          db
+            .from('response_submission_history')
+            .select('*')
+            .eq('organization_id', id)
+            .in('release_id', ids)
+            .order('sequence', { ascending: false })
+            .limit(501),
+          db
+            .from('response_followup_history')
+            .select('*')
+            .eq('organization_id', id)
+            .in('release_id', ids)
+            .order('sequence', { ascending: false })
+            .limit(501),
+          Promise.all(
+            versions.data
+              .slice(0, 20)
+              .map((v) => db.rpc('response_release_status', { org: id, release: v.id })),
+          ),
+        ]);
+        if (
+          approvals.error ||
+          submissions.error ||
+          followups.error ||
+          statuses.some((s) => s.error)
+        )
+          throw new Error('Approval history unavailable. Retry.');
+        data.releaseWorkflow = {
+          enabled: true,
+          context: context.data,
+          versions: versions.data.slice(0, 20).map((v, i) => ({ ...v, status: statuses[i].data })),
+          approvals: approvals.data,
+          submissions: submissions.data,
+          followups: followups.data,
+          partial:
+            versions.data.length > 20 ||
+            approvals.data.length > 500 ||
+            submissions.data.length > 500 ||
+            followups.data.length > 500,
+        };
+      }
+    }
   }
   if (
     process.env.BIDXCHANGE_SOURCES_ENABLED === 'true' &&

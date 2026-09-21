@@ -44,9 +44,7 @@ export default function BidReview({ data, pursuitId }: { data: TenantData; pursu
         <strong>{review.missingOwners.length}</strong> without an owner ·{' '}
         <strong>{review.tasks.length}</strong> visible open actions
       </p>
-      <p>
-        Next: <Link href={review.next.href}>{review.next.label}</Link>
-      </p>
+
       {review.staleDecision && (
         <p role="status">
           The saved decision needs another review because its context changed or is unavailable.

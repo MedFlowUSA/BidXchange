@@ -1,0 +1,421 @@
+[
+  {
+    "title": "From opportunity to reviewed response",
+    "section": "BIDXCHANGE · USER TRAINING",
+    "subtitle": "A practical walkthrough for your first bid",
+    "cover": true,
+    "notes": "Audience: new BidXchange users and team leads. Plan for a 20–25 minute walkthrough plus a 10-minute exercise. This September 21 workflow edition distinguishes existing features from new approval and submission features awaiting production activation. Open https://bidxapp.vercel.app/ before presenting. Explain that BidXchange organizes company evidence, bid review and response drafts. A draft export is not approval or proof of submission."
+  },
+  {
+    "title": "Follow one bid through the workspace",
+    "section": "THE WORKFLOW",
+    "cards": [
+      ["01  Set up Company", "Record company details and sources.\nVerify current information."],
+      ["02  Capture and review", "Add the opportunity.\nCreate a pursuit and its requirements."],
+      ["03  Draft and export", "Create the response outline.\nComplete, review and download it."]
+    ],
+    "takeaway": "One source of company information. A separate review trail for each pursuit.",
+    "notes": "Define an opportunity as the source bid or notice. A pursuit is your team's workspace for assessing and responding to that opportunity. Company facts can be reused, but applicability and proposal-use reviews belong to specific requirements. Use the workflow in this order during the first session."
+  },
+  {
+    "title": "Sign in and choose the right workspace",
+    "section": "01 · GET STARTED",
+    "cards": [
+      ["Open the app", "Go to bidxapp.vercel.app.\nSign in with your own account."],
+      [
+        "Check your company",
+        "Confirm the selected organization before entering or editing information."
+      ],
+      [
+        "Know the demo",
+        "The public demo uses fictional data.\nReal response documents require an authorized company workspace."
+      ]
+    ],
+    "takeaway": "If your workspace or controls are missing, ask your organization administrator to check access.",
+    "notes": "Do not display credentials while presenting. A signed-in account still needs active organization membership. Never use another person's account to gain a missing control. The demo is useful for navigation, but it is not a live company workspace and does not save company response packages."
+  },
+  {
+    "title": "Learn the main navigation",
+    "section": "02 · FIND YOUR WAY",
+    "image": "dashboard-demo.png",
+    "cards": [
+      [
+        "Start with these areas",
+        "Today: open work and deadlines.\nCompany: reusable company facts.\nOpportunities: source bids.\nPursuits: review and response work.\nAssistant: questions and help."
+      ]
+    ],
+    "takeaway": "Public demo screenshot · fictional company and sample data",
+    "notes": "Point to the sidebar in the screenshot. In a live workspace, Today provides the task queue. Company is the foundation for document autofill. Opportunities and Pursuits are different stages. Documents, Reports and Settings are also available in navigation; this session focuses on the active bid-to-response workflow. Menu visibility and controls depend on access."
+  },
+  {
+    "title": "Complete Company before drafting",
+    "section": "03 · COMPANY SETUP",
+    "cards": [
+      [
+        "Identity and contacts",
+        "Legal and operating names.\nWebsite, mailing address, phone and business email.\nAuthorized representative."
+      ],
+      [
+        "Business credentials",
+        "Record public identifiers, registrations and NAICS.\nAdd relevant licenses, capabilities and service areas."
+      ],
+      [
+        "Source every record",
+        "Add an evidence reference.\nSet an owner and effective or expiration dates where applicable."
+      ]
+    ],
+    "takeaway": "Autofill uses only supported fields and current, verified, shareable facts. Always inspect the generated draft.",
+    "notes": "An administrator manages company records. Use the Company setup prompts, including address, phone and email. Unknown values should remain unknown. UEI/CAGE identifiers can be recorded under registration. Do not paste passwords, tax identifiers or account credentials into shared records. Presence in the profile alone does not establish eligibility for a bid."
+  },
+  {
+    "title": "Understand what makes a fact reusable",
+    "section": "03 · COMPANY SETUP",
+    "cards": [
+      [
+        "Capture",
+        "Save the known information and source.\nNew or corrected records need verification."
+      ],
+      [
+        "Verify",
+        "An administrator verifies the source and dates.\nVerification does not establish eligibility for a particular solicitation."
+      ],
+      [
+        "Review its use",
+        "Relevant qualification claims need current approval for the specific pursuit requirement before autofill."
+      ]
+    ],
+    "takeaway": "Editing a company record resets its verification. Expired and restricted records do not autofill shared responses.",
+    "notes": "Separate three questions: is the recorded fact supported, may workspace members see it, and does it apply to this requirement? A record can be verified without being approved for proposal use. Basic current verified identity and registration facts populate automatically. Licenses, capabilities and certifications require current applicable evidence-use approval for the pursuit. The workflow never treats a company fact as a whole-document approval. Autofill also excludes role-restricted fact types. Qualifications require current approved proposal use for the specific pursuit. Empty, unsourced, expired and unverified facts do not become claims."
+  },
+  {
+    "title": "Capture the source opportunity",
+    "section": "04 · OPPORTUNITIES",
+    "image": "opportunities-demo.png",
+    "cards": [
+      [
+        "Use Add opportunity",
+        "Enter the opportunity title.\nProvide a source URL or traceable source note.\nAdd buyer, solicitation number, scope and official deadline when known.\nSave, then open the record."
+      ]
+    ],
+    "takeaway": "Public demo screenshot · use the official notice as the source of truth",
+    "notes": "The screenshot illustrates the opportunities area, not a production record. Manual opportunity entry is the reliable path covered by this training. A title and source reference are required. Unknown dates should not be guessed. When entering a deadline, follow the form's explicit-offset and time-zone instructions. Do not claim automatic discovery or continuous SAM.gov synchronization; connector activation is a separate rollout."
+  },
+  {
+    "title": "Create a pursuit for the bid",
+    "section": "05 · PURSUITS",
+    "cards": [
+      [
+        "Open the opportunity",
+        "Read the scope, source and deadline.\nCheck whether a pursuit already exists."
+      ],
+      [
+        "Start the workspace",
+        "Choose Create planning workspace if needed.\nOpen the saved pursuit."
+      ],
+      [
+        "Organize the work",
+        "Use its requirements, evidence reviews, tasks, decision section and response packages."
+      ]
+    ],
+    "takeaway": "Creating a planning workspace keeps the decision pending; it does not authorize a bid.",
+    "notes": "Demonstrate this in an authorized training workspace, not with an unrelated production opportunity. Use the existing pursuit link when one is present to avoid parallel copies of the same work. Capture managers and administrators can create planning workspaces. All subsequent response commands must be issued from the selected pursuit so the assistant knows which bid is intended."
+  },
+  {
+    "title": "Turn notice language into requirements",
+    "section": "06 · REQUIREMENTS",
+    "cards": [
+      [
+        "Identify the source",
+        "Record Notice title and version.\nAdd the Page or section.\nPaste the relevant Source text."
+      ],
+      [
+        "Find and inspect",
+        "Choose Find possible requirements.\nCheck each candidate against the full notice and its exceptions."
+      ],
+      [
+        "Save the requirement",
+        "Confirm the wording and citation.\nAssign a requirement owner.\nUse Add requirement for anything missed."
+      ]
+    ],
+    "takeaway": "The excerpt tool finds candidate lines; it does not certify a complete requirements register.",
+    "notes": "Keep each obligation and its conditions together when pasting. Do not paste restricted company information into public-notice capture. The excerpt stays in the tab, while saved requirement wording and citations become shared workspace records. Review tables, attachments, cross-references and amendments manually. A missing candidate does not mean the notice contains no obligation."
+  },
+  {
+    "title": "Connect each requirement to evidence",
+    "section": "07 · EVIDENCE REVIEW",
+    "cards": [
+      [
+        "Choose the evidence",
+        "In the requirement, review the relevant saved company record and its source."
+      ],
+      [
+        "Record the decision",
+        "Authorized reviewers set Applicability, Proposal use, and Reason and limits."
+      ],
+      [
+        "Watch for change",
+        "Approved for this requirement is scoped approval.\nPrevious approval needs review means reassess the current sources."
+      ]
+    ],
+    "takeaway": "A task marked complete or a fact marked verified is not the same as approved proposal use.",
+    "notes": "Administrators and executive approvers perform evidence-use reviews. Capture managers prepare the requirement register and coordinate follow-up. Requirement dispositions and bid intent are separate human decisions. Explain that changes to requirements, facts or dates can invalidate prior review context. Do not use a favorable label to infer pricing approval or submission authority."
+  },
+  {
+    "title": "Assign work and record bid intent",
+    "section": "08 · TEAM WORK",
+    "cards": [
+      [
+        "Make follow-up explicit",
+        "Add a task inside the pursuit.\nAssign an active team member.\nSet the due date and status."
+      ],
+      [
+        "Use Today",
+        "Check open and overdue work.\nOpen the linked pursuit to act.\nRefresh after completing tasks."
+      ],
+      [
+        "Record the decision",
+        "Authorized decision makers choose Pursue bid, Do not bid or Reopen review, with reasons and conditions."
+      ]
+    ],
+    "takeaway": "A Pursue bid decision records intent. Final pricing, document approval and submission remain separate.",
+    "notes": "Administrators and capture managers manage pursuit tasks. Administrators and executive approvers record bid/no-bid decisions. The decision is attributed and historical; a changed review context means it needs renewed attention. Task counts and statuses support coordination rather than certification. Keep restricted information out of shared reasons and task text."
+  },
+  {
+    "title": "Choose the assistant mode for the job",
+    "section": "09 · ASK BIDXCHANGE",
+    "cards": [
+      [
+        "General questions",
+        "“Explain how a bid bond works.”\n“Help me write a professional follow-up email.”\nGeneral answers use no company records."
+      ],
+      [
+        "Workspace records",
+        "“Summarize this pursuit.”\n“What tasks are overdue?”\nInspect the returned evidence and sources."
+      ],
+      [
+        "Document commands",
+        "Open a pursuit first.\n“Create a response outline for this solicitation”\nThe selected pursuit supplies the document context in either mode."
+      ]
+    ],
+    "takeaway": "Questions are answered independently. Include needed context; never enter passwords or API keys.",
+    "notes": "Live AI availability depends on workspace activation and usage limits. The assistant has no live web browsing. Workspace answers use authorized evidence. Document creation is an explicit application action that prepares a saved outline; it does not mean the model wrote a complete proposal. The public demo assistant is separate and cannot create company response records."
+  },
+  {
+    "title": "Ask for a response, then open the draft",
+    "section": "10 · CREATE THE DOCUMENT",
+    "command": "Create a response outline for this solicitation",
+    "cards": [
+      ["1  Open the pursuit", "Use the assistant within the bid's pursuit workspace."],
+      [
+        "2  Send the command",
+        "Supports RFP, RFI, RFQ, bid, sources-sought and capability-statement outlines.\nCapture/admin access is required."
+      ],
+      [
+        "3  Open the result",
+        "Choose Open response workspace.\nFind the saved response card and select Edit this draft."
+      ]
+    ],
+    "takeaway": "This creates a contractor response outline. The buyer’s solicitation and submission instructions remain authoritative.",
+    "notes": "The exact example command is supported. Also try Draft an RFI response or Prepare an RFQ for the selected pursuit. Without a selected pursuit the app points the user to Pursuits. The resulting outline contains requirement sections and type-specific completion prompts. Narrative and pricing still need qualified human preparation. Repeated transport retries reuse the same creation request rather than overwriting another draft."
+  },
+  {
+    "title": "Check the information that fills itself",
+    "section": "11 · AUTOMATIC INFORMATION",
+    "cards": [
+      [
+        "Company",
+        "Names and website.\nSupported verified contact and registration fields.\nApproved, shareable qualifications."
+      ],
+      [
+        "Bid",
+        "Buyer and solicitation.\nSaved scope and deadline with time zone.\nNotice URL, source references and requirements."
+      ],
+      [
+        "Preview and correct",
+        "Open Automatically included: company and bid information.\nUse Update company information to fix gaps."
+      ]
+    ],
+    "takeaway": "Downloads refresh automatic values from current records; your written answers remain as saved.",
+    "notes": "Restricted, expired, unverified and future-effective facts are not copied into shared documents. Basic profile names and website come from workspace settings; sourced company facts have separate verification requirements. Missing information is flagged rather than invented. Existing drafts benefit from current automatic sections, but old manually written narrative can still contain stale values and must be reviewed. Autofill is allowlisted; it is not every company field. Downloaded working drafts refresh permitted values, while frozen release snapshots and external final-file hashes remain immutable."
+  },
+  {
+    "title": "Finish the draft before downloading",
+    "section": "12 · WRITE AND REVIEW",
+    "cards": [
+      [
+        "Write and save",
+        "Choose the response type and draft name.\nComplete the overview and each requirement answer.\nSave the draft."
+      ],
+      [
+        "Review the saved version",
+        "Choose Review saved draft.\nInspect missing answers, placeholders and changed wording.\nUse the direct edit links."
+      ],
+      [
+        "Read it end to end",
+        "Open Read complete saved draft.\nCheck the company information, evidence, answers and internal checklist."
+      ]
+    ],
+    "takeaway": "“Answers drafted” measures writing progress. It is not a compliance score or approval.",
+    "notes": "TODO/TBD and bracketed drafting prompts are flagged. Ordinary references like [1] are not treated as placeholders. A written answer whose requirement changed is not counted as drafted against current wording. Review links focus the overview or affected answer. Save edits before relying on the saved preview and downloads. If the app asks for a fresh load after saving, use Open saved response packages."
+  },
+  {
+    "title": "Export a working copy for review",
+    "section": "13 · PDF AND WORD",
+    "cards": [
+      [
+        "Save first",
+        "Downloads use saved answers.\nFinish the latest edit and open the saved response card."
+      ],
+      [
+        "Choose the format",
+        "Download saved draft PDF for a stable review copy.\nDownload saved draft Word for further editing."
+      ],
+      [
+        "Review and hand off",
+        "Check the Draft markings and internal checklist.\nObtain the required approvals and follow the buyer's submission instructions."
+      ]
+    ],
+    "takeaway": "Word edits do not sync back into BidXchange. A download does not submit anything to the buyer.",
+    "notes": "Exports include an internal review checklist and are not automatically buyer-ready. Keep the saved application draft current if changes made in Word should be reflected there. PDF may reject unsupported glyphs; Word is the alternative. Later source changes do not update files already downloaded. BidXchange does not currently perform final document approval, electronic signature or procurement-portal submission for this workflow."
+  },
+  {
+    "title": "Read readiness without assuming approval",
+    "section": "16 · REVIEW WORKFLOW",
+    "cards": [
+      [
+        "Review the saved records",
+        "Check sources, deadline and timezone.\nResolve cited requirements, evidence gaps, missing owners and stale answers."
+      ],
+      [
+        "Prepare a version",
+        "Complete the submission checklist.\nUnknown and missing items block approval.\nReview final files and calculate their hashes."
+      ],
+      [
+        "Know the state",
+        "Not ready → Needs review → internal review → final approval → authorized → submitted.\nA count is not a compliance score."
+      ]
+    ],
+    "takeaway": "Versioned approvals and submission recording require environment activation. Disabled controls explain what is unavailable.",
+    "notes": "Availability: new release workflow is staged, not yet activated in production. States are determined by records; they do not necessarily occur in this order. Needs review means a frozen context changed. Submitted means a human recorded submission; it does not verify buyer receipt. Sources may have obligations absent from the local register. Unknown forms, signatures or file limits cannot silently pass."
+  },
+  {
+    "title": "Approve the exact response version",
+    "section": "17 · HUMAN APPROVALS",
+    "cards": [
+      [
+        "Pricing and compliance",
+        "Estimator, administrator or executive: pricing.\nAdministrator or executive: compliance."
+      ],
+      [
+        "Final and submission",
+        "Administrator or executive: final response approval, then submission authorization.\nRecord rationale and conditions."
+      ],
+      [
+        "If anything changes",
+        "Changed response, checklist, source or role requires fresh review.\nReplacing an approval invalidates later gates."
+      ]
+    ],
+    "takeaway": "Approvals are attributed review records. They are not legal signatures, buyer acceptance or automatic submission.",
+    "notes": "Available only where versioned release workflow is activated. Every approval binds an immutable response snapshot, current source context and SHA-256 file manifest. A new upstream decision invalidates downstream decisions even if the upstream decision again says approved. Current implementation uses a UTC-day review boundary; next-day recording may require fresh review. The same authorized reviewer can perform multiple gates; no four-person separation of duties is enforced."
+  },
+  {
+    "title": "Hand off, submit manually, keep the receipt",
+    "section": "18 · SUBMISSION",
+    "cards": [
+      [
+        "Export the handoff",
+        "Download the internal JSON packet.\nCheck the frozen version, checklist, approvers and final-file hashes.\nKeep files in your approved storage."
+      ],
+      [
+        "Named human submits",
+        "Use the official buyer portal or delivery channel yourself.\nCheck file names, format, signatures, limits and deadline."
+      ],
+      [
+        "Record what happened",
+        "Confirm exact submitted files.\nRecord time, method, confirmation and receipt reference.\nAppend corrections or resubmissions."
+      ]
+    ],
+    "takeaway": "File bytes and portal credentials stay outside this workflow. A receipt reference is a human report, not verified delivery.",
+    "notes": "The new workflow is staged pending production approval. The handoff is JSON and includes bounded immutable history, not file attachments. Hashing occurs in the browser, without uploading selected files. Submission requires explicit confirmation by the named active submitter after current authorization. If a receipt is unavailable, record that limitation. Append corrections; never overwrite original history. Recording after the deadline or a UTC review-date change is conservatively blocked unless recording a correction to an already recorded submission. Follow-up events support questions, clarifications, interviews, best-and-final-offer requests, award/loss/cancellation, debriefs and lessons learned."
+  },
+  {
+    "title": "Use help without adding another dashboard",
+    "section": "19 · WORKSPACE GUIDE",
+    "cards": [
+      [
+        "Getting started",
+        "Open the optional 12-step guide.\nProgress reflects visible saved records, not page visits.\nDismiss it when familiar."
+      ],
+      [
+        "One next action",
+        "Review the suggested action.\nDeadline and unresolved review work come first.\nLinks open the exact record."
+      ],
+      [
+        "Reopen when needed",
+        "Choose Workspace guide in secondary navigation.\nRead role restrictions and feature status.\nUse HTML or PDF help."
+      ]
+    ],
+    "takeaway": "Primary navigation stays Today, Opportunities, Pursuits, Company and Assistant.",
+    "notes": "Guidance is optional and does not create records or grant permissions. Records and counts are scoped to the organization, current role and loaded pursuit. Global lists are bounded samples; a guide cannot certify an entire company or a complete solicitation. The HTML guide is the accessible reading alternative; the PDF uses tagged text but is not certified PDF/UA."
+  },
+  {
+    "title": "Know who owns the next action",
+    "section": "14 · ACCESS AND HANDOFFS",
+    "cards": [
+      [
+        "Administrator",
+        "Manage company records and access.\nCapture bids and responses.\nPerform authorized evidence and bid reviews."
+      ],
+      [
+        "Capture manager",
+        "Add opportunities and requirements.\nManage pursuit tasks.\nCreate, edit and export response drafts."
+      ],
+      [
+        "Executive / other members",
+        "Executive approvers review evidence use and bid intent.\nOther members work within assigned permissions; readers can inspect shared drafts."
+      ]
+    ],
+    "takeaway": "If a control is absent, check your role and workspace. Access to a page does not grant authority to approve.",
+    "notes": "This is a workflow-oriented role summary, not a promise of unrestricted access. Visibility depends on organization membership, classification and record policies. Restricted company facts are not made public by including a document in a shared workspace. Users who can read shared response packages can review/export them, while creating and editing drafts requires capture or administrator permission."
+  },
+  {
+    "title": "Resolve the common stopping points",
+    "section": "15 · TROUBLESHOOTING",
+    "cards": [
+      [
+        "Information missing?",
+        "Complete Company and source fields.\nVerify sourced records.\nReview qualification use for the specific requirement."
+      ],
+      [
+        "Source changed?",
+        "Reload the pursuit.\nCompare the new wording and evidence.\nReconcile retained answers and save again."
+      ],
+      [
+        "Assistant or export unavailable?",
+        "Check access and workspace activation.\nWait if a usage limit is reached.\nFor a PDF glyph error, try Word."
+      ]
+    ],
+    "takeaway": "Do not recreate records blindly after a failure. Check whether the draft or pursuit already saved.",
+    "notes": "If an export reports changed company or bid information, reload and retry after reviewing the change. Large or incomplete source registers can prevent export and should be reviewed by a capture manager. An unavailable feature may be permission- or rollout-dependent. Source PDF upload/extraction, scanner-backed attachments and automatic portal submission are not prerequisites for the manual workflow taught here and should not be presented as live automation."
+  },
+  {
+    "title": "Practice once, then make it routine",
+    "section": "16 · GUIDED EXERCISE",
+    "cards": [
+      [
+        "Practice · 10 minutes",
+        "Use an authorized training workspace.\nAdd a clearly labeled practice opportunity and source note.\nCreate its planning workspace."
+      ],
+      [
+        "Build the response",
+        "Add two cited requirements and one task.\nAsk for a response outline.\nReplace placeholders, save and inspect the review."
+      ],
+      [
+        "Daily rhythm",
+        "Start in Today.\nReview upcoming deadlines and changed sources.\nFinish assigned work, then save and review the response."
+      ]
+    ],
+    "takeaway": "Your first milestone: one traceable, saved response draft that another team member can review.",
+    "notes": "Use synthetic information and label the record Training — not for submission. Do not invent an official citation; for this exercise cite the training brief and its numbered items. Have the trainee demonstrate the difference between missing data, verified evidence and approved use. Export a PDF or Word draft and identify its internal checklist. Coordinate cleanup of training records with the administrator. End by opening https://bidxapp.vercel.app/ and showing where the next real task will begin."
+  }
+]

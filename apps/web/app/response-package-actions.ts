@@ -107,7 +107,9 @@ export async function saveResponsePackage(
           .eq('pursuit_id', v.pursuit_id)
           .eq('id', v.record_id)
           .eq('updated_at', v.version)
-          .or('title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%')
+          .or(
+            'title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%,title.like.BID response:%,title.like.SOURCES_SOUGHT response:%,title.like.CAPABILITY response:%',
+          )
           .eq('status', 'draft')
           .select('id')
       : await db

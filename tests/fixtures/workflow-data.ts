@@ -1,0 +1,75 @@
+import type { TenantData } from '../../apps/web/lib/tenant-types';
+export const org = '11111111-1111-4111-8111-111111111111',
+  pursuit = '22222222-2222-4222-8222-222222222222',
+  user = '33333333-3333-4333-8333-333333333333',
+  release = '44444444-4444-4444-8444-444444444444';
+export function workflowData(role = 'organization_admin'): TenantData {
+  return {
+    organization: {
+      id: org,
+      operating_name: 'Synthetic training',
+      legal_name: 'Synthetic training',
+      role,
+      slug: 'synthetic',
+      website: null,
+      status: 'active',
+      default_timezone: 'UTC',
+      organization_type: 'Contractor',
+    },
+    choices: [],
+    userId: user,
+    userEmail: 'synthetic@example.invalid',
+    reviewAsOf: '2026-09-21T00:00:00Z',
+    facts: [],
+    onboarding: [],
+    sources: [],
+    documents: [],
+    audit: [],
+    tasks: [],
+    members: [{ id: 'member', user_id: user, role, status: 'active' }],
+    opportunities: [
+      {
+        id: 'opp',
+        title: 'Synthetic notice',
+        solicitation_number: 'SYN-001',
+        source_url: 'https://example.com/notice',
+        source_note: null,
+        official_deadline: '2026-09-21T12:00:00Z',
+        deadline_timezone: 'UTC',
+        summary: 'Training only',
+        buyer: 'Synthetic buyer',
+        estimated_value: null,
+        status: 'open',
+      },
+    ],
+    pursuits: [
+      {
+        id: pursuit,
+        title: 'Synthetic pursuit',
+        opportunity_id: 'opp',
+        decision: 'pending',
+        status: 'active',
+      },
+    ],
+    requirements: [
+      {
+        id: '55555555-5555-4555-8555-555555555555',
+        pursuit_id: pursuit,
+        requirement: 'Provide the required form',
+        citation: 'Training section 1',
+        status: 'needs_review',
+        owner_user_id: null,
+        updated_at: '2026-09-21T00:00:00Z',
+      },
+    ],
+    responsePackages: [],
+    releaseWorkflow: {
+      enabled: true,
+      context: 'a'.repeat(64),
+      versions: [],
+      approvals: [],
+      submissions: [],
+      followups: [],
+    },
+  };
+}

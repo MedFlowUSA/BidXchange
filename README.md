@@ -1,6 +1,6 @@
 ﻿# BidXchange
 
-Next.js, React and TypeScript contracting workspace with a separate fictional demo and an authenticated Supabase organization foundation. The existing visual design and browser-local demo remain intact. This is an onboarding beta, not a production bid-submission system.
+Next.js, React and TypeScript contracting workspace with a separate fictional demo and an authenticated Supabase organization foundation. The existing visual design and browser-local demo remain intact. Human submission remains outside BidXchange.
 
 Live: https://bidxapp.vercel.app
 
@@ -24,9 +24,9 @@ Open http://127.0.0.1:3000. The public demo needs no credentials and uses `bidxc
 - `?workspace=demo` selects the fictional Apex workspace. Real workspaces use `?organization=<authorized UUID>` and require email sign-in.
 - `/login` supports magic links and one-time codes; `/auth/callback` establishes a server-managed session.
 - GES has pending company facts, an onboarding checklist and procurement preferences. Its real pipeline starts empty.
-- Settings allows administrators to edit organization details, review fact verification and change existing member roles. Invitations, upload/scanning, operational editors, approvals and connectors remain explicitly labeled placeholders.
+- Settings allows administrators to edit organization details, review fact verification and change existing member roles. Capture editors and response drafts are implemented. Invitations, upload/scanning and connectors have separate activation boundaries; versioned approvals require migration 015.
 - `/assistant` and contextual dashboard/opportunity/pursuit panels implement a read-only evidence assistant behind explicit configuration and organization activation. No live feeds or private document retrieval are provided. See [AI architecture and activation](docs/ai-assistant.md).
-- The public demo-request/beta-interest form is a disabled preview; no lead information is collected. See [homepage launch requirements](docs/marketing-homepage.md) before enabling it.
+- Public intake and demo AI have separate activation controls. This workflow release does not change their activation, billing or quotas.
 
 ## Validation
 
@@ -60,3 +60,7 @@ Vercel builds from the root using `npm ci` and `npm run build`, with `apps/web/.
 - [Phase completion report](docs/phase2-completion.md)
 
 App: `apps/web`; scoring: `packages/scoring`; GES seed: `packages/database`; migrations: `supabase/migrations`. Estimates are not awards or revenue. Final pricing, representations, certifications and submission authorization remain human-controlled.
+
+## Guided response workflow — September 21
+
+Optional record-based guidance, deterministic next actions and version-bound human approval/submission records are prepared for release. Migration `20260921001500_response_release_workflow.sql` is installed in staging; production migration, deployment and activation remain pending explicit approval. Buyer-portal delivery is manual. See [pursuit workflow](docs/pursuit-workflow.md), [response workspace](docs/response-workspace.md), [approval meanings](docs/approvals-and-submission.md), [role matrix](docs/role-permissions.md) and [release operations](docs/response-release-runbook.md).

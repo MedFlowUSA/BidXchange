@@ -2,3 +2,5 @@
 **/next-env.d.ts
 **/public
 **/tsconfig.tsbuildinfo
+# Generated slide HTML preserves intentional whitespace inside positioned text.
+docs/presentations/BidXchange-User-Guide.html

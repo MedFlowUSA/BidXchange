@@ -21,7 +21,10 @@ export async function createAssistantDocument(
     return { message: 'Open the bid in Pursuits before creating a response draft.' };
   const v = parsed.data;
   const kind = responseCommand(v.prompt);
-  if (!kind) return { message: 'Use a direct command such as “Create an RFP for this bid”.' };
+  if (!kind)
+    return {
+      message: 'Use a direct command such as “Create a response outline for this solicitation”.',
+    };
   try {
     const account = await accountContext();
     if (

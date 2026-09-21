@@ -71,7 +71,12 @@
       "file": "20260920001400_public_demo_ai.sql",
       "sha256": "1b60179ac8a9d3dc022bf6e385066de339d22125bdeb84f2aba6ab04f6a6d8a6",
       "action": "include-schema"
+    },
+    {
+      "file": "20260921001500_response_release_workflow.sql",
+      "sha256": "71a4317a9170e7e715df22b46c1aaa0db7e17a8fb4f1ecd223606c2f641ac7c7",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 10
+  "packageRevision": 11
 }

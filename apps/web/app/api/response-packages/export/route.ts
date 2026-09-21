@@ -54,7 +54,9 @@ export async function GET(request: Request) {
       .eq('organization_id', v.organization)
       .eq('pursuit_id', v.pursuit)
       .eq('id', v.package)
-      .or('title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%')
+      .or(
+        'title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%,title.like.BID response:%,title.like.SOURCES_SOUGHT response:%,title.like.CAPABILITY response:%',
+      )
       .single();
     if (saved.error)
       return Response.json({ message: 'Response unavailable.' }, { status: 404, headers });

@@ -100,6 +100,10 @@ function fixture() {
 }
 test('document commands require explicit intent and prepare typed drafts without claims or prices', async () => {
   for (const [prompt, kind] of [
+    ['Create a response outline for this solicitation', 'BID'],
+    ['Create an RFP response outline for this solicitation', 'RFP'],
+    ['Create a sources-sought response outline', 'SOURCES_SOUGHT'],
+    ['Create a capability-statement response outline', 'CAPABILITY'],
     ['create an rfp for this bid', 'RFP'],
     ['Please draft an RFI response', 'RFI'],
     ['Can you prepare an RFQ for the selected pursuit?', 'RFQ'],

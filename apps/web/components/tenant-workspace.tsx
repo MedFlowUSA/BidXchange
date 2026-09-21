@@ -2,6 +2,9 @@
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
 import AppShell from './app-shell';
+import Dialog from './dialog';
+import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
+import ResponseReleases from './response-release';
 import Assistant from './assistant';
 import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
@@ -166,6 +169,7 @@ export default function TenantWorkspace({
   const href = (path: string) => workspaceHref(path, org.id);
   const [query, setQuery] = useState('');
   const [notice, setNotice] = useState('');
+  const [guideOpen, setGuideOpen] = useState(false);
   const pursuit =
     recordType === 'pursuit' ? data.pursuits.find((p) => p.id === recordId) : undefined;
   const opportunity = data.opportunities.find(
@@ -197,7 +201,6 @@ export default function TenantWorkspace({
   ];
   const readiness = companyReadiness(data.facts, data.reviewAsOf);
   const pending = readiness.needingReview;
-  const nextFact = pending[0];
   const download = () => {
     const text = [
       `${org.operating_name} — opportunity brief`,
@@ -227,8 +230,23 @@ export default function TenantWorkspace({
       choices={data.choices}
       userEmail={data.userEmail}
       records={records}
+      onHelp={() => setGuideOpen(true)}
     >
+      {guideOpen && (
+        <Dialog title="Workspace guide" close={() => setGuideOpen(false)} wide>
+          <GuideContent data={data} pursuitId={pursuit?.id} />
+        </Dialog>
+      )}
       <main>
+        {page === 'Today' && <GettingStarted data={data} onOpen={() => setGuideOpen(true)} />}
+        {['Today', 'Company', 'Opportunities', 'Pursuits'].includes(page) && (
+          <NextActions
+            data={data}
+            page={page}
+            pursuitId={pursuit?.id}
+            opportunityId={recordType === 'opportunity' ? recordId : undefined}
+          />
+        )}
         {page === 'Today' && (!!data.sourceAttention || data.sourceIssue) && (
           <section className="panel">
             <h2>Source review needs attention</h2>
@@ -316,6 +334,7 @@ export default function TenantWorkspace({
                   />
                 )}
                 <section className="panel" aria-labelledby="requirements-heading">
+                  <span id="pursuit-requirements" />
                   <h2 id="requirements-heading">Requirements and gaps</h2>
                   <p>
                     Capture the notice requirements and assign the next review. This register does
@@ -392,6 +411,7 @@ export default function TenantWorkspace({
                   data={data}
                   pursuitId={recordId}
                 />
+                <ResponseReleases data={data} pursuitId={recordId} />
                 <section className="panel" id="pursuit-tasks">
                   <h2>Tasks</h2>
                   {data.tasks
@@ -452,28 +472,6 @@ export default function TenantWorkspace({
         {!recordId && page === 'Today' && (
           <>
             <TodayTaskQueue data={data} />
-            <section className="panel" aria-labelledby="readiness-next-action">
-              <div className="eyebrow">YOUR NEXT STEP</div>
-              <h2 id="readiness-next-action">
-                {nextFact ? `Review ${nextFact.label}` : 'Review your company readiness'}
-              </h2>
-              <p>
-                {nextFact
-                  ? `This visible record is ${reviewStatus(nextFact, data.reviewAsOf).replaceAll('_', ' ')}. Confirm current evidence before relying on it in a response.`
-                  : 'Confirm company basics, capabilities and current evidence with an authorized representative before evaluating an opportunity.'}
-              </p>
-              <p>
-                {admin
-                  ? 'Your role can review saved evidence. The company representative supplies and confirms the records.'
-                  : 'Ask your organization administrator to review the evidence with an authorized company representative.'}
-              </p>
-              <Link
-                className="button primary"
-                href={href('/company') + (nextFact ? `#fact-${nextFact.id}` : '#company-readiness')}
-              >
-                {nextFact ? 'Open record for review' : 'Start readiness review'}
-              </Link>
-            </section>
             <EvidenceRenewals key={org.id} data={data} />
             <div className="stats-grid">
               {[

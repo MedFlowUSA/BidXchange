@@ -114,7 +114,8 @@ function Editor({
     };
   });
   const [title, setTitle] = useState(
-    saved?.title.replace(/^RF[IPQ] response: /, '') ?? 'Initial response',
+    saved?.title.replace(/^(RF[IPQ]|BID|SOURCES_SOUGHT|CAPABILITY) response: /, '') ??
+      'Initial response',
   );
   const [state, action, pending] = useActionState(saveResponsePackage, { message: '' });
   const changed = Boolean(
@@ -161,6 +162,9 @@ function Editor({
             <option>RFI</option>
             <option>RFP</option>
             <option>RFQ</option>
+            <option value="BID">Bid response</option>
+            <option value="SOURCES_SOUGHT">Sources-sought response</option>
+            <option value="CAPABILITY">Capability-statement response</option>
           </select>
         </label>
         <label>

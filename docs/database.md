@@ -1,8 +1,8 @@
-# Database changes for the AI phase
+# Database architecture and migrations
 
 Migration `20260919000500_ai_readonly.sql` is additive except for tightening the `profile_facts` SELECT policy. It creates no production identities, organizations, seed opportunities or document access.
 
-The newer [opportunity-source schema](opportunity-ingestion.md) documents prepared migration 013, its eight RLS tables, restricted grants, public review RPCs and private validation/immutability functions. It has not been applied to hosted staging or production. Offline package revision 9 includes it without applying it or activating document migration 012.
+The newer [opportunity-source schema](opportunity-ingestion.md) documents prepared migration 013, its eight RLS tables, restricted grants, public review RPCs and private validation/immutability functions. Its deployment status belongs to the source release report. Current offline package revision 11 includes migrations through 015 without enabling uploads.
 
 The production preflight also found eight excess authenticated grants on the identity tables inherited from hosted defaults. Migration 005 resets those tables to the intended foundation grants: SELECT/UPDATE on organizations and SELECT/INSERT/UPDATE/DELETE on memberships. This removes TRUNCATE, TRIGGER and REFERENCES on both, plus INSERT/DELETE on organizations. RLS and mutation guards still apply. The isolated AI suite reproduces the broader grants before migration and checks their removal.
 
@@ -19,3 +19,18 @@ No conversation/message/citation persistence is added. Existing audit JSON is no
 Run `npm run test:ai:database` for an isolated migration rehearsal with exact SQLSTATE assertions. Run `npm run test:security:local` for existing policy regressions. These use real PostgreSQL semantics through PGlite with minimal auth/storage stubs; hosted Supabase API/JWT behavior and concurrent processes need staging validation. The linked-project rehearsal is explicitly opt-in with `node scripts/test-ai-database.mjs --linked` and must be authorized separately. A prior automatic approval review rejected that linked-project rehearsal; no linked database changes were performed.
 
 Before applying this migration in production, review its effect on existing lower-role company views, classify intended facts individually, rehearse hosted integration and approve metadata retention. Do not remove tightened RLS as an application rollback shortcut.
+
+## Response release workflow — migration 015
+
+`20260921001500_response_release_workflow.sql` adds:
+
+- `response_release_versions`: immutable organization/pursuit/package snapshot, saved version, context token, canonical SHA-256 and actor/time.
+- `response_approval_history`: append-only gate, outcome, rationale, conditions, role/actor/time, checksum and dependency event IDs.
+- `response_submission_history`: immutable delivery/correction/resubmission event, prior event, exact release/checksum, submitter, receipt details and authorization ID.
+- `response_followup_history`: append-only agency/outcome/debrief/lessons events with actor/time and optional due date.
+
+Each table has RLS, an active-member SELECT policy, no direct authenticated write/sequence grants, an immutable update/delete trigger and an insert audit trigger. Composite release/pursuit keys preserve tenant identity. Public RPCs: `response_release_context`, `freeze_response_release`, `response_release_status`, `record_response_approval`, `record_response_submission`, `record_response_followup`. Anonymous execution is revoked; authenticated execution independently validates roles, exact parent/context and optimistic previous event IDs. `private.immutable_response_history` is not client callable.
+
+Readiness and approval dependency checks are database-derived. File hashes identify externally retained files; no object storage policy is added. All four histories are shared organization records, so bounded text references must not carry restricted facts or secrets. The source’s observed version/change-pending state participates in release context.
+
+The schema-only inventory is 52 public RLS tables and 127 policies. Migration 015 is installed in staging only; production requires explicit approval. Do not rewrite this migration after production release. Future changes must be additive, and application rollback must preserve histories. See [release operations](response-release-runbook.md).

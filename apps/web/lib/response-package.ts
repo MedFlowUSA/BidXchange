@@ -7,7 +7,7 @@ import { hasResponsePlaceholder } from './response-progress';
 export const responseDraftSchema = z
   .object({
     schema: z.literal(1),
-    kind: z.enum(['RFI', 'RFP', 'RFQ']).default('RFI'),
+    kind: z.enum(['RFI', 'RFP', 'RFQ', 'BID', 'SOURCES_SOUGHT', 'CAPABILITY']).default('RFI'),
     context: z.string().max(500),
     summary: z.string().trim().max(6000),
     answers: z
@@ -56,7 +56,7 @@ export function newResponseDraft(data: TenantData, pursuitId: string): ResponseD
 }
 export type ResponseBlock = { kind: 'heading' | 'body' | 'note'; text: string };
 export type ResponseDocument = {
-  kind?: 'RFI' | 'RFP' | 'RFQ';
+  kind?: 'RFI' | 'RFP' | 'RFQ' | 'BID' | 'SOURCES_SOUGHT' | 'CAPABILITY';
   title: string;
   draftName: string;
   company: string;
@@ -200,7 +200,7 @@ export function responseDocument(
   return {
     kind: draft.kind,
     title: `${draft.kind} response — ${pursuit.title}`,
-    draftName: saved.title.replace(/^RF[IPQ] response: /, ''),
+    draftName: saved.title.replace(/^(RF[IPQ]|BID|SOURCES_SOUGHT|CAPABILITY) response: /, ''),
     company: data.organization.legal_name || data.organization.operating_name,
     buyer: opportunity.buyer ?? 'Buyer not recorded',
     solicitation: opportunity.solicitation_number ?? 'Not recorded',

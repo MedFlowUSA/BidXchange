@@ -2,7 +2,7 @@
 
 The public Apex demo remains fictional and browser-local. Real organization data is loaded through a validated Supabase user session and active database membership. Browser organization IDs are untrusted; unauthorized IDs render access denied without switching organization. Next.js streamed not-found responses can have HTTP 200; their content contains no protected record.
 
-Every public tenant table has RLS. Server actions independently require administrator membership, validate inputs and invoke a persistent per-user mutation limit. Database policies enforce ownership and roles even for direct API calls. Tenant IDs are immutable, composite foreign keys prevent cross-organization parent references, and a serialized guard prevents removal/demotion of the final active administrator. No test-only bypass exists.
+Every public tenant table has RLS. Server actions independently require the action’s authorized role, validate inputs and invoke a persistent per-user mutation limit. Database policies enforce ownership and roles even for direct API calls. Tenant IDs are immutable, composite foreign keys prevent cross-organization parent references, and a serialized guard prevents removal/demotion of the final active administrator. No test-only bypass exists.
 
 Ordinary members cannot create organizations, grant themselves membership or edit roles. Administrators control profile and membership changes; administrators/capture managers can write operational records under RLS. Sensitive insurance, bonding, personnel and similar tables restrict reads to administrator, executive approver and estimator roles. Audit reads are administrator/executive only; ordinary clients cannot insert, update or delete audit history. Audit triggers capture changes transactionally. Inspect migration 001 for exact table policies before expanding any role.
 
@@ -10,13 +10,13 @@ Fact verification requires an authenticated administrator, saved source evidence
 
 The app uses server-only Supabase clients and HttpOnly, SameSite=Lax cookies, with Secure cookies in production. Proxy refreshes sessions; server loaders validate the user. Responses are private/no-store. Redirect destinations are locally allowlisted and callback origins use configured SITE_URL. Passwords are neither requested nor handled. Auth errors log only a code, never a token. Development request logging is disabled to avoid callback tokens in logs. Configure hosting log redaction/retention for query strings before production.
 
-Tenant workspace reads and mutations use the authenticated user's client, never a service-role key. The separately gated public demo-intake feature uses a server-only service-role key solely for its bounded intake RPC, with HMAC-based abuse counters; it is configured only in dedicated staging at this checkpoint. Production uses the direct email fallback. Protected operator scripts obtain staging credentials from the authenticated CLI into memory only. Restrict operator CLI access and run test suites in the dedicated test project. Never capture raw CLI key/dump output. Local environment files and CLI state are excluded from Git and Vercel uploads.
+Tenant workspace reads and mutations use the authenticated user's client, never a service-role key. The separately gated public demo-intake feature uses a server-only service-role key solely for its bounded intake RPC, with HMAC-based abuse counters; its deployment state is governed separately from this response workflow. Protected operator scripts obtain staging credentials from the authenticated CLI into memory only. Restrict operator CLI access and run test suites in the dedicated test project. Never capture raw CLI key/dump output. Local environment files and CLI state are excluded from Git and Vercel uploads.
 
 `company-private` is a private PDF bucket with a size limit and no client storage policies. Uploads/downloads remain unavailable pending malware scanning, content validation, tenant path policies and authorized expiring signed URLs. Private documents have not been uploaded or committed.
 
 ## Source ingestion checkpoint
 
-Migration 013 is local only. [Source ingestion](opportunity-ingestion.md) documents tenant-scoped searches/inbox, restricted raw snapshots, immutable versions, sanitized errors, operator-only synchronization and explicit activation gates. Imported content never automatically enters AI. The [general AI activation report](ai-general-activation.md) supersedes historical disabled-AI statements in this document.
+Source migration 013 has a separate deployment checkpoint. [Source ingestion](opportunity-ingestion.md) documents tenant-scoped searches/inbox, restricted raw snapshots, immutable versions, sanitized errors, operator-only synchronization and explicit activation gates. Imported content never automatically enters AI. The [general AI activation report](ai-general-activation.md) supersedes historical disabled-AI statements in this document.
 
 ## Before production use
 
@@ -30,7 +30,7 @@ Migration 013 is local only. [Source ingestion](opportunity-ingestion.md) docume
 - Test actual token-expiry refresh over time, MFA and email-provider outage handling. Initial sessions/sign-out are tested, not every provider failure mode.
 - Establish separate staging and production Supabase projects for ongoing development.
 
-No live procurement connectors, production AI activation, automatic pricing, automated approvals or portal submission are enabled. Demo scoring is illustrative and does not authorize real bids.
+This workflow does not enable procurement feeds, alter existing AI activation, calculate prices, automate approvals or submit through buyer portals. Demo scoring is illustrative and does not authorize real bids.
 
 ## Read-only assistant implementation
 
@@ -39,3 +39,11 @@ The assistant is gated by server configuration and an operator-controlled organi
 Strict read-only function calls expose no SQL, writes, approval, verification, messaging or submission action. Model prose is not accepted as factual output: selected records and citations are rendered from authorized evidence, then refetched before release. Usage is reserved atomically in the database; requests cannot refund themselves. The public demo never calls paid AI. Conversations are ephemeral private tab memory with no shared or persisted prompt/answer store; status checks clear them when access changes. No service-role key is required by ordinary application requests.
 
 The new migration and existing RLS are tested in isolated PostgreSQL. Hosted JWT/PostgREST integration, multi-process concurrency, actual provider behavior and production activation require the additional gates described in [AI architecture](ai-assistant.md) and [operations](ai-operations.md). This implementation does not resolve unrelated privileged MFA, full verification-invalidation or operational-recovery audit findings.
+
+## Version-bound approval and submission records
+
+Migration 015 grants active members SELECT under RLS on four new shared-history tables. Authenticated clients have no direct insert/update/delete grants or sequence permissions. Immutable triggers reject update/delete even after an accidental future grant. Six narrowly scoped security-definer RPCs use an empty search path and check actual membership, not asserted browser roles. Every write is attributed from `auth.uid()` and audited transactionally. Unknown fields and oversized inputs are rejected.
+
+Approval dependencies bind exact upstream event IDs. Package/source/evidence/membership changes, review date changes and revoked approvals prevent current authorization. Initial/resubmission history is serialized per pursuit, requires named-submitter confirmation and cannot predate authorization. Corrections append to the same historical version. Handoff is private/no-store and rechecks access and state. Shared notes/references must not contain restricted information or portal credentials.
+
+The app disable flag is not a database kill switch. Use the [write-RPC revocation procedure](response-release-runbook.md) for an incident; preserve immutable history and RLS. No uploads, production users, AI billing changes, scanner purchase or portal automation are part of this release. See the [exact permission matrix](role-permissions.md).

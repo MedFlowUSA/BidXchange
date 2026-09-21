@@ -136,7 +136,7 @@ export default function Assistant({
                     ...c,
                     document: {
                       message:
-                        'Open the bid in Pursuits, then ask “Create an RFP for this bid”. The selected pursuit supplies the bid details and requirements.',
+                        'Open the bid in Pursuits, then ask “Create a response outline for this solicitation”. The selected pursuit supplies the bid details and requirements.',
                       href: workspaceHref('/pursuits', organizationId),
                     },
                   }
@@ -362,9 +362,9 @@ export default function Assistant({
                   <button
                     className="button secondary"
                     disabled={pending}
-                    onClick={() => setPrompt('Create an RFP for this bid')}
+                    onClick={() => setPrompt('Create a response outline for this solicitation')}
                   >
-                    Create an RFP for this bid
+                    Create a response outline for this solicitation
                   </button>
                 )}
                 {questions.map((q) => (
