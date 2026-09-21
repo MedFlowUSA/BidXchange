@@ -100,8 +100,14 @@ test('request CTAs offer the approved business contact without claiming delivery
   await expect(page.getByRole('form', { name: 'Request a bid review' })).toHaveCount(0);
   await expect(page.getByText('Demo requests are opening soon.')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
-  await expect(page.getByText('Privacy — pending', { exact: true })).toBeVisible();
-  await expect(page.getByText('Terms — pending', { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Privacy Policy', exact: true })).toHaveAttribute(
+    'href',
+    '/privacy',
+  );
+  await expect(page.getByRole('link', { name: 'Terms of Use', exact: true })).toHaveAttribute(
+    'href',
+    '/terms',
+  );
 });
 
 test('public navigation supports keyboard, mobile escape and section links', async ({ page }) => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { requestDemo } from '../app/demo-request-actions';
 import styles from './marketing.module.css';
 
@@ -42,7 +43,8 @@ export default function DemoRequestForm() {
         <p id="demo-data-notice">
           BidXchange saves these details so its operations team can review and respond to your demo
           request. Do not include passwords, tax IDs, financial records or confidential bid
-          information.
+          information. Read our <Link href="/privacy">Privacy Policy draft</Link> and{' '}
+          <Link href="/terms">Terms of Use draft</Link> (not yet effective).
         </p>
         <label className={styles.consent}>
           <input name="consent" value="yes" type="checkbox" required /> You may contact me about

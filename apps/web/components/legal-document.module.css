@@ -1,0 +1,141 @@
+.page {
+  background: #f7f8fb;
+  color: #17243c;
+  min-height: 100vh;
+}
+.header {
+  max-width: 1120px;
+  margin: auto;
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid #dbe1eb;
+}
+.header > a {
+  font-size: 24px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.page a {
+  color: #174aa5;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+.page a:focus-visible {
+  outline: 3px solid #aa6a00;
+  outline-offset: 5px;
+  border-radius: 2px;
+}
+.main {
+  max-width: 800px;
+  margin: auto;
+  padding: 64px 24px;
+}
+.eyebrow {
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  font-weight: 750;
+  color: #59677b;
+}
+.main h1 {
+  font-size: clamp(36px, 6vw, 56px);
+  line-height: 1.1;
+  margin: 16px 0 28px;
+}
+.main h2 {
+  font-size: 23px;
+  line-height: 1.35;
+}
+.main p,
+.main li {
+  line-height: 1.8;
+}
+.main li {
+  margin-bottom: 12px;
+}
+.draft {
+  padding: 20px 24px;
+  border-left: 4px solid #bc7c14;
+  background: #fff3d9;
+  border-radius: 4px;
+}
+.draft p {
+  margin: 8px 0 0;
+}
+.introduction {
+  font-size: 19px;
+  margin: 30px 0;
+}
+.contents {
+  padding: 24px;
+  background: white;
+  border: 1px solid #dbe1eb;
+  border-radius: 12px;
+}
+.contents h2 {
+  margin-top: 0;
+}
+.contents ol {
+  padding-left: 24px;
+  margin-bottom: 0;
+}
+.section {
+  margin-top: 40px;
+  scroll-margin-top: 24px;
+}
+.section ul {
+  padding-left: 24px;
+}
+.footer {
+  max-width: 800px;
+  margin: auto;
+  padding: 28px 24px 48px;
+  border-top: 1px solid #dbe1eb;
+  line-height: 1.7;
+}
+@media (max-width: 600px) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .main {
+    padding-top: 36px;
+  }
+  .header nav {
+    gap: 16px;
+    font-size: 14px;
+  }
+}
+@media print {
+  .page {
+    background: white;
+    color: black;
+  }
+  .header {
+    display: none;
+  }
+  .main {
+    max-width: none;
+    padding: 0;
+  }
+  .contents {
+    display: none;
+  }
+  .section h2 {
+    break-after: avoid;
+  }
+  .draft {
+    border: 1px solid black;
+    background: white;
+  }
+  .footer {
+    padding-bottom: 0;
+  }
+}

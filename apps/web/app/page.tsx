@@ -431,16 +431,17 @@ export default async function Home() {
           </div>
           <nav aria-label="Footer access links">
             <Link href="/login">Sign In</Link>
-            <a href="#legal-notices">Privacy — pending</a>
-            <a href="#legal-notices">Terms — pending</a>
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/terms">Terms of Use</Link>
           </nav>
         </div>
         <details id="legal-notices" className={clean.legal}>
           <summary>Privacy and terms are being finalized</summary>
           <p>
-            Published legal terms are not yet available. For questions about information you have
-            shared, contact mrodriguez@oaisinc.com. Please do not send confidential records through
-            the public contact channel.
+            Privacy Policy and Terms of Use drafts are available for review and are not yet
+            effective. For questions about information you have shared, contact
+            mrodriguez@oaisinc.com. Please do not send confidential records through the public
+            contact channel.
           </p>
         </details>
         <div className={clean.footerBottom}>

@@ -35,6 +35,10 @@ export default async function Login({
           Access is limited to provisioned accounts. Contact your organization administrator for
           membership.
         </p>
+        <nav aria-label="Legal documents">
+          <Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Terms of Use</Link>
+          <p className="auth-footnote">Drafts for review — not yet effective.</p>
+        </nav>
       </section>
     </main>
   );
