@@ -12,6 +12,8 @@ Next actions are deterministic: imminent/passed pursuit deadline, unresolved or 
 
 ## Human review
 
+Saved response review includes a requirement-to-answer coverage matrix. Search requirement wording, notice citations or saved answer text; filter to rows needing attention and open a row to inspect the answer, assignment status and evidence-review counts. Editors can jump directly to the corresponding answer. Changed requirement versions, unfinished placeholders and stale or unavailable review context remain visible even when an answer exists. Counts describe loaded records only, with a partial-register warning at the existing limits; this is not a compliance score or an approval. Evidence counts refer to review records and do not disclose company fact values.
+
 Verification establishes a sourced company fact. Evidence applicability and proposal-use approval establish its reviewed use for a particular requirement. A requirement finding records supported, blocked, clarification, review needed or a documented buyer waiver. These are distinct records. Only an executive can record a waiver with authority references. “Pursue bid” is a current human intent decision, not pricing approval or permission to submit.
 
 Open the full notice and amendments. Candidate requirement extraction does not certify a complete register. Resolve stale findings, missing owners and writing gaps before final-file review. See [response workspace](response-workspace.md) and [approval/submission rules](approvals-and-submission.md).

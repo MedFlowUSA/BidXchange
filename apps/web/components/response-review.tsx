@@ -7,6 +7,7 @@ import {
   type SavedResponsePackage,
 } from '../lib/response-package';
 import { responseProgress } from '../lib/response-progress';
+import ResponseCoverage from './response-coverage';
 
 export default function ResponseReview({
   data,
@@ -75,28 +76,7 @@ export default function ResponseReview({
               {!progress.rows.length && (
                 <p>No requirements recorded. Review the notice and add its requirements first.</p>
               )}
-              <ul>
-                {progress.rows
-                  .filter((r) => r.missing || r.placeholder || r.changed)
-                  .map((r) => (
-                    <li key={r.id}>
-                      <strong>{r.title}</strong> —{' '}
-                      {[
-                        r.missing && 'answer missing',
-                        r.placeholder && 'unfinished placeholders',
-                        r.changed && 'source wording changed',
-                      ]
-                        .filter(Boolean)
-                        .join('; ')}
-                      .
-                      {onEdit && (
-                        <button type="button" className="text-button" onClick={() => onEdit(r.id)}>
-                          Review this answer
-                        </button>
-                      )}
-                    </li>
-                  ))}
-              </ul>
+              <ResponseCoverage data={data} pursuitId={pursuitId} draft={draft} onEdit={onEdit} />
               {!!progress.removed && (
                 <p>
                   {progress.removed} saved answers refer to removed or unavailable requirements.
