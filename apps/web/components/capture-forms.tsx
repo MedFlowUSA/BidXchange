@@ -19,7 +19,7 @@ type Field = {
   multiline?: boolean;
   options?: { value: string; label: string }[];
 };
-function CaptureForm({
+export function CaptureForm({
   label,
   action,
   hidden,
@@ -253,10 +253,12 @@ export function TaskForm({
   data,
   pursuitId,
   task,
+  suggestedTitle,
 }: {
   data: TenantData;
   pursuitId: string;
   task?: TenantData['tasks'][number];
+  suggestedTitle?: string;
 }) {
   return (
     <CaptureForm
@@ -269,7 +271,7 @@ export function TaskForm({
         updated_at: task?.updated_at ?? '',
       }}
       initial={{
-        title: task?.title ?? '',
+        title: task?.title ?? suggestedTitle ?? '',
         status: task?.status ?? 'todo',
         assigned_user_id: task?.assigned_user_id ?? '',
         due_at: task?.due_at ?? '',

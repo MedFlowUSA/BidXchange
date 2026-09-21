@@ -6,6 +6,8 @@ import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
 import ResponseReleases from './response-release';
 import Assistant from './assistant';
+import { PepmaIntake, PepmaWorkflow } from './pepma-workflow';
+import { isPepmaUrl } from '../lib/pepma';
 import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
@@ -310,6 +312,9 @@ export default function TenantWorkspace({
           recordType === 'pursuit' ? (
             <>
               {pursuit && <BidReview data={data} pursuitId={pursuit.id} />}
+              {pursuit && isPepmaUrl(opportunity.source_url) && (
+                <PepmaWorkflow data={data} pursuitId={pursuit.id} canEdit={capture} />
+              )}
               <PursuitFoundation
                 source={opportunity.source_url ?? opportunity.source_note ?? 'Not provided'}
                 deadline={deadline}
@@ -454,6 +459,18 @@ export default function TenantWorkspace({
               </p>
               <h3>Source</h3>
               <p>{opportunity.source_url ?? opportunity.source_note ?? 'Not provided'}</p>
+              {opportunity.source_url && opportunity.source_note && (
+                <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                  {opportunity.source_note}
+                </p>
+              )}
+              {isPepmaUrl(opportunity.source_url) && (
+                <p>
+                  PEPMA invitation recorded manually. Start or open the pursuit to review addenda,
+                  company evidence and proposal deliverables. Edit opportunity to update the source
+                  notes after checking PEPMA.
+                </p>
+              )}
               <div className="info-note">
                 Qualification has not been performed. No eligibility or bid recommendation is
                 implied.
@@ -663,6 +680,7 @@ export default function TenantWorkspace({
         )}
         {!recordId && page === 'Opportunities' && (
           <>
+            {capture && <PepmaIntake data={data} />}
             <section className="panel">
               <Link href={href('/opportunities/sources')}>Source inbox →</Link>
               <p>
@@ -700,7 +718,9 @@ export default function TenantWorkspace({
                     <small>
                       {data.sourceProvenance?.some((s) => s.opportunity_id === o.id)
                         ? 'Official SAM.gov source · review current metadata in Source inbox'
-                        : 'Manually recorded opportunity'}
+                        : isPepmaUrl(o.source_url)
+                          ? 'PEPMA · manually recorded invitation'
+                          : 'Manually recorded opportunity'}
                     </small>
                     <span className="fit amber">Not qualified</span>
                     <h3>{o.title}</h3>

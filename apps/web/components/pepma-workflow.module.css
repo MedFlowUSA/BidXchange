@@ -1,0 +1,28 @@
+.panel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.panel fieldset {
+  min-inline-size: 0;
+}
+.panel select,
+.panel input,
+.panel textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+.panel button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+.panel nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0;
+}
+.panel article {
+  border-top: 1px solid #dbe1eb;
+  padding: 12px 0;
+}
