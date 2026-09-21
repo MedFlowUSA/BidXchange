@@ -6,6 +6,7 @@ import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
 import ResponseReleases from './response-release';
 import Assistant from './assistant';
+import SourceDetails from './source-details';
 import { PepmaIntake, PepmaWorkflow } from './pepma-workflow';
 import { isPepmaUrl } from '../lib/pepma';
 import AssistantUsage from './assistant-usage';
@@ -448,6 +449,7 @@ export default function TenantWorkspace({
             <section className="panel record-page">
               <Link href={href('/opportunities')}>← Back to opportunities</Link>
               <h2>Scope</h2>
+              <SourceDetails data={data} opportunity={opportunity} />
               <p>{opportunity.summary ?? 'Not provided'}</p>
               <h3>Buyer</h3>
               <p>{opportunity.buyer ?? 'Not provided'}</p>
@@ -680,6 +682,11 @@ export default function TenantWorkspace({
         )}
         {!recordId && page === 'Opportunities' && (
           <>
+            <section className="panel">
+              <h2>Opportunity sources</h2>
+              <p>Manage source registrations, contract vehicles and reviewed portal intake.</p>
+              <Link href={href('/opportunities/registry')}>Open source registry</Link>
+            </section>
             {capture && <PepmaIntake data={data} />}
             <section className="panel">
               <Link href={href('/opportunities/sources')}>Source inbox →</Link>

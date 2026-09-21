@@ -12,6 +12,7 @@ test('structured facts enforce tenant access, canonical text, validation and re-
     await db.query(
       readFileSync('supabase/migrations/20260921001600_structured_company_profiles.sql', 'utf8'),
     );
+    await db.query(readFileSync('supabase/migrations/20260921001800_company_source_capabilities.sql', 'utf8'));
     await db.query('insert into auth.users(id) values($1),($2),($3)', [admin, viewer, foreign]);
     const org = (
       await db.query(

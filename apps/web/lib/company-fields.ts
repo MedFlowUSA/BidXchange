@@ -18,6 +18,90 @@ const field = (key: string, label: string, format?: CompanyField['format']): Com
 
 // Stable keys, independent of the editable evidence label. Unknown values stay blank.
 export const companyTemplates: Record<string, CompanyTemplate> = {
+  procurement_codes: {
+    type: 'capability',
+    label: 'Procurement classification codes',
+    fields: [
+      field('naics', 'NAICS codes'),
+      field('psc', 'PSC codes'),
+      field('nigp', 'NIGP codes'),
+      field('unspsc', 'UNSPSC codes'),
+      field('scope', 'Work supported by these codes'),
+    ],
+  },
+  safety_record: {
+    type: 'safety',
+    label: 'Safety and EMR evidence',
+    fields: [
+      field('emr', 'EMR and rating period'),
+      field('issuer', 'Rating issuer'),
+      field('program', 'Safety program reference'),
+      field('incidents', 'Disclosable incident history reference'),
+      field('assessed', 'Assessment date', 'date'),
+    ],
+  },
+  labor_compliance: {
+    type: 'compliance',
+    label: 'Labor and prevailing-wage capability',
+    fields: [
+      field('registration', 'Labor / public works registration'),
+      field('prevailing_wage', 'Prevailing-wage capability and evidence'),
+      field('payroll', 'Certified payroll process'),
+      field('apprenticeship', 'Apprenticeship obligations'),
+      field('limitations', 'Jurisdiction and limitations'),
+    ],
+  },
+  financial_capacity: {
+    type: 'financial',
+    label: 'Reviewed financial capacity',
+    fields: [
+      field('capacity', 'Reviewed capacity', 'amount'),
+      field('currency', 'Currency', 'code'),
+      field('assessed', 'Assessment date', 'date'),
+      field('reviewer', 'Review source'),
+      field('conditions', 'Limitations; no bank details'),
+    ],
+  },
+  staffing_capacity: {
+    type: 'capacity',
+    label: 'Staffing and scheduling capacity',
+    fields: [
+      field('employees', 'Employee count and roles'),
+      field('backlog', 'Committed work / backlog'),
+      field('available', 'Available from', 'date'),
+      field('constraints', 'Capacity and scheduling constraints'),
+    ],
+  },
+  partner_qualification: {
+    type: 'subcontractor',
+    label: 'Partner and subcontractor qualifications',
+    fields: [
+      field('entity', 'Partner legal entity'),
+      field('scope', 'Proposed scope'),
+      field('qualifications', 'License / certification references'),
+      field('agreement', 'Teaming agreement reference'),
+      field('permission', 'Permission to use partner evidence'),
+    ],
+  },
+  reusable_documents: {
+    type: 'compliance',
+    label: 'Reusable forms and capability statement',
+    fields: [
+      field('capability_statement', 'Capability statement reference'),
+      field('standard_forms', 'Standard form references'),
+      field('reviewed', 'Last reviewed', 'date'),
+      field('restrictions', 'Reuse restrictions'),
+    ],
+  },
+  tax_reference: {
+    type: 'financial',
+    label: 'Tax identity evidence reference',
+    fields: [
+      field('reference', 'Secure EIN / W-9 document reference; do not enter full tax ID'),
+      field('entity', 'Entity named on tax document'),
+      field('reviewed', 'Last reviewed', 'date'),
+    ],
+  },
   mailing_address: {
     type: 'identity',
     label: 'Business mailing address',

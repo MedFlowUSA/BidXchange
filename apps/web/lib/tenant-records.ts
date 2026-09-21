@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { LiveOpportunity, LivePursuit, TenantData } from './tenant-types';
 
 export const opportunityFields =
-  'id,title,solicitation_number,buyer,source_url,source_note,official_deadline,deadline_timezone,summary,estimated_value,status,updated_at';
+  'id,title,solicitation_number,buyer,source_url,source_note,official_deadline,deadline_timezone,summary,estimated_value,status,updated_at,source_details';
 export const pursuitFields = 'id,title,opportunity_id,decision,status,updated_at';
 export const taskFields =
   'id,pursuit_id,title,status,updated_at,assigned_user_id,due_at,due_timezone';

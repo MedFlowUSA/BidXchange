@@ -27,6 +27,7 @@ export type Fact = {
   updated_at: string;
 };
 export type LiveOpportunity = {
+  source_details?: import('./sources/normalized').NormalizedDetails | null;
   updated_at?: string;
   id: string;
   title: string;

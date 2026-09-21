@@ -120,6 +120,15 @@ export default function AppShell({
         <details className="secondary-navigation" open={page === 'Reports'}>
           <summary className="nav-item">More</summary>
           <nav aria-label="More navigation">
+            {organization && (
+              <Link
+                href={workspaceHref('/opportunities/registry', organization.id)}
+                className="nav-item"
+                onClick={() => setMobile(false)}
+              >
+                Source registry
+              </Link>
+            )}
             <Link
               href={workspaceHref('/reports', organization?.id)}
               className={`nav-item ${page === 'Reports' ? 'active' : ''}`}
