@@ -7,6 +7,71 @@ import {
   type SavedResponsePackage,
 } from '../lib/response-package';
 import { saveResponsePackage } from '../app/response-package-actions';
+import { responseAutofill } from '../lib/response-autofill';
+import { workspaceHref } from '../lib/routes';
+
+function AutofillPreview({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
+  let fields;
+  try {
+    fields = responseAutofill(data, pursuitId, new Date(data.reviewAsOf));
+  } catch {
+    return (
+      <p role="status">
+        The automatic company information is unavailable. Reload and review the company profile
+        before exporting.
+      </p>
+    );
+  }
+  return (
+    <details className="panel" aria-label="Automatic document information">
+      <summary>Automatically included: company and bid information</summary>
+      <p>
+        These fields populate every RFI, RFP and RFQ PDF and Word draft from current records.
+        Downloads refresh the values; your written answers stay as saved.
+      </p>
+      <h3>Company and bid details</h3>
+      <dl>
+        {[...fields.company, ...fields.bid].map((row) => (
+          <div key={row.label}>
+            <dt>{row.label}</dt>
+            <dd style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <h3>Verified company records and relevant qualifications</h3>
+      {fields.facts.length ? (
+        <dl>
+          {fields.facts.map((f) => (
+            <div key={f.id}>
+              <dt>{f.label}</dt>
+              <dd style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                {f.value}
+                <br />
+                <small>Source: {f.source_reference}</small>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p>
+          No current exportable company records. Add or verify records in Company, and review
+          qualifications against the pursuit requirements.
+        </p>
+      )}
+      {!!fields.gaps.length && (
+        <>
+          <h3>Information to complete</h3>
+          <ul>
+            {fields.gaps.map((g) => (
+              <li key={g}>{g}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      <a href={workspaceHref('/company', data.organization.id)}>Update company information</a>
+    </details>
+  );
+}
 
 function Editor({
   data,
@@ -215,6 +280,7 @@ export default function ResponsePackages({
       {packages.length > 20 && (
         <p role="status">Showing the 20 most recently updated response packages.</p>
       )}
+      <AutofillPreview data={data} pursuitId={pursuitId} />
       {!packages.length && <p>No saved response packages yet.</p>}
       {packages.slice(0, 20).map((saved) => (
         <article key={saved.id} id={`response-${saved.id}`} className="panel">

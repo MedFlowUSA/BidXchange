@@ -16,6 +16,24 @@ export const passportSteps = [
         prompt:
           'Identify the representative and role. Cite the basis of their authority; listing a person here does not authorize a bid.',
       },
+      {
+        type: 'identity',
+        label: 'Business mailing address',
+        prompt:
+          'Enter the company mailing address used on responses, including city, state and postal code. Cite a current company record.',
+      },
+      {
+        type: 'identity',
+        label: 'Business phone',
+        prompt:
+          'Enter the business phone number and extension buyers should use. Cite the company contact record.',
+      },
+      {
+        type: 'identity',
+        label: 'Business email',
+        prompt:
+          'Enter the company email address buyers should use for responses. Cite the company contact record; do not enter login credentials.',
+      },
     ],
   },
   {

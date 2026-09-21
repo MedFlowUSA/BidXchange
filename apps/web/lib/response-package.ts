@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { TenantData } from './tenant-types';
 import { pursuitBrief } from './pursuit-brief';
-import { discloseFact } from './ai/policy';
+import { exportableFact, responseAutofill } from './response-autofill';
 
 export const responseDraftSchema = z
   .object({
@@ -86,6 +86,23 @@ export function responseDocument(
   const blocks: ResponseBlock[] = [];
   const add = (kind: ResponseBlock['kind'], text: string) => blocks.push({ kind, text });
   const issues: string[] = [];
+  const autofill = responseAutofill(data, pursuitId, now);
+  add('heading', 'Company information');
+  add(
+    'note',
+    'Company identity comes from the workspace profile. Verified records include their sources below. Qualification evidence is limited to current approvals for this pursuit; it does not establish compliance with other requirements.',
+  );
+  for (const field of autofill.company) add('body', `${field.label}: ${field.value}`);
+  for (const fact of autofill.facts) {
+    add('body', `${fact.label}: ${fact.value}`);
+    add(
+      'note',
+      `Company source: ${fact.source_reference}\nRecord ${fact.id}, version ${fact.updated_at}; verified ${fact.verified_at}${fact.expiration_date ? `; expires ${fact.expiration_date}` : ''}`,
+    );
+  }
+  add('heading', 'Bid information');
+  for (const field of autofill.bid) add('body', `${field.label}: ${field.value}`);
+  issues.push(...autofill.gaps);
   const contextChanged = !draft.context || draft.context !== data.decisionContext;
   if (contextChanged)
     issues.push(
@@ -129,16 +146,7 @@ export function responseDocument(
         )
       : [];
     const facts = data.facts.filter(
-      (f) =>
-        discloseFact('viewer', f.sensitivity, f.fact_type) &&
-        f.value?.trim() &&
-        f.source_reference?.trim() &&
-        f.verification_status === 'verified' &&
-        f.verified_by &&
-        f.verified_at &&
-        (!f.expiration_date || f.expiration_date >= now.toISOString().slice(0, 10)) &&
-        (!f.effective_date || f.effective_date <= now.toISOString().slice(0, 10)) &&
-        reviews.some((e) => e.fact_id === f.id),
+      (f) => exportableFact(f, now) && reviews.some((e) => e.fact_id === f.id),
     );
     if (!facts.length) {
       add(

@@ -119,6 +119,22 @@ export async function GET(request: Request) {
           { status: 409, headers },
         );
     }
+    // Company identity and unlinked registration/contact facts are not all part
+    // of the pursuit decision token. Recheck the complete rendered source set.
+    const refreshed = await loadTenant(v.organization, `/pursuits/${v.pursuit}`, {
+      kind: 'pursuit',
+      id: v.pursuit,
+    });
+    if (
+      !refreshed.data ||
+      JSON.stringify(
+        responseDocument(refreshed.data, v.pursuit, saved.data, new Date(document.generatedAt)),
+      ) !== JSON.stringify(document)
+    )
+      return Response.json(
+        { message: 'Company or bid information changed during export. Reload and retry.' },
+        { status: 409, headers },
+      );
     return new Response(new Uint8Array(bytes), {
       headers: {
         ...headers,

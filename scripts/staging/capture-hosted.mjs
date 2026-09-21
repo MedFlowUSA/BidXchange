@@ -413,6 +413,14 @@ try {
   await assistantPage.getByRole('link', { name: 'Open response workspace' }).click();
   const rfpCard = assistantPage.locator(`#response-${rfp[0].id}`);
   await expect(rfpCard).toBeVisible();
+  const autoInfo = assistantPage.getByLabel('Automatic document information');
+  await autoInfo.locator('summary').click();
+  await expect(autoInfo).toContainText('Company and bid details');
+  await expect(autoInfo).toContainText('Submission deadline');
+  await expect(autoInfo.getByRole('link', { name: 'Update company information' })).toHaveAttribute(
+    'href',
+    `/company?organization=${org}`,
+  );
   await rfpCard.getByRole('button', { name: 'Edit this draft' }).click();
   await expect(assistantPage.getByRole('form', { name: 'Edit RFP response' })).toBeVisible();
   for (const format of ['PDF', 'Word']) {

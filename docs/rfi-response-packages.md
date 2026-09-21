@@ -1,5 +1,15 @@
 # RFI response packages
 
+## Automatic company and bid information
+
+All RFI, RFP and RFQ exports now include a company-information section and bid-information section. The response workspace previews the same data and links to Company to fill gaps. Company identity uses the workspace legal name, operating name and website. Current, sourced, verified workspace-visible identity, registration, NAICS and service-territory facts populate automatically, including contacts, addresses, phone/email and public identifiers when recorded in those categories. Licenses, capabilities and certifications additionally require current applicable evidence-use approval for a requirement in the selected pursuit. Restricted and role-restricted fact types remain excluded from these shared documents.
+
+Bid details include pursuit and opportunity names, buyer, solicitation number, saved notice summary, official deadline with time zone, notice URL and source reference. Requirements and their citations continue to populate per section. Missing contact/address/phone/email and bid fields appear in the internal review checklist. Unverified, expired, future-effective and future-verified records are omitted; they are not promoted to verified by document creation. Pricing, authorization and missing narrative are not inferred.
+
+Values refresh at export, including for existing saved drafts. Automatic data is separate from editable narrative, so updates do not overwrite answers. New assistant outlines no longer duplicate company/buyer/solicitation values inside saved free text. Legacy and manually written narrative may still contain old facts and needs review. After rendering, the export reloads its scoped sources and compares the complete rendered document before releasing bytes, covering company records outside the decision-context token. Profiles at the 500-row loading limit fail closed rather than silently exporting incomplete profile data.
+
+Validation: five response tests passed, covering all three document types, contact and identifier population, fresh values, omissions, source limits and real PDF/Word text. The PDF information page was visually inspected. The authenticated staging workflow passed the new automatic-information preview and actual exports alongside command creation/replay, stale-edit denial and viewer denial; fixture records were cleaned up. Company setup now provides dedicated address, phone and email prompts. No migration or credentials changed.
+
 ## Assistant document commands
 
 The authenticated assistant now accepts explicit standalone commands such as “Create an RFP for this bid”, “Draft an RFI response” and “Prepare an RFQ for the selected pursuit”. The command works in either answer mode on an open pursuit. Outside a pursuit it links to Pursuits instead of guessing a bid. Public demo conversations cannot create company records.

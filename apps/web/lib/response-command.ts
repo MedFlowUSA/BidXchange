@@ -24,10 +24,7 @@ export function prepareResponseDraft(data: TenantData, pursuitId: string, kind: 
     ...draft,
     kind,
     summary: [
-      `${kind} response draft for ${pursuit.title}`,
-      `Prepared by: ${data.organization.legal_name || data.organization.operating_name}`,
-      `Buyer: ${opportunity.buyer || '[Confirm buyer]'}`,
-      `Solicitation: ${opportunity.solicitation_number || '[Confirm solicitation number]'}`,
+      `${kind} response draft`,
       '',
       kind === 'RFP'
         ? '[Complete technical approach, delivery plan, staffing, past performance and pricing as required by the solicitation.]'

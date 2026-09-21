@@ -11,6 +11,7 @@ import {
 import { renderResponsePdf, renderResponseDocx } from '../apps/web/lib/response-render';
 import type { TenantData, Fact } from '../apps/web/lib/tenant-types';
 import { responseCommand, prepareResponseDraft } from '../apps/web/lib/response-command';
+import { responseAutofill } from '../apps/web/lib/response-autofill';
 const id = '11111111-1111-4111-8111-111111111111';
 const stamp = '2026-09-20T00:00:00+00:00';
 const now = new Date('2026-09-21T00:00:00Z');
@@ -138,6 +139,67 @@ test('document commands require explicit intent and prepare typed drafts without
   }
   expect(() => prepareResponseDraft(data, 'other', 'RFP')).toThrow();
 });
+test('all response types autofill current company contacts, registrations and bid details without stale or restricted data', () => {
+  const { data, saved } = fixture();
+  data.organization.website = 'https://example.invalid';
+  data.opportunities[0].summary = 'Maintain three public facilities';
+  data.opportunities[0].official_deadline = '2026-10-01T20:00:00Z';
+  data.opportunities[0].deadline_timezone = 'America/Los_Angeles';
+  const fields = [
+    ['identity', 'Mailing address', '100 Synthetic Street'],
+    ['identity', 'Business phone', '555-0100'],
+    ['identity', 'Business email', 'bids@example.invalid'],
+    ['identity', 'Primary contact', 'Synthetic Contact'],
+    ['registration', 'UEI', 'SYNTHETICUEI'],
+    ['registration', 'CAGE', 'TEST1'],
+  ];
+  for (const [fact_type, label, value] of fields)
+    data.facts.push({ ...data.facts[0], id: label, fact_type, label, value });
+  data.facts.push({
+    ...data.facts[0],
+    id: 'expired',
+    fact_type: 'identity',
+    label: 'Old email',
+    value: 'OLD-EMAIL-MUST-NOT-EXPORT',
+    expiration_date: '2026-09-01',
+  });
+  data.facts.push({
+    ...data.facts[0],
+    id: 'pending',
+    fact_type: 'registration',
+    value: 'PENDING-MUST-NOT-EXPORT',
+    verification_status: 'pending_verification',
+  });
+  data.facts.push({
+    ...data.facts[0],
+    id: 'future',
+    fact_type: 'identity',
+    value: 'FUTURE-MUST-NOT-EXPORT',
+    verified_at: '2027-01-01T00:00:00Z',
+  });
+  for (const kind of ['RFI', 'RFP', 'RFQ']) {
+    saved.content = JSON.stringify({ ...JSON.parse(saved.content!), kind });
+    const text = JSON.stringify(responseDocument(data, 'p', saved, now));
+    for (const [, , value] of fields) expect(text).toContain(value);
+    expect(text).toContain('Maintain three public facilities');
+    expect(text).toContain('America/Los_Angeles');
+    expect(text).toContain('https://example.invalid');
+    expect(text).not.toContain('MUST-NOT-EXPORT');
+    expect(text).not.toContain('RESTRICTED MUST NOT EXPORT');
+  }
+  expect(responseAutofill(data, 'p', now).gaps.join(' ')).not.toContain('Business email:');
+  data.facts.find((f) => f.label === 'Business email')!.value = 'updated@example.invalid';
+  const fresh = JSON.stringify(responseDocument(data, 'p', saved, now));
+  expect(fresh).toContain('updated@example.invalid');
+  expect(fresh).not.toContain('bids@example.invalid');
+  data.facts.find((f) => f.label === 'Business email')!.sensitivity = 'restricted';
+  expect(JSON.stringify(responseDocument(data, 'p', saved, now))).not.toContain(
+    'updated@example.invalid',
+  );
+  expect(responseAutofill(data, 'p', now).gaps.join(' ')).toContain('Business email:');
+  data.facts = Array.from({ length: 500 }, () => data.facts[0]);
+  expect(() => responseAutofill(data, 'p', now)).toThrow('incomplete');
+});
 test('response package copies only current approved workspace evidence and retains exact citations', () => {
   const { data, saved } = fixture();
   const text = JSON.stringify(responseDocument(data, 'p', saved, now));
@@ -180,6 +242,13 @@ test('stale sources, missing answers, malformed packages and partial registers c
 });
 test('PDF and Word preserve long answers, pagination, Unicode and draft markings', async () => {
   const { data, saved } = fixture();
+  data.facts.push({
+    ...data.facts[0],
+    id: 'contact-email',
+    fact_type: 'identity',
+    label: 'Business email',
+    value: 'response@example.invalid',
+  });
   const draft = JSON.parse(saved.content!);
   draft.answers[0].text = 'Résumé — capability & availability. '.repeat(70) + 'END-OF-RESPONSE';
   saved.content = JSON.stringify(draft);
@@ -210,12 +279,14 @@ test('PDF and Word preserve long answers, pagination, Unicode and draft markings
     }
   }
   expect(text).toContain('END-OF-RESPONSE');
+  expect(text).toContain('response@example.invalid');
   expect(text).toContain('Résumé');
   expect(text).not.toContain('RESTRICTED');
   const docx = await renderResponseDocx(document, assets.logo);
   const zip = await JSZip.loadAsync(docx);
   const xml = await zip.file('word/document.xml')!.async('string');
   expect(xml).toContain('END-OF-RESPONSE');
+  expect(xml).toContain('response@example.invalid');
   expect(xml).toContain('Résumé');
   expect(xml).toContain('&amp;');
   expect(xml).not.toContain('RESTRICTED');
