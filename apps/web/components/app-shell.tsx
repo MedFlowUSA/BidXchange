@@ -126,7 +126,7 @@ export default function AppShell({
                 className="nav-item"
                 onClick={() => setMobile(false)}
               >
-                Source registry
+                Portals & connections
               </Link>
             )}
             <Link

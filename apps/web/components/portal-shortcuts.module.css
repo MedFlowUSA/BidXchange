@@ -1,0 +1,28 @@
+.portals {
+  margin: 20px 0 28px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+.grid a {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #d4deee;
+  border-radius: 10px;
+  background: #f5f8ff;
+  color: #183b83;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.grid a:hover,
+.grid a:focus-visible {
+  border-color: #3459cc;
+  background: #eaf0ff;
+}
+.grid span {
+  color: #52637c;
+  font-size: 0.8rem;
+}

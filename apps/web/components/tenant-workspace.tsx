@@ -24,6 +24,7 @@ import { DocumentLibrary, RequirementDocuments } from './document-library';
 import TodayTaskQueue from './today-task-queue';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
+import PortalShortcuts from './portal-shortcuts';
 import EvidenceUseReview from './evidence-use-review';
 import EvidenceRenewals from './evidence-renewals';
 import { OpportunityForm, StartPursuitForm, TaskForm, RequirementForm } from './capture-forms';
@@ -683,9 +684,10 @@ export default function TenantWorkspace({
         {!recordId && page === 'Opportunities' && (
           <>
             <section className="panel">
-              <h2>Opportunity sources</h2>
-              <p>Manage source registrations, contract vehicles and reviewed portal intake.</p>
-              <Link href={href('/opportunities/registry')}>Open source registry</Link>
+              <PortalShortcuts />
+              <Link href={href('/opportunities/registry')}>
+                Manage portals, registrations and data connections
+              </Link>
             </section>
             {capture && <PepmaIntake data={data} />}
             <section className="panel">

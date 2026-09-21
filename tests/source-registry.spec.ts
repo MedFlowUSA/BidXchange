@@ -11,6 +11,19 @@ import {
   externalUrl,
 } from '../apps/web/lib/sources/normalized';
 import { org } from './fixtures/workflow-data';
+import { reviewedPortalUrl } from '../apps/web/lib/sources/portal-url';
+
+test('reviewed portal links reject credentials and secret-bearing destinations', () => {
+  expect(reviewedPortalUrl('https://agency.gov/vendor')).toBe('https://agency.gov/vendor');
+  for (const url of [
+    'javascript:alert(1)',
+    'https://user:pass@agency.gov',
+    'https://agency.gov?api_key=private',
+    'https://agency.gov#access_token=private',
+    '',
+  ])
+    expect(reviewedPortalUrl(url)).toBeNull();
+});
 test('registry distinguishes opportunities, vehicles, research and gated eBuy', () => {
   expect(new Set(sourceRegistry.map((s) => s.id)).size).toBe(sourceRegistry.length);
   for (const id of [
@@ -148,6 +161,14 @@ test('registry exposes honest status, category separation and eBuy lock on mobil
   page,
 }) => {
   await mount(page);
+  await expect(page.getByRole('link', { name: 'SAM.gov Federal · Open portal' })).toHaveAttribute(
+    'href',
+    'https://sam.gov/opportunities',
+  );
+  await expect(page.getByRole('link', { name: 'SAM.gov Federal · Open portal' })).toHaveAttribute(
+    'rel',
+    'noopener noreferrer',
+  );
   await expect(
     page.getByText('Manual intake only; automatic connector not connected'),
   ).toBeVisible();

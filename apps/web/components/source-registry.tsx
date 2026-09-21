@@ -13,6 +13,8 @@ import {
 import { saveNormalizedOpportunity, saveSourceRegistration } from '../app/registry-actions';
 import type { LiveOpportunity } from '../lib/tenant-types';
 import styles from './pepma-workflow.module.css';
+import PortalShortcuts from './portal-shortcuts';
+import { reviewedPortalUrl } from '../lib/sources/portal-url';
 
 export function SourceOpportunityForm({
   org,
@@ -149,9 +151,11 @@ export default function SourceRegistry({
   const source = list.find((s) => s.id === selected) ?? list[0];
   const registration = registrations.find((r) => r.source_id === source.id);
   const eligible = !source.scheduleRequired || scheduleEligible(registration);
+  const savedPortal = reviewedPortalUrl(registration?.portal_url);
   return (
     <section className={`panel ${styles.panel}`}>
       <h1>Source registry</h1>
+      <PortalShortcuts />
       <p>
         Independent intake and submission handoffs. No affiliation, endorsement or portal
         partnership is implied. Registration evidence is not an authenticated connector.
@@ -227,7 +231,7 @@ export default function SourceRegistry({
         </dl>
         {source.url ? (
           <a href={source.url} target="_blank" rel="noopener noreferrer">
-            Open source guidance
+            Open {source.platform} portal / guidance ↗
           </a>
         ) : (
           <p>
@@ -235,12 +239,43 @@ export default function SourceRegistry({
             connection is assumed.
           </p>
         )}
-        {source.id === 'sam.gov' && (
+        {savedPortal && (
           <p>
+            <a href={savedPortal} target="_blank" rel="noopener noreferrer">
+              Open company’s reviewed portal ↗
+            </a>
+            <br />
+            <small>
+              Destination recorded by your company administrator. Verify the address before signing
+              in.
+            </small>
+          </p>
+        )}
+        {source.id === 'sam.gov' && (
+          <div className="info-note">
+            <h3>SAM.gov data connection</h3>
+            <p>
+              {sam?.enabled
+                ? 'The operator has enabled this connector. Check the last successful synchronization above before relying on its freshness.'
+                : 'Automatic sync is not active. An operator must privately configure a SAM.gov API key, validate a bounded test, and activate the production job and source inbox.'}
+            </p>
+            <p>
+              Opening SAM.gov does not connect your account. BidXchange never needs your SAM.gov
+              password.
+            </p>
+            <p>
+              <a
+                href="https://open.gsa.gov/api/get-opportunities-public-api/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Official API key and connection instructions ↗
+              </a>
+            </p>
             <Link href={`/opportunities/sources?organization=${org}`}>
               SAM.gov source inbox and API status
             </Link>
-          </p>
+          </div>
         )}
         {source.group === 'vehicles' && (
           <p>
