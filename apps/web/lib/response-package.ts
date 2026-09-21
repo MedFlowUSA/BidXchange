@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { TenantData } from './tenant-types';
 import { pursuitBrief } from './pursuit-brief';
 import { exportableFact, responseAutofill } from './response-autofill';
+import { hasResponsePlaceholder } from './response-progress';
 
 export const responseDraftSchema = z
   .object({
@@ -64,6 +65,7 @@ export type ResponseDocument = {
   version: string;
   generatedAt: string;
   blocks: ResponseBlock[];
+  reviewIssues?: string[];
 };
 
 export function responseDocument(
@@ -111,6 +113,8 @@ export function responseDocument(
   add('heading', 'Response overview');
   add('body', draft.summary || '[Response overview not supplied]');
   if (!draft.summary) issues.push('Response overview is missing.');
+  if (hasResponsePlaceholder(draft.summary))
+    issues.push('Response overview contains unfinished placeholders.');
   add(
     'note',
     `Source notice: ${opportunity.source_url ?? opportunity.source_note ?? 'Not recorded'}`,
@@ -131,6 +135,8 @@ export function responseDocument(
     add('note', `Requirement ID: ${r.id}\nNotice citation: ${r.citation ?? 'Missing'}`);
     add('body', answer?.text || '[Answer not supplied]');
     if (!answer?.text) issues.push(`Requirement ${index + 1}: answer missing.`);
+    if (hasResponsePlaceholder(answer?.text ?? ''))
+      issues.push(`Requirement ${index + 1}: answer contains unfinished placeholders.`);
     if (changed) {
       add('note', 'REVIEW AGAIN: this requirement changed after the answer was drafted.');
       issues.push(`Requirement ${index + 1}: source version changed.`);
@@ -201,5 +207,6 @@ export function responseDocument(
     version: `${saved.id} / ${saved.updated_at}`,
     generatedAt: now.toISOString(),
     blocks,
+    reviewIssues: issues,
   };
 }

@@ -1,5 +1,13 @@
 # RFI response packages
 
+## Saved draft review
+
+Each saved response now shows how many requirement answers contain text against the current requirement version without recognized unfinished markers. “Review saved draft” exposes missing answers, placeholder text, changed wording, removed requirements and the same company/evidence/internal checklist used by export. Capture/admin users can jump directly to the overview or affected answer; readers can inspect the saved draft without write controls. A complete text preview uses the same document assembler and disclosure checks as PDF/Word.
+
+Counts describe drafting progress only, never completeness of the notice, compliance, approval or submission readiness. TODO/TBD and explicit bracketed drafting prompts are recognized; ordinary bracketed citations such as [1] are not. Placeholder warnings also appear in the exported internal review checklist. Missing or oversized/unavailable sources fail visibly when opening review. Reviews use saved answers and the currently loaded workspace snapshot; downloads still reload and recheck sources. Editing shows live answer progress and reminds the user to save before relying on downloads. No new database permissions, approval state or model calls were introduced.
+
+Validation: six response tests passed, including placeholder/current-version distinctions and PDF/Word rendering. The authenticated staging workflow verified the saved review, full preview, direct focus to overview and requirement answers, downloads and role denial. Synthetic staging records were cleaned up. Lint, type checking, production build and secret scanning passed.
+
 ## Automatic company and bid information
 
 All RFI, RFP and RFQ exports now include a company-information section and bid-information section. The response workspace previews the same data and links to Company to fill gaps. Company identity uses the workspace legal name, operating name and website. Current, sourced, verified workspace-visible identity, registration, NAICS and service-territory facts populate automatically, including contacts, addresses, phone/email and public identifiers when recorded in those categories. Licenses, capabilities and certifications additionally require current applicable evidence-use approval for a requirement in the selected pursuit. Restricted and role-restricted fact types remain excluded from these shared documents.

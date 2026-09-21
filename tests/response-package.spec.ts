@@ -12,6 +12,7 @@ import { renderResponsePdf, renderResponseDocx } from '../apps/web/lib/response-
 import type { TenantData, Fact } from '../apps/web/lib/tenant-types';
 import { responseCommand, prepareResponseDraft } from '../apps/web/lib/response-command';
 import { responseAutofill } from '../apps/web/lib/response-autofill';
+import { hasResponsePlaceholder, responseProgress } from '../apps/web/lib/response-progress';
 const id = '11111111-1111-4111-8111-111111111111';
 const stamp = '2026-09-20T00:00:00+00:00';
 const now = new Date('2026-09-21T00:00:00Z');
@@ -138,6 +139,36 @@ test('document commands require explicit intent and prepare typed drafts without
     expect(await zip.file('word/header1.xml')!.async('string')).toContain(`${kind} RESPONSE`);
   }
   expect(() => prepareResponseDraft(data, 'other', 'RFP')).toThrow();
+});
+test('draft review distinguishes written answers, placeholders, changed requirements and missing scope', () => {
+  const { data, saved } = fixture();
+  const draft = readResponseDraft(saved.content)!;
+  expect(responseProgress(draft, data, 'p').current).toBe(1);
+  expect(hasResponsePlaceholder('See reference [1] for the approach.')).toBe(false);
+  draft.summary = '[Complete technical approach]';
+  draft.answers[0].text = 'TBD';
+  let review = responseProgress(draft, data, 'p');
+  expect(review.current).toBe(0);
+  expect(review.overviewPlaceholder).toBe(true);
+  expect(review.rows[0].placeholder).toBe(true);
+  saved.content = JSON.stringify(draft);
+  const doc = responseDocument(data, 'p', saved, now);
+  expect(doc.reviewIssues).toContain('Response overview contains unfinished placeholders.');
+  expect(doc.reviewIssues).toContain('Requirement 1: answer contains unfinished placeholders.');
+  expect(doc.blocks.some((b) => b.text.includes('answer contains unfinished placeholders'))).toBe(
+    true,
+  );
+  draft.answers[0].text = 'A written answer';
+  data.requirements![0].updated_at = '2026-09-21T00:00:00+00:00';
+  review = responseProgress(draft, data, 'p');
+  expect(review.current).toBe(0);
+  expect(review.rows[0].changed).toBe(true);
+  draft.answers = [];
+  expect(responseProgress(draft, data, 'p').rows[0].missing).toBe(true);
+  expect(responseProgress(draft, data, 'another-pursuit').rows).toEqual([]);
+  expect(responseProgress(readResponseDraft(saved.content)!, data, 'another-pursuit').removed).toBe(
+    1,
+  );
 });
 test('all response types autofill current company contacts, registrations and bid details without stale or restricted data', () => {
   const { data, saved } = fixture();

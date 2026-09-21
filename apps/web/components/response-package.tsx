@@ -1,5 +1,5 @@
 'use client';
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import type { TenantData } from '../lib/tenant-types';
 import {
   newResponseDraft,
@@ -9,6 +9,8 @@ import {
 import { saveResponsePackage } from '../app/response-package-actions';
 import { responseAutofill } from '../lib/response-autofill';
 import { workspaceHref } from '../lib/routes';
+import ResponseReview from './response-review';
+import { responseProgress } from '../lib/response-progress';
 
 function AutofillPreview({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
   let fields;
@@ -77,11 +79,23 @@ function Editor({
   data,
   pursuitId,
   saved,
+  focusTarget,
 }: {
   data: TenantData;
   pursuitId: string;
   saved?: SavedResponsePackage;
+  focusTarget?: { field: string };
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const id = !focusTarget
+      ? 'response-draft-name'
+      : focusTarget.field === 'overview'
+        ? 'response-overview'
+        : `response-answer-${focusTarget.field}`;
+    const target = document.getElementById(id);
+    if (target && formRef.current?.contains(target)) target.focus();
+  }, [focusTarget]);
   const [snapshot] = useState(() => ({
     version: saved?.updated_at ?? '',
     draft: readResponseDraft(saved?.content ?? null) ?? newResponseDraft(data, pursuitId),
@@ -106,8 +120,10 @@ function Editor({
   const changed = Boolean(
     saved && (!snapshot.draft.context || snapshot.draft.context !== data.decisionContext),
   );
+  const progress = responseProgress(draft, data, pursuitId);
   return (
     <form
+      ref={formRef}
       action={action}
       className="opportunity-form admin-form"
       aria-label={`Edit ${draft.kind} response`}
@@ -131,6 +147,10 @@ function Editor({
       </p>
       <fieldset disabled={pending || state.success}>
         <legend>{draft.kind} response draft</legend>
+        <p>
+          {progress.current} of {progress.rows.length} requirement answers drafted. Save your edits
+          to update the saved review and downloads.
+        </p>
         <label>
           Response type
           <select
@@ -146,6 +166,7 @@ function Editor({
         <label>
           Draft name
           <input
+            id="response-draft-name"
             name="title"
             required
             maxLength={160}
@@ -156,6 +177,7 @@ function Editor({
         <label>
           Response overview
           <textarea
+            id="response-overview"
             rows={5}
             aria-label="Response overview"
             maxLength={6000}
@@ -178,6 +200,7 @@ function Editor({
               <label>
                 Response to requirement {index + 1}
                 <textarea
+                  id={`response-answer-${answer.requirementId}`}
                   rows={5}
                   aria-label={`Response to requirement ${index + 1}`}
                   maxLength={4000}
@@ -224,6 +247,7 @@ export default function ResponsePackages({
   pursuitId: string;
 }) {
   const [editing, setEditing] = useState<string | null>(null);
+  const [focusTarget, setFocusTarget] = useState<{ field: string } | undefined>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const canEdit = ['organization_admin', 'capture_manager'].includes(data.organization.role);
@@ -286,6 +310,19 @@ export default function ResponsePackages({
         <article key={saved.id} id={`response-${saved.id}`} className="panel">
           <h3>{saved.title}</h3>
           <p>Saved {saved.updated_at} · Draft</p>
+          <ResponseReview
+            data={data}
+            pursuitId={pursuitId}
+            saved={saved}
+            onEdit={
+              canEdit
+                ? (field) => {
+                    setEditing(saved.id);
+                    setFocusTarget({ field });
+                  }
+                : undefined
+            }
+          />
           {readResponseDraft(saved.content) ? (
             <div className="hero-actions">
               <button
@@ -303,7 +340,13 @@ export default function ResponsePackages({
                 Download saved draft Word
               </button>
               {canEdit && (
-                <button className="button secondary" onClick={() => setEditing(saved.id)}>
+                <button
+                  className="button secondary"
+                  onClick={() => {
+                    setEditing(saved.id);
+                    setFocusTarget(undefined);
+                  }}
+                >
                   Edit this draft
                 </button>
               )}
@@ -315,7 +358,13 @@ export default function ResponsePackages({
       ))}
       <p role="status">{busy ? 'Preparing your saved draft…' : error}</p>
       {canEdit && (data.requirements?.length ?? 0) <= 100 && (
-        <button className="button primary" onClick={() => setEditing('new')}>
+        <button
+          className="button primary"
+          onClick={() => {
+            setEditing('new');
+            setFocusTarget(undefined);
+          }}
+        >
           Create response draft
         </button>
       )}
@@ -336,6 +385,7 @@ export default function ResponsePackages({
             data={data}
             pursuitId={pursuitId}
             saved={packages.find((p) => p.id === editing)}
+            focusTarget={focusTarget}
           />
         </div>
       )}

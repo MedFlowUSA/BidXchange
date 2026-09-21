@@ -413,6 +413,18 @@ try {
   await assistantPage.getByRole('link', { name: 'Open response workspace' }).click();
   const rfpCard = assistantPage.locator(`#response-${rfp[0].id}`);
   await expect(rfpCard).toBeVisible();
+  await rfpCard.getByRole('button', { name: 'Review saved draft', exact: true }).click();
+  await expect(rfpCard.getByRole('region', { name: 'Saved draft review' })).toContainText(
+    'unfinished placeholders',
+  );
+  await rfpCard.getByRole('button', { name: 'Edit overview', exact: true }).click();
+  await expect(assistantPage.getByLabel('Response overview', { exact: true })).toBeFocused();
+  await rfpCard.getByRole('button', { name: 'Review this answer', exact: true }).first().click();
+  await expect(
+    assistantPage.getByLabel('Response to requirement 1', { exact: true }),
+  ).toBeFocused();
+  await rfpCard.locator('summary').filter({ hasText: 'Read complete saved draft' }).click();
+  await expect(rfpCard).toContainText('Internal review checklist');
   const autoInfo = assistantPage.getByLabel('Automatic document information');
   await autoInfo.locator('summary').click();
   await expect(autoInfo).toContainText('Company and bid details');
