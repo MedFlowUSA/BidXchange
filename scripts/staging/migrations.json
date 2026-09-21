@@ -66,7 +66,12 @@
       "file": "20260920001300_opportunity_sources.sql",
       "sha256": "6635515006a03841f97ed819f368479b8dff4a9744d1e19435efacb667062a67",
       "action": "include-schema"
+    },
+    {
+      "file": "20260920001400_public_demo_ai.sql",
+      "sha256": "1b60179ac8a9d3dc022bf6e385066de339d22125bdeb84f2aba6ab04f6a6d8a6",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 9
+  "packageRevision": 10
 }

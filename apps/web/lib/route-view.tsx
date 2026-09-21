@@ -28,6 +28,7 @@ export async function renderWorkspace(
         choices={account.choices}
         userEmail={account.user?.email}
         demoAssistantEnabled={process.env.BIDXCHANGE_AI_DEMO_ENABLED === 'true'}
+        liveDemoAssistant={process.env.BIDXCHANGE_AI_PUBLIC_DEMO_ENABLED === 'true'}
       />
     );
   }

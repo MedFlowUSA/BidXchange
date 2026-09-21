@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import AppShell from './app-shell';
 import Dialog from './dialog';
 import Assistant from './assistant';
+import PublicDemoAssistant from './public-demo-assistant';
 import PursuitFoundation from './pursuit-foundation';
 import { sections, workspaceHref, type OrganizationChoice } from '../lib/routes';
 import {
@@ -81,6 +82,7 @@ const isOpportunity = (v: unknown): v is Opportunity => {
 };
 
 export default function Workspace({
+  liveDemoAssistant = false,
   demoAssistantEnabled = false,
   initialPage = 'Today',
   recordId,
@@ -88,6 +90,7 @@ export default function Workspace({
   choices = [],
   userEmail,
 }: {
+  liveDemoAssistant?: boolean;
   demoAssistantEnabled?: boolean;
   initialPage?: string;
   recordId?: string;
@@ -839,7 +842,10 @@ export default function Workspace({
             </p>
           </section>
         )}
-        {(page === 'Today' || page === 'Assistant' || recordId) && (
+        {liveDemoAssistant && (page === 'Today' || page === 'Assistant' || recordId) && (
+          <PublicDemoAssistant />
+        )}
+        {!liveDemoAssistant && (page === 'Today' || page === 'Assistant' || recordId) && (
           <Assistant
             demo
             demoEnabled={demoAssistantEnabled}

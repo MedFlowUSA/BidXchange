@@ -25,10 +25,10 @@ function fixture() {
 test('only reviewed schema files enter an unlinked idempotent package', () => {
   const { root } = fixture();
   const result = preparePackage(root);
-  assert.equal(result.included.length, 12);
+  assert.equal(result.included.length, 13);
   assert.deepEqual(result.excluded, ['20260919000200_ges_onboarding.sql']);
   assert.deepEqual(preparePackage(root), result);
-  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 12);
+  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 13);
   assert.deepEqual(readdirSync(result.destination).sort(), [
     'README.txt',
     'manifest.json',
@@ -103,7 +103,7 @@ test('schema-only bootstrap has tenant protections and no company or AI activati
           "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity",
         )
       ).rows[0].n,
-      46,
+      48,
     );
     assert.equal(
       (await db.query("select count(*)::int n from pg_policies where schemaname='public'")).rows[0]
