@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Bell,
   Building2,
+  BookOpen,
   ChevronRight,
   CircleHelp,
   LayoutDashboard,
@@ -115,6 +116,17 @@ export default function AppShell({
               </Link>
             );
           })}
+          <a
+            href="/guides/bidxchange-user-guide.pdf"
+            className="nav-item"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="How-to guide (PDF, opens in a new tab)"
+            onClick={() => setMobile(false)}
+          >
+            <BookOpen size={19} />
+            <span>How-to guide (PDF)</span>
+          </a>
         </nav>
         <details className="secondary-navigation" open={page === 'Reports'}>
           <summary className="nav-item">More</summary>
