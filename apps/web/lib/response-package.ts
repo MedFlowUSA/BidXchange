@@ -6,6 +6,7 @@ import { discloseFact } from './ai/policy';
 export const responseDraftSchema = z
   .object({
     schema: z.literal(1),
+    kind: z.enum(['RFI', 'RFP', 'RFQ']).default('RFI'),
     context: z.string().max(500),
     summary: z.string().trim().max(6000),
     answers: z
@@ -43,6 +44,7 @@ export function readResponseDraft(content: string | null) {
 export function newResponseDraft(data: TenantData, pursuitId: string): ResponseDraft {
   return {
     schema: 1,
+    kind: 'RFI',
     context: data.decisionContext ?? '',
     summary: '',
     answers: (data.requirements ?? [])
@@ -53,6 +55,7 @@ export function newResponseDraft(data: TenantData, pursuitId: string): ResponseD
 }
 export type ResponseBlock = { kind: 'heading' | 'body' | 'note'; text: string };
 export type ResponseDocument = {
+  kind?: 'RFI' | 'RFP' | 'RFQ';
   title: string;
   draftName: string;
   company: string;
@@ -181,8 +184,9 @@ export function responseDocument(
   if (blocks.reduce((n, b) => n + b.text.length, 0) > 180000)
     throw new Error('This package is too large for one export. Reduce its scope.');
   return {
-    title: `RFI response — ${pursuit.title}`,
-    draftName: saved.title.replace(/^RFI response: /, ''),
+    kind: draft.kind,
+    title: `${draft.kind} response — ${pursuit.title}`,
+    draftName: saved.title.replace(/^RF[IPQ] response: /, ''),
     company: data.organization.legal_name || data.organization.operating_name,
     buyer: opportunity.buyer ?? 'Buyer not recorded',
     solicitation: opportunity.solicitation_number ?? 'Not recorded',

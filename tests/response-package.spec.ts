@@ -10,6 +10,7 @@ import {
 } from '../apps/web/lib/response-package';
 import { renderResponsePdf, renderResponseDocx } from '../apps/web/lib/response-render';
 import type { TenantData, Fact } from '../apps/web/lib/tenant-types';
+import { responseCommand, prepareResponseDraft } from '../apps/web/lib/response-command';
 const id = '11111111-1111-4111-8111-111111111111';
 const stamp = '2026-09-20T00:00:00+00:00';
 const now = new Date('2026-09-21T00:00:00Z');
@@ -95,6 +96,48 @@ function fixture() {
   };
   return { data, saved };
 }
+test('document commands require explicit intent and prepare typed drafts without claims or prices', async () => {
+  for (const [prompt, kind] of [
+    ['create an rfp for this bid', 'RFP'],
+    ['Please draft an RFI response', 'RFI'],
+    ['Can you prepare an RFQ for the selected pursuit?', 'RFQ'],
+  ])
+    expect(responseCommand(prompt)).toBe(kind);
+  for (const prompt of [
+    'Do not create an RFP',
+    'Explain how to create an RFP',
+    'The notice says "create an RFP"',
+    'create an RFP and submit it',
+    'create an RFP for another bid',
+    'What is an RFP?',
+  ])
+    expect(responseCommand(prompt)).toBeNull();
+  const { data, saved } = fixture();
+  expect(readResponseDraft(saved.content)?.kind).toBe('RFI');
+  for (const kind of ['RFP', 'RFQ'] as const) {
+    const draft = prepareResponseDraft(data, 'p', kind);
+    expect(draft.kind).toBe(kind);
+    expect(draft.answers[0].text).toBe('');
+    expect(JSON.stringify(draft)).not.toContain('RESTRICTED MUST NOT EXPORT');
+    expect(JSON.stringify(draft)).not.toContain('Documented public capability');
+    const document = responseDocument(
+      data,
+      'p',
+      { ...saved, title: `${kind} response: Test`, content: JSON.stringify(draft) },
+      now,
+    );
+    expect(document.kind).toBe(kind);
+    expect(document.title).toContain(`${kind} response`);
+    expect(JSON.stringify(document)).toContain('missing');
+    const bytes = await renderResponseDocx(
+      document,
+      readFileSync('apps/web/public/brand/bidxchange-logo.png'),
+    );
+    const zip = await JSZip.loadAsync(bytes);
+    expect(await zip.file('word/header1.xml')!.async('string')).toContain(`${kind} RESPONSE`);
+  }
+  expect(() => prepareResponseDraft(data, 'other', 'RFP')).toThrow();
+});
 test('response package copies only current approved workspace evidence and retains exact citations', () => {
   const { data, saved } = fixture();
   const text = JSON.stringify(responseDocument(data, 'p', saved, now));

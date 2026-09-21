@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { accountContext } from '../lib/tenant';
 import { responseDraftSchema } from '../lib/response-package';
-export type ResponseSaveState = { message: string; success?: boolean };
+export type ResponseSaveState = { message: string; success?: boolean; id?: string };
 const inputSchema = z.object({
   organization_id: z.uuid(),
   pursuit_id: z.uuid(),
@@ -11,6 +11,7 @@ const inputSchema = z.object({
   version: z.string().max(60),
   title: z.string().trim().min(1).max(160),
   content: z.string().max(100000),
+  creation_id: z.uuid().optional(),
 });
 export async function saveResponsePackage(
   _state: ResponseSaveState,
@@ -35,6 +36,21 @@ export async function saveResponsePackage(
     )
       return { message: 'Capture or administrator access is required to save a draft.' };
     const db = account.supabase;
+    if (v.creation_id && !v.record_id) {
+      const existing = await db
+        .from('proposal_sections')
+        .select('id,content,status')
+        .eq('organization_id', v.organization_id)
+        .eq('pursuit_id', v.pursuit_id)
+        .eq('id', v.creation_id)
+        .maybeSingle();
+      if (existing.error)
+        return { message: 'Could not check the previous request. Retry shortly.' };
+      if (existing.data)
+        return existing.data.status === 'draft'
+          ? { success: true, id: existing.data.id, message: 'Your draft is already saved.' }
+          : { message: 'This request already exists. Open the saved response.' };
+    }
     const allowance = await db.rpc('consume_admin_mutation');
     if (allowance.error || allowance.data !== true)
       return { message: 'Please wait a minute before saving again.' };
@@ -79,7 +95,7 @@ export async function saveResponsePackage(
         };
     } else draft.context = '';
     const values = {
-      title: `RFI response: ${v.title}`,
+      title: `${draft.kind} response: ${v.title}`,
       content: JSON.stringify(draft),
       status: 'draft',
     };
@@ -91,12 +107,17 @@ export async function saveResponsePackage(
           .eq('pursuit_id', v.pursuit_id)
           .eq('id', v.record_id)
           .eq('updated_at', v.version)
-          .like('title', 'RFI response:%')
+          .or('title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%')
           .eq('status', 'draft')
           .select('id')
       : await db
           .from('proposal_sections')
-          .insert({ ...values, organization_id: v.organization_id, pursuit_id: v.pursuit_id })
+          .insert({
+            ...values,
+            ...(v.creation_id ? { id: v.creation_id } : {}),
+            organization_id: v.organization_id,
+            pursuit_id: v.pursuit_id,
+          })
           .select('id');
     if (result.error)
       return { message: 'The response draft could not be saved. Check your access and retry.' };
@@ -107,6 +128,7 @@ export async function saveResponsePackage(
     revalidatePath('/', 'layout');
     return {
       success: true,
+      id: result.data[0].id,
       message: 'Response draft saved. It has not been approved for submission.',
     };
   } catch {

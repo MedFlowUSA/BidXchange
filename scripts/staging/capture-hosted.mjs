@@ -282,7 +282,7 @@ try {
   console.log(
     'PASS cited requirements persist with owners; stale edits, invalid owners and unavailable parents rejected; arbitrary legacy status cannot claim compliance',
   );
-  await page.getByRole('button', { name: 'Create RFI response draft' }).click();
+  await page.getByRole('button', { name: 'Create response draft' }).click();
   let responseForm = page.getByRole('form', { name: 'Edit RFI response' });
   await responseForm.getByLabel('Draft name', { exact: true }).fill('Synthetic response');
   await responseForm
@@ -360,6 +360,67 @@ try {
     'PASS response save/reload, PDF and Word downloads, anonymous/foreign denial, stale exports/edits and mobile layout',
   );
   await open(stale, 'Edit task');
+  // Mock only the availability badge: the command uses real authenticated server
+  // actions and the staging database, with no paid model call.
+  const assistantPage = await context.newPage();
+  await assistantPage.route('**/api/assistant/status?*', (route) =>
+    route.fulfill({ json: { available: true, access: 'synthetic-capture' } }),
+  );
+  await assistantPage.goto(`${base}/assistant?organization=${org}`);
+  await assistantPage
+    .getByLabel('Ask a question', { exact: true })
+    .fill('Create an RFP for this bid');
+  await assistantPage.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await expect(assistantPage.getByLabel('Assistant document')).toContainText(
+    'Open the bid in Pursuits',
+  );
+  await assistantPage.goto(pursuitUrl);
+  await assistantPage.getByRole('button', { name: 'Open assistant', exact: true }).click();
+  await assistantPage
+    .getByLabel('Ask a question', { exact: true })
+    .fill('Create an RFP for this bid');
+  const actionRequest = assistantPage.waitForRequest(
+    (request) => request.method() === 'POST' && Boolean(request.headers()['next-action']),
+  );
+  await assistantPage.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  const submitted = await actionRequest;
+  await expect(assistantPage.getByLabel('Assistant document')).toContainText(
+    'Your RFP response draft is saved',
+  );
+  const rfp = (
+    await db.query(
+      "select * from public.proposal_sections where organization_id=$1 and pursuit_id=$2 and title='RFP response: Assistant-prepared response'",
+      [org, pursuit.id],
+    )
+  ).rows;
+  assert.equal(rfp.length, 1);
+  assert.equal(JSON.parse(rfp[0].content).kind, 'RFP');
+  assert.equal(JSON.parse(rfp[0].content).answers[0].text, '');
+  const replay = await assistantPage.request.post(submitted.url(), {
+    headers: submitted.headers(),
+    data: submitted.postDataBuffer(),
+  });
+  assert.equal(replay.status(), 200);
+  assert.equal(
+    (
+      await db.query('select count(*)::int as n from public.proposal_sections where id=$1', [
+        rfp[0].id,
+      ])
+    ).rows[0].n,
+    1,
+  );
+  assert((await replay.text()).includes('Your RFP response draft is saved'));
+  await assistantPage.getByRole('link', { name: 'Open response workspace' }).click();
+  const rfpCard = assistantPage.locator(`#response-${rfp[0].id}`);
+  await expect(rfpCard).toBeVisible();
+  await rfpCard.getByRole('button', { name: 'Edit this draft' }).click();
+  await expect(assistantPage.getByRole('form', { name: 'Edit RFP response' })).toBeVisible();
+  for (const format of ['PDF', 'Word']) {
+    const download = assistantPage.waitForEvent('download');
+    await rfpCard.getByRole('button', { name: `Download saved draft ${format}` }).click();
+    assert.equal(await (await download).failure(), null);
+  }
+  console.log('PASS assistant command saves real RFP response, opens editor, exports PDF and Word');
   await db.query(
     "update public.organization_memberships set role='viewer' where organization_id=$1 and user_id=$2",
     [org, user],
@@ -367,11 +428,29 @@ try {
   await save(staleTask, 'Edit task', 'Check capture access');
   await save(staleRequirement, 'Edit requirement', 'Check capture access');
   await save(staleResponseForm, 'Save RFI draft', 'Capture or administrator access');
+  await assistantPage.reload();
+  await assistantPage.getByRole('button', { name: 'Open assistant', exact: true }).click();
+  await assistantPage
+    .getByLabel('Ask a question', { exact: true })
+    .fill('Create an RFQ for this bid');
+  await assistantPage.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await expect(
+    assistantPage.getByRole('region', { name: 'Ask BidXchange' }).getByRole('alert'),
+  ).toContainText('Capture or administrator access');
+  assert.equal(
+    (
+      await db.query(
+        "select count(*)::int as n from public.proposal_sections where organization_id=$1 and title like 'RFQ response:%'",
+        [org],
+      )
+    ).rows[0].n,
+    0,
+  );
   await page.reload();
   await expect(page.locator('details[aria-label="Add requirement"]')).toHaveCount(0);
   await expect(page.locator('details[aria-label="Edit requirement"]')).toHaveCount(0);
   await expect(page.locator('#notice-intake')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Create RFI response draft' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Create response draft' })).toHaveCount(0);
   await expect(page.locator(`#requirement-${requirement.id}`)).toBeVisible();
   assert(
     (

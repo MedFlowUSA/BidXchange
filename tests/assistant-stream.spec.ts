@@ -11,6 +11,16 @@ test.beforeAll(async () => {
     outdir: '.tmp/assistant-harness',
     jsx: 'automatic',
     alias: { 'next/link': path.resolve('tests/fixtures/link.tsx') },
+    plugins: [
+      {
+        name: 'server-action-transport',
+        setup(builder) {
+          builder.onResolve({ filter: /assistant-document-actions$/ }, () => ({
+            path: path.resolve('tests/fixtures/assistant-document-action.ts'),
+          }));
+        },
+      },
+    ],
     define: { 'process.env.NODE_ENV': '"production"' },
     platform: 'browser',
   });

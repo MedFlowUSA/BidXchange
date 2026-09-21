@@ -23,7 +23,7 @@ export async function renderResponsePdf(input: ResponseDocument, assets: Assets)
   const logo = await pdf.embedPng(assets.logo);
   pdf.setTitle(input.title);
   pdf.setAuthor(input.company);
-  pdf.setSubject('Draft RFI response — internal review');
+  pdf.setSubject(`Draft ${input.kind ?? 'RFI'} response — internal review`);
   pdf.setCreator('BidXchange');
   const navy = rgb(0.05, 0.1, 0.2),
     gold = rgb(0.94, 0.65, 0.13),
@@ -51,7 +51,7 @@ export async function renderResponsePdf(input: ResponseDocument, assets: Assets)
       throw new ResponseRenderError('This response is too long for one PDF. Reduce its scope.');
     page = pdf.addPage([612, 792]);
     y = 718;
-    page.drawText('BIDXCHANGE  /  RFI RESPONSE', {
+    page.drawText(`BIDXCHANGE  /  ${input.kind ?? 'RFI'} RESPONSE`, {
       x: 48,
       y: 752,
       size: 9,
@@ -185,7 +185,7 @@ export async function renderResponseDocx(input: ResponseDocument, logo: Uint8Arr
   const doc = new Document({
     creator: 'BidXchange',
     title: input.title,
-    description: 'Draft RFI response, not approved for submission',
+    description: `Draft ${input.kind ?? 'RFI'} response, not approved for submission`,
     styles: { default: { document: { run: { font: 'Arial', size: 22 } } } },
     sections: [
       {
@@ -196,7 +196,9 @@ export async function renderResponseDocx(input: ResponseDocument, logo: Uint8Arr
           },
         },
         headers: {
-          default: new Header({ children: [paragraph('BidXchange | RFI RESPONSE · DRAFT')] }),
+          default: new Header({
+            children: [paragraph(`BidXchange | ${input.kind ?? 'RFI'} RESPONSE · DRAFT`)],
+          }),
         },
         footers: {
           default: new Footer({

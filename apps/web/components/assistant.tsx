@@ -4,7 +4,16 @@ import Link from 'next/link';
 import { FEED_NOTICE, type Answer, type AssistantContext } from '../lib/ai/contracts';
 import styles from './assistant.module.css';
 import { evidenceLabel, evidenceValue } from '../lib/ai/display';
-type Conversation = { id: string; question: string; answer?: Answer; requestId?: string };
+import { responseCommand } from '../lib/response-command';
+import { createAssistantDocument } from '../app/assistant-document-actions';
+import { workspaceHref } from '../lib/routes';
+type Conversation = {
+  id: string;
+  question: string;
+  answer?: Answer;
+  requestId?: string;
+  document?: { message: string; href?: string };
+};
 export default function Assistant({
   organizationId,
   name,
@@ -33,6 +42,8 @@ export default function Assistant({
     [feedback, setFeedback] = useState('');
   const controller = useRef<AbortController | null>(null);
   const access = useRef<string | null>(null);
+  const actionLock = useRef(false);
+  const documentRequest = useRef<{ question: string; id: string } | null>(null);
   const selected = conversations.find((c) => c.id === active);
   const questions =
     !demo && mode === 'general'
@@ -58,6 +69,7 @@ export default function Assistant({
       setConversations([]);
       setActive(null);
       setPrompt('');
+      documentRequest.current = null;
     };
     const check = () =>
       fetch(`/api/assistant/status?organization=${encodeURIComponent(organizationId ?? '')}`, {
@@ -96,12 +108,14 @@ export default function Assistant({
       setConversations([]);
       setActive(null);
       setPrompt('');
+      documentRequest.current = null;
     };
     window.addEventListener('pagehide', clear);
     return () => window.removeEventListener('pagehide', clear);
   }, []);
-  async function ask(question = prompt) {
-    if (pending || !question.trim() || !available) return;
+  async function ask(question = prompt, retry = false) {
+    if (pending || actionLock.current || !question.trim() || !available) return;
+    actionLock.current = true;
     setError('');
     setFeedback('');
     setPending(true);
@@ -112,6 +126,37 @@ export default function Assistant({
     const abort = new AbortController();
     controller.current = abort;
     try {
+      if (!demo && responseCommand(question)) {
+        setStatus('Preparing a response draft from this pursuit…');
+        if (context?.kind !== 'pursuit') {
+          setConversations((old) =>
+            old.map((c) =>
+              c.id === id
+                ? {
+                    ...c,
+                    document: {
+                      message:
+                        'Open the bid in Pursuits, then ask “Create an RFP for this bid”. The selected pursuit supplies the bid details and requirements.',
+                      href: workspaceHref('/pursuits', organizationId),
+                    },
+                  }
+                : c,
+            ),
+          );
+          return;
+        }
+        if (!retry || documentRequest.current?.question !== question)
+          documentRequest.current = { question, id };
+        const result = await createAssistantDocument({
+          organizationId,
+          pursuitId: context.id,
+          requestId: documentRequest.current!.id,
+          prompt: question,
+        });
+        if (!result.href) throw new Error(result.message);
+        setConversations((old) => old.map((c) => (c.id === id ? { ...c, document: result } : c)));
+        return;
+      }
       if (demo) {
         const answer: Answer = {
           answer: [
@@ -194,6 +239,7 @@ export default function Assistant({
             : 'Assistant unavailable.',
       );
     } finally {
+      actionLock.current = false;
       setPending(false);
       setStatus('');
     }
@@ -246,6 +292,13 @@ export default function Assistant({
               evidence only. No live web browsing is available. Do not enter passwords or API keys.
             </p>
           )}
+          {!demo && (
+            <p>
+              Document commands use the open pursuit in either mode. Ask “Create an RFP for this
+              bid” to save a response outline with bid details and requirement sections. Complete
+              and review the answers before exporting.
+            </p>
+          )}
           {checking ? (
             <p role="status">Checking assistant availability…</p>
           ) : !available ? (
@@ -263,6 +316,7 @@ export default function Assistant({
                 onClick={() => {
                   setActive(null);
                   setPrompt('');
+                  documentRequest.current = null;
                   setError('');
                   setFeedback('');
                 }}
@@ -294,6 +348,7 @@ export default function Assistant({
                   setConversations([]);
                   setActive(null);
                   setPrompt('');
+                  documentRequest.current = null;
                   setError('');
                   setFeedback('');
                 }}
@@ -303,6 +358,15 @@ export default function Assistant({
             </aside>
             <div className={styles.content}>
               <div className={styles.suggestions}>
+                {!demo && context?.kind === 'pursuit' && (
+                  <button
+                    className="button secondary"
+                    disabled={pending}
+                    onClick={() => setPrompt('Create an RFP for this bid')}
+                  >
+                    Create an RFP for this bid
+                  </button>
+                )}
                 {questions.map((q) => (
                   <button
                     key={q}
@@ -353,7 +417,7 @@ export default function Assistant({
                   >
                     Ask BidXchange
                   </button>
-                  {pending && (
+                  {pending && !responseCommand(selected?.question ?? '') && (
                     <button
                       type="button"
                       className="button secondary"
@@ -373,11 +437,25 @@ export default function Assistant({
                   <button
                     className="button secondary"
                     disabled={pending || !available}
-                    onClick={() => void ask(selected?.question ?? prompt)}
+                    onClick={() => void ask(selected?.question ?? prompt, true)}
                   >
                     Retry
                   </button>
                 </div>
+              )}
+              {selected?.document && (
+                <article aria-label="Assistant document">
+                  <h3>Response draft</h3>
+                  <p>{selected.document.message}</p>
+                  {selected.document.href && (
+                    <a className="button primary" href={selected.document.href}>
+                      Open response workspace
+                    </a>
+                  )}
+                  <p>
+                    Drafts need human review before use. Nothing has been approved or submitted.
+                  </p>
+                </article>
               )}
               {selected?.answer && (
                 <article aria-label="Assistant answer">

@@ -54,7 +54,7 @@ export async function GET(request: Request) {
       .eq('organization_id', v.organization)
       .eq('pursuit_id', v.pursuit)
       .eq('id', v.package)
-      .like('title', 'RFI response:%')
+      .or('title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%')
       .single();
     if (saved.error)
       return Response.json({ message: 'Response unavailable.' }, { status: 404, headers });
@@ -126,7 +126,7 @@ export async function GET(request: Request) {
           v.format === 'pdf'
             ? 'application/pdf'
             : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="bidxchange-rfi-draft.${v.format}"`,
+        'Content-Disposition': `attachment; filename="bidxchange-response-draft.${v.format}"`,
       },
     });
   } catch (e) {

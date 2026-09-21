@@ -25,6 +25,7 @@ function Editor({
     const fresh = newResponseDraft(data, pursuitId);
     return {
       ...fresh,
+      kind: snapshot.draft.kind,
       summary: snapshot.draft.summary,
       answers: fresh.answers.map((a) => ({
         ...a,
@@ -34,14 +35,18 @@ function Editor({
     };
   });
   const [title, setTitle] = useState(
-    saved?.title.replace(/^RFI response: /, '') ?? 'Initial response',
+    saved?.title.replace(/^RF[IPQ] response: /, '') ?? 'Initial response',
   );
   const [state, action, pending] = useActionState(saveResponsePackage, { message: '' });
   const changed = Boolean(
     saved && (!snapshot.draft.context || snapshot.draft.context !== data.decisionContext),
   );
   return (
-    <form action={action} className="opportunity-form admin-form" aria-label="Edit RFI response">
+    <form
+      action={action}
+      className="opportunity-form admin-form"
+      aria-label={`Edit ${draft.kind} response`}
+    >
       <input type="hidden" name="organization_id" value={data.organization.id} />
       <input type="hidden" name="pursuit_id" value={pursuitId} />
       <input type="hidden" name="record_id" value={saved?.id ?? ''} />
@@ -60,7 +65,19 @@ function Editor({
         is never silently copied into your narrative.
       </p>
       <fieldset disabled={pending || state.success}>
-        <legend>RFI response draft</legend>
+        <legend>{draft.kind} response draft</legend>
+        <label>
+          Response type
+          <select
+            aria-label="Response type"
+            value={draft.kind}
+            onChange={(e) => setDraft({ ...draft, kind: e.target.value as typeof draft.kind })}
+          >
+            <option>RFI</option>
+            <option>RFP</option>
+            <option>RFQ</option>
+          </select>
+        </label>
         <label>
           Draft name
           <input
@@ -122,7 +139,7 @@ function Editor({
           </label>
         )}
         <button className="button primary" type="submit">
-          {pending ? 'Saving…' : 'Save RFI draft'}
+          {pending ? 'Saving…' : `Save ${draft.kind} draft`}
         </button>
       </fieldset>
       <p role="status">{state.message}</p>
@@ -170,7 +187,7 @@ export default function ResponsePackages({
       const url = URL.createObjectURL(await response.blob());
       const a = document.createElement('a');
       a.href = url;
-      a.download = `bidxchange-rfi-draft.${format}`;
+      a.download = `bidxchange-response-draft.${format}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
@@ -188,7 +205,7 @@ export default function ResponsePackages({
   return (
     <section className="panel" id="response-packages" aria-labelledby="response-packages-heading">
       <div className="eyebrow">Prepare your response</div>
-      <h2 id="response-packages-heading">RFI response packages</h2>
+      <h2 id="response-packages-heading">Response packages</h2>
       <p>
         Build a working response from this pursuit’s requirements. Saved PDFs and editable Word
         files include a cover, your answers, source references, approved company evidence and an
@@ -200,7 +217,7 @@ export default function ResponsePackages({
       )}
       {!packages.length && <p>No saved response packages yet.</p>}
       {packages.slice(0, 20).map((saved) => (
-        <article key={saved.id} className="panel">
+        <article key={saved.id} id={`response-${saved.id}`} className="panel">
           <h3>{saved.title}</h3>
           <p>Saved {saved.updated_at} · Draft</p>
           {readResponseDraft(saved.content) ? (
@@ -233,7 +250,7 @@ export default function ResponsePackages({
       <p role="status">{busy ? 'Preparing your saved draft…' : error}</p>
       {canEdit && (data.requirements?.length ?? 0) <= 100 && (
         <button className="button primary" onClick={() => setEditing('new')}>
-          Create RFI response draft
+          Create response draft
         </button>
       )}
       {(data.requirements?.length ?? 0) > 100 && (

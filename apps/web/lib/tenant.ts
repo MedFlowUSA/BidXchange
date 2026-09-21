@@ -139,7 +139,7 @@ export async function loadTenant(
       .select('id,title,content,status,updated_at')
       .eq('organization_id', id)
       .eq('pursuit_id', record.id)
-      .like('title', 'RFI response:%')
+      .or('title.like.RFI response:%,title.like.RFP response:%,title.like.RFQ response:%')
       .order('updated_at', { ascending: false })
       .limit(21);
     if (packages.error) throw new Error('Response drafts could not be loaded. Please retry.');
