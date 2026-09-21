@@ -5,7 +5,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Before you bid,know what’s required.',
+    'A bid worth pursuing.A decision you can defend.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
@@ -15,10 +15,10 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.getByRole('link', { name: 'Open Workspace', exact: true })).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText('Green Energy Solutions');
   await expect(
-    page.getByText(/Live procurement feeds, AI answers, and proposal submission are not enabled/),
+    page.getByText(/Live procurement feeds\s+and proposal submission are not enabled/),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: /The notice\. The evidence\.\s*The work still to do\./ }),
+    page.getByRole('heading', { name: /Don’t start from scratch\s*with every solicitation\./ }),
   ).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
   await page.getByRole('link', { name: 'Explore the Demo', exact: true }).first().click();
@@ -107,7 +107,7 @@ test('public SEO is canonical and workspace/demo pages remain noindex', async ({
   request,
 }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle('BidXchange | Find and Qualify Government Contract Opportunities');
+  await expect(page).toHaveTitle('BidXchange | A Clearer Decision Before You Bid');
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     'https://bidxapp.vercel.app/',

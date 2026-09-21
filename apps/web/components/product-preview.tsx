@@ -1,96 +1,79 @@
-import {
-  ArrowUpRight,
-  Check,
-  Circle,
-  LayoutDashboard,
-  ListFilter,
-  ShieldCheck,
-  FolderOpen,
-  BriefcaseBusiness,
-} from 'lucide-react';
-import styles from './marketing.module.css';
-import Image from 'next/image';
+﻿import { ArrowUpRight, Check, Circle, FileText } from 'lucide-react';
+import styles from './bid-preview.module.css';
 
 export default function ProductPreview() {
   return (
     <figure
-      className={styles.preview}
-      aria-label="Representative BidXchange dashboard using fictional Apex Energy Demo records"
+      className={styles.brief}
+      aria-label="Illustrative bid review using fictional Apex Energy Demo records"
     >
-      <div className={styles.previewBar}>
+      <div className={styles.top}>
         <span>
-          <i />
-          <i />
-          <i />
+          <FileText size={15} aria-hidden="true" /> THE BID REVIEW
         </span>
-        <span>YOUR CONTRACT DESK</span>
-        <span className={styles.previewDemo}>Fictional demo</span>
+        <span>ILLUSTRATIVE EXAMPLE</span>
       </div>
-      <div className={styles.previewBody}>
-        <div className={styles.previewRail} aria-hidden="true">
-          <Image src="/brand/bidxchange-icon.png?v=2" width={40} height={40} alt="" />
-          <LayoutDashboard />
-          <ListFilter />
-          <BriefcaseBusiness />
-          <FolderOpen />
-          <ShieldCheck className={styles.railBottom} />
+      <div className={styles.heading}>
+        <p>APEX ENERGY DEMO / PUBLIC WORKS</p>
+        <h2>
+          Municipal building
+          <br />
+          energy retrofit
+        </h2>
+        <span>One notice. Three requirements to review.</span>
+      </div>
+      <div className={styles.sheet}>
+        <div className={styles.columns}>
+          <span>REQUIREMENT</span>
+          <span>REVIEW STATUS</span>
         </div>
-        <div className={styles.previewContent}>
-          <div className={styles.previewBreadcrumb}>
-            Apex Energy Demo <span>/</span> Today
+        <div className={styles.row}>
+          <div>
+            <strong>Contractor license</strong>
+            <small>Company Passport → license record</small>
           </div>
-          <div className={styles.previewTitle}>
-            <h2>
-              Review the notice.
-              <br />
-              Assign the next task.
-            </h2>
-            <span className={styles.previewAdd}>+ Opportunity</span>
+          <span className={styles.reviewed}>
+            <Check size={13} aria-hidden="true" /> Reviewed
+          </span>
+        </div>
+        <div className={styles.row}>
+          <div>
+            <strong>Bid bond</strong>
+            <small>Confirm capacity with the surety</small>
           </div>
-          <div className={styles.previewStats}>
-            <div>
-              <span>To review</span>
-              <strong>03</strong>
-            </div>
-            <div>
-              <span>In pursuit</span>
-              <strong>01</strong>
-            </div>
-            <div>
-              <span>Evidence first</span>
-              <ShieldCheck size={27} />
-            </div>
+          <span className={styles.open}>
+            <Circle size={11} aria-hidden="true" /> Needs evidence
+          </span>
+        </div>
+        <div className={styles.row}>
+          <div>
+            <strong>Mandatory site visit</strong>
+            <small>Confirm attendance requirements</small>
           </div>
-          <div className={styles.previewOpportunity}>
-            <div className={styles.previewCardTop}>
-              <span>ENERGY EFFICIENCY</span>
-              <span>Demo fit review</span>
-            </div>
-            <h3>Municipal building energy retrofit</h3>
-            <p>Canyon Springs · Public Works</p>
-            <div className={styles.previewChecklist}>
-              <span>
-                <Check size={14} /> Scope reviewed
-              </span>
-              <span>
-                <Circle size={12} /> Evidence to confirm
-              </span>
-            </div>
-            <div className={styles.previewCardBottom}>
-              <span>Source → requirements → decision</span>
-              <ArrowUpRight size={17} />
-            </div>
-          </div>
-          <div className={styles.previewFooter}>
-            <span>
-              <i /> Requirements recorded. Evidence to review.
-            </span>
-            <span>Human review</span>
+          <span className={styles.open}>
+            <Circle size={11} aria-hidden="true" /> Needs clarification
+          </span>
+        </div>
+        <div className={styles.followup}>
+          <span>NEXT FOLLOW-UP</span>
+          <p>Get the bond confirmation before the bid review.</p>
+          <div>
+            <span className={styles.avatar}>BL</span>
+            <strong>Bid lead</strong>
+            <span>Assigned owner</span>
           </div>
         </div>
+      </div>
+      <div className={styles.decision}>
+        <div>
+          <span>THE DECISION STAYS WITH YOUR TEAM</span>
+          <p>Evidence first. Then pursue—or pass.</p>
+        </div>
+        <ArrowUpRight size={22} aria-hidden="true" />
       </div>
       <figcaption>
-        Representative product view · Fictional demonstration data, not live contracts or results.
+        Fictional demonstration data. Illustrative review, not a live contract or eligibility
+        determination.
       </figcaption>
     </figure>
   );

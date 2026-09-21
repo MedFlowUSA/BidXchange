@@ -7,11 +7,11 @@ export default function InterestPreview() {
   return (
     <section id="request-demo" className={styles.requestSection} aria-labelledby="request-title">
       <div className={styles.requestIntro}>
-        <span className={styles.eyebrow}>SEE A SAMPLE BID WORKFLOW</span>
-        <h2 id="request-title">Walk through a notice with us.</h2>
+        <span className={styles.eyebrow}>PUT THE WORKFLOW TO THE TEST</span>
+        <h2 id="request-title">From “should we bid?” to a documented decision.</h2>
         <p>
-          Manuel Rodriguez will show you how to record a solicitation, list its requirements, and
-          assign the follow-up work using a sample opportunity.
+          Walk through a sample solicitation with Manuel Rodriguez. See how a requirement connects
+          to company evidence, an open question gets an owner, and your team records its decision.
         </p>
       </div>
       {demoIntakeConfig() ? (

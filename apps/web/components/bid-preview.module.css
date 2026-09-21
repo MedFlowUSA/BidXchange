@@ -1,0 +1,187 @@
+.brief {
+  margin: 0;
+  background: #12213b;
+  border: 1px solid #263a59;
+  border-radius: 14px;
+  box-shadow: 0 26px 65px #12213b25;
+  color: #fff;
+  overflow: hidden;
+  text-align: left;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 19px 24px;
+  border-bottom: 1px solid #ffffff18;
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: #c4cfdf;
+}
+.top > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #edbb62;
+}
+.heading {
+  padding: 27px 26px 25px;
+}
+.brief .heading p {
+  color: #adbfd7;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  margin: 0 0 12px;
+}
+.brief .heading h2 {
+  font-size: 27px;
+  line-height: 1.18;
+  letter-spacing: -0.7px;
+  color: #fff;
+  margin: 0 0 12px;
+}
+.heading > span {
+  font-size: 12px;
+  color: #bdcbe0;
+}
+.sheet {
+  background: #fff;
+  color: #12213b;
+  margin: 0 14px;
+  border-radius: 8px;
+  padding: 0 18px;
+}
+.columns {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #657185;
+  padding: 19px 0 12px;
+  border-bottom: 1px solid #e6e9ed;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e6e9ed;
+}
+.row strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+}
+.row small {
+  display: block;
+  font-size: 10px;
+  color: #677487;
+  margin-top: 5px;
+  line-height: 1.5;
+}
+.row > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.reviewed {
+  color: #227252;
+}
+.open {
+  color: #8a5a0d;
+}
+.followup {
+  padding: 17px 0 20px;
+}
+.followup > span {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #69778a;
+}
+.brief .followup p {
+  color: #263b58;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 7px 0 12px;
+}
+.followup > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+}
+.followup > div > span:last-child {
+  margin-left: auto;
+  color: #667487;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e8edfc;
+  color: #3157ae;
+  font-size: 9px;
+}
+.decision {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 25px;
+  gap: 12px;
+}
+.decision span {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #edbb62;
+}
+.brief .decision p {
+  font-size: 12px;
+  color: #fff;
+  margin: 6px 0 0;
+}
+.decision > svg {
+  color: #edbb62;
+  flex-shrink: 0;
+}
+.brief figcaption {
+  font-size: 9px;
+  line-height: 1.6;
+  padding: 12px 24px;
+  background: #0c192d;
+  color: #bac9df;
+}
+@media (max-width: 450px) {
+  .top {
+    padding-inline: 16px;
+    font-size: 8px;
+    letter-spacing: 0.5px;
+  }
+  .heading {
+    padding: 22px 18px;
+  }
+  .sheet {
+    margin-inline: 9px;
+    padding-inline: 12px;
+  }
+  .row {
+    gap: 8px;
+  }
+  .row strong {
+    font-size: 11px;
+  }
+  .row small {
+    font-size: 9px;
+    max-width: 155px;
+  }
+  .row > span {
+    font-size: 8px;
+  }
+  .decision {
+    padding: 20px 18px;
+  }
+}

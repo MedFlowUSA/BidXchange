@@ -8,7 +8,7 @@ import InterestPreview from '../components/interest-preview';
 import { createSupabaseServer } from '../lib/supabase/server';
 import styles from '../components/marketing.module.css';
 import clean from '../components/landing.module.css';
-const title = 'BidXchange | Find and Qualify Government Contract Opportunities';
+const title = 'BidXchange | A Clearer Decision Before You Bid';
 const description =
   'Track solicitation requirements, company registrations, bid deadlines, and assigned tasks with BidXchange. Prepare your team before committing to a government bid.';
 const publicMetadata: Metadata = {
@@ -70,16 +70,17 @@ export default async function Home() {
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
               <div className={styles.heroEyebrow}>
-                <span /> YOUR PUBLIC-SECTOR CONTRACT DESK
+                <span /> FOR THE PEOPLE WHO PUT THE BID TOGETHER
               </div>
               <h1 id="hero-title">
-                Before you bid,
+                A bid worth pursuing.
                 <br />
-                <span>know what’s required.</span>
+                <span>A decision you can defend.</span>
               </h1>
               <p className={styles.heroDescription}>
-                A bid can hinge on a license, a registration, or a deadline. Record what the notice
-                requires, what your company can document, and who needs to follow up.
+                Before your estimator spends a week on the numbers, get the requirements, supporting
+                records, and unanswered questions in one place. Know what still needs checking—and
+                who is on it.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -90,8 +91,7 @@ export default async function Home() {
                 </Link>
               </div>
               <p className={clean.heroNote}>
-                For teams bidding on public works, facility services, and government supply
-                contracts.
+                Public works · Specialty trades · Facility services · Government supply
               </p>
             </div>
             <div className={`${styles.heroVisual} ${clean.visual}`}>
@@ -102,16 +102,16 @@ export default async function Home() {
         <section id="capabilities" className={clean.workspace} aria-labelledby="capabilities-title">
           <div className={clean.sectionIntro}>
             <div>
-              <span className={styles.eyebrow}>FROM SOLICITATION TO ASSIGNED WORK</span>
+              <span className={styles.eyebrow}>LESS CHASING. A CLEARER BID REVIEW.</span>
               <h2 id="capabilities-title">
-                The notice. The evidence.
+                Don’t start from scratch
                 <br />
-                The work still to do.
+                with every solicitation.
               </h2>
             </div>
             <p>
-              Give your estimator, company administrator, and bid lead a place to record the
-              requirements and track unanswered questions before preparing a response.
+              Your company records belong beside the requirements they support. The open questions
+              belong with the people who can answer them.
             </p>
           </div>
           <div className={clean.features}>
@@ -119,20 +119,20 @@ export default async function Home() {
               {
                 icon: FolderCheck,
                 number: '01',
-                title: 'Document your qualifications.',
-                text: 'Record licenses, SAM registration, insurance, and past project experience. Keep source references, expiration dates, and review status with each company record.',
+                title: '“Do we have the evidence?”',
+                text: 'Keep license details, insurance dates, registrations, and past project experience in your Company Passport. See what has been reviewed and what needs another look.',
               },
               {
                 icon: FileSearch,
                 number: '02',
-                title: 'Start with the actual notice.',
-                text: 'Save the issuing agency, solicitation number, source link, and bid deadline with its time zone. Give the team a reference to check against the original notice.',
+                title: '“What does this bid require?”',
+                text: 'Record the deadline and cite the requirements that matter: the bid bond, the mandatory walk-through, the experience threshold. Review company evidence against each one.',
               },
               {
                 icon: ListChecks,
                 number: '03',
-                title: 'Put a name on the follow-up.',
-                text: 'Cite the section requiring a bid bond or site visit. Flag missing information, assign someone to investigate, and set a task deadline. The bid decision stays with your team.',
+                title: '“Who is closing the gaps?”',
+                text: 'Assign the unanswered questions. Record the reason to pursue—or pass. When reviewed information changes, bring the decision back for another look.',
               },
             ].map((feature) => (
               <article key={feature.number}>
@@ -146,10 +146,11 @@ export default async function Home() {
             ))}
           </div>
           <div className={clean.availability}>
-            <span>AVAILABLE TODAY</span>
+            <span>WORKING SOFTWARE. HUMAN DECISIONS.</span>
             <p>
-              Company records, manual opportunity intake, requirements, and tasks. Live procurement
-              feeds, AI answers, and proposal submission are not enabled.
+              Company Passport, manual opportunity intake, evidence reviews, tasks, and bid/no-bid
+              decisions. AI assistance is available in enabled workspaces. Live procurement feeds
+              and proposal submission are not enabled.
             </p>
           </div>
         </section>
@@ -157,9 +158,9 @@ export default async function Home() {
           <div>
             <span className={styles.eyebrow}>BEFORE YOU TRY IT</span>
             <h2 id="questions-title">
-              Your team.
+              Before you bring
               <br />
-              Your bid process.
+              your next bid.
             </h2>
           </div>
           <div className={clean.faq}>
@@ -213,7 +214,7 @@ export default async function Home() {
                 alt="BidXchange"
               />
             </Link>
-            <p>We Find. We Qualify. You Win.</p>
+            <p>The requirements. The evidence. The decision.</p>
           </div>
           <nav aria-label="Footer access links">
             <Link href="/login">Sign In</Link>
