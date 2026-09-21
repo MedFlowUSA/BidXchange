@@ -137,9 +137,9 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>
 fs.writeFileSync(path.join(dir, 'BidXchange-User-Guide.html'), html);
 fs.writeFileSync(
   path.join(dir, 'Presenter-Notes.md'),
-  '# BidXchange user guide — presenter notes\n\n20–25 minutes plus a 10-minute practice exercise. Review workflow edition; new approval features pending production activation.\n\n' +
+  '# BidXchange user guide — presenter notes\n\n20–25 minutes plus a 10-minute practice exercise. Review workflow edition; approval and submission features enabled for authenticated production workspaces.\n\n' +
     slides.map((d, i) => `## ${i + 1}. ${d.title}\n\n${d.notes}\n`).join('\n') +
-    '\n## Source and screenshot notes\n\nApp behavior was checked against the existing application source against the reviewed source; approval and submission workflow remains staged, including response packages, saved review, assistant commands, company autofill, capture forms, evidence reviews and bid decisions. Screenshots show the public fictional demo at https://bidxapp.vercel.app/; they contain no private company workspace records. App paths and labels reflect the current implementation. Availability and controls depend on role and rollout settings.\n',
+    '\n## Source and screenshot notes\n\nApp behavior was checked against the reviewed implementation, including response packages, saved review, assistant commands, company autofill, capture forms, evidence reviews and bid decisions. Screenshots show the public fictional demo at https://bidxapp.vercel.app/; they contain no private company workspace records. App paths and labels reflect the current implementation. Availability and controls depend on role and rollout settings.\n',
 );
 await pptx.writeFile({ fileName: path.join(dir, 'BidXchange-User-Guide.pptx') });
 const browser = await chromium.launch({ channel: 'msedge', headless: true });

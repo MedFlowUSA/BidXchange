@@ -1,5 +1,7 @@
 # Guided response workflow — completion report
 
+**Rollout update:** the revised migration and production activation were subsequently approved. Migration 015 is installed. See [the deployment report](response-workflow-deployment-2026-09-21.md) for current status; the original pre-approval findings below are retained as release history.
+
 Prepared September 21, 2026. **Implemented and validated in staging; production is unchanged.** No production migration, deployment, upload activation, scanner purchase, AI quota change, paid demo activation, production user creation or GES record change was performed.
 
 ### Deployment follow-up

@@ -25,7 +25,7 @@ for (const phrase of [
 const html = readFileSync('apps/web/public/guides/bidxchange-user-guide.html', 'utf8');
 assert.equal((html.match(/<section id="chapter-/g) ?? []).length, 23);
 assert(html.includes('<main>') && html.includes('<nav aria-label="Guide contents">'));
-assert(html.includes('staged and require production activation'));
+assert(html.includes('enabled for authenticated workspaces, subject to role permissions'));
 console.log(
-  'PASS: 23 PDF pages with extractable text, structure tree and tagging metadata; 23 semantic HTML chapters and explicit staged-feature labels. PDF/UA conformance is not claimed.',
+  'PASS: 23 PDF pages with extractable text, structure tree and tagging metadata; 23 semantic HTML chapters and explicit role-controlled feature labels. PDF/UA conformance is not claimed.',
 );

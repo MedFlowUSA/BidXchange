@@ -33,4 +33,4 @@ Each table has RLS, an active-member SELECT policy, no direct authenticated writ
 
 Readiness and approval dependency checks are database-derived. File hashes identify externally retained files; no object storage policy is added. All four histories are shared organization records, so bounded text references must not carry restricted facts or secrets. The source’s observed version/change-pending state participates in release context.
 
-The schema-only inventory is 52 public RLS tables and 127 policies. Migration 015 is installed in staging only; production requires explicit approval. Do not rewrite this migration after production release. Future changes must be additive, and application rollback must preserve histories. See [release operations](response-release-runbook.md).
+The schema-only inventory is 52 public RLS tables and 127 policies. Migration 015 is installed in staging and production after explicit approval. Do not rewrite this migration after production release. Future changes must be additive, and application rollback must preserve histories. See [release operations](response-release-runbook.md).

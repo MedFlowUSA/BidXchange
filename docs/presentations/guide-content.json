@@ -4,7 +4,7 @@
     "section": "BIDXCHANGE · USER TRAINING",
     "subtitle": "A practical walkthrough for your first bid",
     "cover": true,
-    "notes": "Audience: new BidXchange users and team leads. Plan for a 20–25 minute walkthrough plus a 10-minute exercise. This September 21 workflow edition distinguishes existing features from new approval and submission features awaiting production activation. Open https://bidxapp.vercel.app/ before presenting. Explain that BidXchange organizes company evidence, bid review and response drafts. A draft export is not approval or proof of submission."
+    "notes": "Audience: new BidXchange users and team leads. Plan for a 20–25 minute walkthrough plus a 10-minute exercise. This September 21 workflow edition distinguishes existing features from role-controlled approval and submission records. Open https://bidxapp.vercel.app/ before presenting. Explain that BidXchange organizes company evidence, bid review and response drafts. A draft export is not approval or proof of submission."
   },
   {
     "title": "Follow one bid through the workspace",
@@ -296,7 +296,7 @@
       ]
     ],
     "takeaway": "Versioned approvals and submission recording require environment activation. Disabled controls explain what is unavailable.",
-    "notes": "Availability: new release workflow is staged, not yet activated in production. States are determined by records; they do not necessarily occur in this order. Needs review means a frozen context changed. Submitted means a human recorded submission; it does not verify buyer receipt. Sources may have obligations absent from the local register. Unknown forms, signatures or file limits cannot silently pass."
+    "notes": "Availability: the release workflow is enabled for authenticated production workspaces, subject to role permissions. States are determined by records; they do not necessarily occur in this order. Needs review means a frozen context changed. Submitted means a human recorded submission; it does not verify buyer receipt. Sources may have obligations absent from the local register. Unknown forms, signatures or file limits cannot silently pass."
   },
   {
     "title": "Approve the exact response version",
@@ -336,7 +336,7 @@
       ]
     ],
     "takeaway": "File bytes and portal credentials stay outside this workflow. A receipt reference is a human report, not verified delivery.",
-    "notes": "The new workflow is staged pending production approval. The handoff is JSON and includes bounded immutable history, not file attachments. Hashing occurs in the browser, without uploading selected files. Submission requires explicit confirmation by the named active submitter after current authorization. If a receipt is unavailable, record that limitation. Append corrections; never overwrite original history. Recording after the deadline or a UTC review-date change is conservatively blocked unless recording a correction to an already recorded submission. Follow-up events support questions, clarifications, interviews, best-and-final-offer requests, award/loss/cancellation, debriefs and lessons learned."
+    "notes": "The workflow is enabled for authenticated workspaces with the required roles. The handoff is JSON and includes bounded immutable history, not file attachments. Hashing occurs in the browser, without uploading selected files. Submission requires explicit confirmation by the named active submitter after current authorization. If a receipt is unavailable, record that limitation. Append corrections; never overwrite original history. Recording after the deadline or a UTC review-date change is conservatively blocked unless recording a correction to an already recorded submission. Follow-up events support questions, clarifications, interviews, best-and-final-offer requests, award/loss/cancellation, debriefs and lessons learned."
   },
   {
     "title": "Use help without adding another dashboard",

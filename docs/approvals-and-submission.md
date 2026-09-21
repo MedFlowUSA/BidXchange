@@ -1,6 +1,6 @@
 # Approvals and submission
 
-Status: implemented behind `BIDXCHANGE_RELEASES_ENABLED`; migration 015 is staged. Production application and activation require explicit approval. No portal automation, legal e-signature, upload permission, AI quota change or scanner purchase is included.
+Status: implemented behind `BIDXCHANGE_RELEASES_ENABLED`; migration 015 is installed in production and activation is approved. Access remains role-controlled. No portal automation, legal e-signature, upload permission, AI quota change or scanner purchase is included.
 
 ## Immutable review version
 

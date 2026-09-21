@@ -1,10 +1,10 @@
 # BidXchange user guide — presenter notes
 
-20–25 minutes plus a 10-minute practice exercise. Review workflow edition; new approval features pending production activation.
+20–25 minutes plus a 10-minute practice exercise. Review workflow edition; approval and submission features enabled for authenticated production workspaces.
 
 ## 1. From opportunity to reviewed response
 
-Audience: new BidXchange users and team leads. Plan for a 20–25 minute walkthrough plus a 10-minute exercise. This September 21 workflow edition distinguishes existing features from new approval and submission features awaiting production activation. Open https://bidxapp.vercel.app/ before presenting. Explain that BidXchange organizes company evidence, bid review and response drafts. A draft export is not approval or proof of submission.
+Audience: new BidXchange users and team leads. Plan for a 20–25 minute walkthrough plus a 10-minute exercise. This September 21 workflow edition distinguishes existing features from role-controlled approval and submission records. Open https://bidxapp.vercel.app/ before presenting. Explain that BidXchange organizes company evidence, bid review and response drafts. A draft export is not approval or proof of submission.
 
 ## 2. Follow one bid through the workspace
 
@@ -68,7 +68,7 @@ Exports include an internal review checklist and are not automatically buyer-rea
 
 ## 17. Read readiness without assuming approval
 
-Availability: new release workflow is staged, not yet activated in production. States are determined by records; they do not necessarily occur in this order. Needs review means a frozen context changed. Submitted means a human recorded submission; it does not verify buyer receipt. Sources may have obligations absent from the local register. Unknown forms, signatures or file limits cannot silently pass.
+Availability: the release workflow is enabled for authenticated production workspaces, subject to role permissions. States are determined by records; they do not necessarily occur in this order. Needs review means a frozen context changed. Submitted means a human recorded submission; it does not verify buyer receipt. Sources may have obligations absent from the local register. Unknown forms, signatures or file limits cannot silently pass.
 
 ## 18. Approve the exact response version
 
@@ -76,7 +76,7 @@ Available only where versioned release workflow is activated. Every approval bin
 
 ## 19. Hand off, submit manually, keep the receipt
 
-The new workflow is staged pending production approval. The handoff is JSON and includes bounded immutable history, not file attachments. Hashing occurs in the browser, without uploading selected files. Submission requires explicit confirmation by the named active submitter after current authorization. If a receipt is unavailable, record that limitation. Append corrections; never overwrite original history. Recording after the deadline or a UTC review-date change is conservatively blocked unless recording a correction to an already recorded submission. Follow-up events support questions, clarifications, interviews, best-and-final-offer requests, award/loss/cancellation, debriefs and lessons learned.
+The workflow is enabled for authenticated workspaces with the required roles. The handoff is JSON and includes bounded immutable history, not file attachments. Hashing occurs in the browser, without uploading selected files. Submission requires explicit confirmation by the named active submitter after current authorization. If a receipt is unavailable, record that limitation. Append corrections; never overwrite original history. Recording after the deadline or a UTC review-date change is conservatively blocked unless recording a correction to an already recorded submission. Follow-up events support questions, clarifications, interviews, best-and-final-offer requests, award/loss/cancellation, debriefs and lessons learned.
 
 ## 20. Use help without adding another dashboard
 
@@ -96,4 +96,4 @@ Use synthetic information and label the record Training — not for submission. 
 
 ## Source and screenshot notes
 
-App behavior was checked against the existing application source against the reviewed source; approval and submission workflow remains staged, including response packages, saved review, assistant commands, company autofill, capture forms, evidence reviews and bid decisions. Screenshots show the public fictional demo at https://bidxapp.vercel.app/; they contain no private company workspace records. App paths and labels reflect the current implementation. Availability and controls depend on role and rollout settings.
+App behavior was checked against the reviewed implementation, including response packages, saved review, assistant commands, company autofill, capture forms, evidence reviews and bid decisions. Screenshots show the public fictional demo at https://bidxapp.vercel.app/; they contain no private company workspace records. App paths and labels reflect the current implementation. Availability and controls depend on role and rollout settings.

@@ -2,7 +2,7 @@
 
 ## Activation boundary
 
-Migration: `supabase/migrations/20260921001500_response_release_workflow.sql`. Manifest revision 11 includes its canonical LF SHA-256. Staging target is pinned to `svimdvbgtltmyaubfaux`; production is `bcrxejydosltquspsutw`. Never infer approval from a linked CLI project. This release has not applied the production migration or deployed the app.
+Migration: `supabase/migrations/20260921001500_response_release_workflow.sql`. Manifest revision 11 includes its canonical LF SHA-256. Staging target is pinned to `svimdvbgtltmyaubfaux`; production is `bcrxejydosltquspsutw`. Never infer approval from a linked CLI project. Production migration 015 was applied after explicit approval on September 21; the deployment report records activation status.
 
 1. Review the completion report, migration, current grants and known delayed-recording limitation. Confirm retention/visibility of shared history text with the operator.
 2. Run local checks and staging transaction tests. Staging-only schema installation: `node scripts/staging/release-workflow.mjs apply-reviewed-staging`. It validates the manifest, target and grants. Empty pre-release staging function bodies may be revised; populated history or structural changes require an additive migration.
@@ -38,4 +38,4 @@ For the real signed-in browser flow, set the staging CA and run `node scripts/st
 
 ## Guide maintenance
 
-Source: `docs/presentations/guide-content.json`. `build-guide.mjs` creates slide-format PDF/PPTX/HTML and presenter notes, checks text overflow, and invokes `build-accessible-guide.mjs` for semantic, responsive public HTML. The current generator expects the existing local presentation-tools installation for PptxGenJS and Edge. Copy the validated PDF to `apps/web/public/guides/bidxchange-user-guide.pdf`. Tagged output is not a PDF/UA conformance claim; retain the HTML alternative. New release chapters say staged until production activation is verified.
+Source: `docs/presentations/guide-content.json`. `build-guide.mjs` creates slide-format PDF/PPTX/HTML and presenter notes, checks text overflow, and invokes `build-accessible-guide.mjs` for semantic, responsive public HTML. The current generator expects the existing local presentation-tools installation for PptxGenJS and Edge. Copy the validated PDF to `apps/web/public/guides/bidxchange-user-guide.pdf`. Tagged output is not a PDF/UA conformance claim; retain the HTML alternative. Release chapters identify role-controlled production availability and the remaining manual steps.
