@@ -12,6 +12,29 @@ export const toolSchemas = {
   get_upcoming_deadlines: z.object({ days: z.number().int().min(1).max(90) }).strict(),
   get_company_readiness: empty,
   get_authorized_company_facts: empty,
+  search_company_records: z
+    .object({
+      query: z
+        .string()
+        .max(100)
+        .describe(
+          'Search the record label, for example insurance or business email. Empty for all labels.',
+        ),
+      fact_type: z
+        .string()
+        .max(50)
+        .nullable()
+        .describe(
+          'Exact category, such as identity, insurance or license; null for all authorized categories.',
+        ),
+      offset: z
+        .number()
+        .int()
+        .min(0)
+        .max(10000)
+        .describe('Start at zero; use nextOffset to read another bounded page.'),
+    })
+    .strict(),
   get_pursuit: record,
   get_pursuit_tasks: z.object({ id: z.uuid().nullable(), overdue_only: z.boolean() }).strict(),
   compare_opportunities: z.object({ ids: z.array(z.uuid()).min(2).max(2) }).strict(),
@@ -127,11 +150,15 @@ export class EvidenceTools {
     if (!rows[0]) throw new AiError('forbidden', 403);
     return this.opportunity(rows[0]);
   }
-  private async facts() {
+  private async facts(search?: { query: string; fact_type: string | null; offset: number }) {
     let query = this.query('profile_facts', factFields).neq('sensitivity', 'unknown');
     if (!['organization_admin', 'executive_approver', 'estimator'].includes(this.role))
       query = query.eq('sensitivity', 'workspace').in('fact_type', publicFactTypes);
-    const rows = await this.rows(query.order('id').limit(Math.min(10, this.remaining)));
+    if (search?.query) query = query.ilike('label', `%${search.query.replace(/[%_\\]/g, '')}%`);
+    if (search?.fact_type) query = query.eq('fact_type', search.fact_type);
+    const size = Math.min(10, this.remaining);
+    const offset = search?.offset ?? 0;
+    const rows = await this.rows(query.order('id').range(offset, offset + size - 1));
     return rows
       .filter((r) => discloseFact(this.role, r.sensitivity, r.fact_type))
       .map((r) =>
@@ -163,6 +190,8 @@ export class EvidenceTools {
       days?: number;
       added_today?: boolean;
       overdue_only?: boolean;
+      fact_type?: string | null;
+      offset?: number;
     };
     if (this.remaining <= 0) throw new AiError('tool_limit', 429);
     switch (name) {
@@ -223,6 +252,21 @@ export class EvidenceTools {
       case 'get_company_readiness':
       case 'get_authorized_company_facts':
         return this.facts();
+      case 'search_company_records': {
+        const size = Math.min(10, this.remaining);
+        const records = await this.facts({
+          query: a.query!,
+          fact_type: a.fact_type!,
+          offset: a.offset!,
+        });
+        return {
+          records,
+          readAt: this.now.toISOString(),
+          nextOffset: records.length === size ? a.offset! + size : null,
+          scope:
+            'Authorized saved company records only. A full page may have another page; it is not a company-wide total. Unsaved edits, unknown sensitivity and source notes are excluded.',
+        };
+      }
       case 'get_pursuit': {
         const r = (
           await this.rows(
@@ -355,6 +399,9 @@ export class EvidenceTools {
         {
           label: r.label,
           value: r.value,
+          type: r.fact_type,
+          lastUpdated: r.updated_at,
+          effectiveDate: r.effective_date,
           status: effectiveStatus(r, this.now),
           expiration: r.expiration_date,
         },

@@ -99,6 +99,7 @@ export async function POST(request: Request) {
               sources: [item.citation.key],
             }));
           if (controller.signal.aborted) throw new AiError('cancelled', 499);
+          if (body.mode === 'workspace') result.answer.recordsCheckedAt = new Date().toISOString();
           emit({ type: 'answer', answer: result.answer });
           // Operational totals only. No prompt, tool payload, generated text, key or token logged.
           console.info(

@@ -24,6 +24,7 @@ function fakeDb(tables: Record<string, Row[]>) {
           queries.push(record);
           let rows = [...(tables[table] ?? [])];
           let limit = Infinity;
+          let offset = 0;
           const q = {
             eq(k: string, v: unknown) {
               if (k === 'organization_id') record.scope = String(v);
@@ -50,7 +51,14 @@ function fakeDb(tables: Record<string, Row[]>) {
               rows = rows.filter((r) => String(r[k]) < v);
               return q;
             },
-            ilike() {
+            ilike(k: string, pattern: string) {
+              const text = pattern.replace(/^%|%$/g, '').toLowerCase();
+              rows = rows.filter((r) => String(r[k]).toLowerCase().includes(text));
+              return q;
+            },
+            range(start: number, end: number) {
+              offset = start;
+              limit = end - start + 1;
               return q;
             },
             order() {
@@ -64,7 +72,7 @@ function fakeDb(tables: Record<string, Row[]>) {
               return Promise.resolve(
                 resolve({
                   data: rows
-                    .slice(0, limit)
+                    .slice(offset, offset + limit)
                     .map((r) => Object.fromEntries(fields.split(',').map((k) => [k, r[k]]))),
                   error: null,
                 }),
@@ -208,6 +216,77 @@ test('fact values and notes cannot leak indirectly via readiness or citations', 
   expect(queries[0].fields).not.toMatch(/source_note|source_reference/);
   await expect(tools.source('fact', id)).rejects.toMatchObject({ code: 'forbidden' });
 });
+test('company lookup reaches later records and reads saved updates without a sync job', async () => {
+  const records = Array.from({ length: 12 }, (_, index) => ({
+    id: `${index}`,
+    organization_id: org,
+    fact_type: 'identity',
+    sensitivity: 'workspace',
+    label: index === 11 ? 'Business email' : `Company record ${index}`,
+    value: index === 11 ? 'old@example.com' : 'Recorded value',
+    verification_status: 'pending_verification',
+    updated_at: '2026-09-20T12:00:00Z',
+  }));
+  const { db, queries } = fakeDb({ profile_facts: records });
+  const search = (query = '', offset = 0) =>
+    new EvidenceTools(db, org, 'viewer', now).run('search_company_records', {
+      query,
+      fact_type: 'identity',
+      offset,
+    });
+  expect(await search('', 10)).toMatchObject({
+    records: [{ citation: { id: '10' } }, { citation: { id: '11' } }],
+    nextOffset: null,
+  });
+  expect(await search('Business email')).toMatchObject({
+    records: [{ fields: { value: 'old@example.com' } }],
+  });
+  records[11].value = 'new@example.com';
+  records[11].updated_at = '2026-09-21T12:00:00Z';
+  expect(await search('Business email')).toMatchObject({
+    records: [{ fields: { value: 'new@example.com', lastUpdated: '2026-09-21T12:00:00Z' } }],
+  });
+  records[11].sensitivity = 'restricted';
+  expect(await search('Business email')).toMatchObject({ records: [] });
+  await expect(
+    new EvidenceTools(db, org, 'viewer', now).source('fact', '11'),
+  ).rejects.toMatchObject({ code: 'forbidden' });
+  expect(queries.every((q) => q.scope === org)).toBe(true);
+  expect(queries.every((q) => !/source_note|source_reference/.test(q.fields))).toBe(true);
+});
+
+test('company search excludes foreign and unclassified records for every role', async () => {
+  const { db } = fakeDb({
+    profile_facts: [
+      {
+        id,
+        organization_id: other,
+        fact_type: 'identity',
+        sensitivity: 'workspace',
+        label: 'Foreign',
+        value: 'PRIVATE',
+      },
+      {
+        id: other,
+        organization_id: org,
+        fact_type: 'identity',
+        sensitivity: 'unknown',
+        label: 'Unclassified',
+        value: 'PRIVATE',
+      },
+    ],
+  });
+  for (const role of roles) {
+    const tools = new EvidenceTools(db, org, role, now);
+    expect(
+      await tools.run('search_company_records', { query: '', fact_type: null, offset: 0 }),
+    ).toMatchObject({ records: [] });
+    await expect(
+      tools.run('search_company_records', { query: '', fact_type: null, offset: -1 }),
+    ).rejects.toMatchObject({ code: 'invalid_tool' });
+  }
+});
+
 test('manual freshness, timezone and no-production-score are explicit', async () => {
   const { db } = fakeDb({ opportunities: [opportunity] });
   const tools = new EvidenceTools(db, org, 'viewer', now);

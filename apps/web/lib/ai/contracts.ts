@@ -49,6 +49,7 @@ export type Answer = z.infer<typeof answerSchema> & {
   citations: Citation[];
   evidence: Evidence[];
   notice: string;
+  recordsCheckedAt?: string;
 };
 export const NO_EVIDENCE =
   'I could not verify that from the records currently available to BidXchange.';

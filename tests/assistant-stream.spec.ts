@@ -44,7 +44,7 @@ async function mount(page: Page, available = true) {
     r.fulfill({ json: { available, access: 'synthetic-user:viewer' } }),
   );
   await page.goto('/assistant-test');
-  await page.getByLabel('Answer mode', { exact: true }).selectOption('workspace');
+  await expect(page.getByLabel('Answer mode', { exact: true })).toHaveValue('workspace');
   await expect(page.getByLabel('Ask about Synthetic Test Company')).toBeVisible();
 }
 test('general mode sends no record context and displays uncited helpful prose', async ({
@@ -76,6 +76,54 @@ test('general mode sends no record context and displays uncited helpful prose', 
   await expect(
     page.getByRole('article').getByRole('heading', { name: 'Sources', exact: true }),
   ).toHaveCount(0);
+});
+
+test('company connection and refresh use a new workspace request even after switching modes', async ({
+  page,
+}) => {
+  const requests: { requestId: string; mode: string }[] = [];
+  await page.route('**/api/assistant', (route) => {
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({
+      contentType: 'application/x-ndjson',
+      body:
+        JSON.stringify({
+          type: 'answer',
+          answer: {
+            answer: [
+              {
+                text: requests.length === 1 ? 'Previous saved email' : 'Current saved email',
+                sources: ['fact:email'],
+              },
+            ],
+            evidence: [],
+            citations: [],
+            risks: [],
+            nextAction: '',
+            notice: 'Saved records',
+            recordsCheckedAt: '2026-09-21T12:00:00Z',
+          },
+        }) + '\n',
+    });
+  });
+  await mount(page);
+  await expect(page.getByLabel('Company records connection')).toContainText(
+    'Synthetic Test Company',
+  );
+  await expect(page.getByRole('link', { name: 'Manage company records' })).toHaveAttribute(
+    'href',
+    '/company?organization=11111111-1111-4111-8111-111111111111',
+  );
+  await page.getByLabel('Ask about Synthetic Test Company').fill('What is our business email?');
+  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await expect(page.getByRole('article')).toContainText('Previous saved email');
+  await expect(page.getByRole('article')).toContainText('Records checked:');
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await expect(page.getByLabel('Company records connection')).toContainText('Company records off');
+  await page.getByRole('button', { name: 'Refresh from company records' }).click();
+  await expect(page.getByRole('article')).toContainText('Current saved email');
+  expect(requests.map((r) => r.mode)).toEqual(['workspace', 'workspace']);
+  expect(requests[0].requestId).not.toBe(requests[1].requestId);
 });
 test('verified streamed event renders citations and copy/feedback controls', async ({ page }) => {
   await page.route('**/api/assistant', (r) =>

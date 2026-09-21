@@ -12,6 +12,7 @@ type Conversation = {
   question: string;
   answer?: Answer;
   requestId?: string;
+  mode: 'general' | 'workspace';
   document?: { message: string; href?: string };
 };
 export default function Assistant({
@@ -35,7 +36,7 @@ export default function Assistant({
   const [prompt, setPrompt] = useState(''),
     [conversations, setConversations] = useState<Conversation[]>([]),
     [active, setActive] = useState<string | null>(null);
-  const [mode, setMode] = useState<'general' | 'workspace'>('general');
+  const [mode, setMode] = useState<'general' | 'workspace'>('workspace');
   const [pending, setPending] = useState(false),
     [status, setStatus] = useState(''),
     [error, setError] = useState(''),
@@ -113,7 +114,7 @@ export default function Assistant({
     window.addEventListener('pagehide', clear);
     return () => window.removeEventListener('pagehide', clear);
   }, []);
-  async function ask(question = prompt, retry = false) {
+  async function ask(question = prompt, retry = false, answerMode = mode) {
     if (pending || actionLock.current || !question.trim() || !available) return;
     actionLock.current = true;
     setError('');
@@ -122,7 +123,10 @@ export default function Assistant({
     setStatus('Starting…');
     const id = crypto.randomUUID();
     setActive(id);
-    setConversations((old) => [...old.slice(-9), { id, question, requestId: id }]);
+    setConversations((old) => [
+      ...old.slice(-9),
+      { id, question, requestId: id, mode: answerMode },
+    ]);
     const abort = new AbortController();
     controller.current = abort;
     try {
@@ -195,8 +199,8 @@ export default function Assistant({
           organizationId,
           requestId: id,
           prompt: question,
-          context: mode === 'general' ? null : context,
-          mode,
+          context: answerMode === 'general' ? null : context,
+          mode: answerMode,
         }),
         signal: abort.signal,
       });
@@ -291,6 +295,21 @@ export default function Assistant({
               General questions use no company records. Workspace records use authorized, classified
               evidence only. No live web browsing is available. Do not enter passwords or API keys.
             </p>
+          )}
+          {!demo && (
+            <div className="info-note" aria-label="Company records connection">
+              <strong>
+                {mode === 'workspace'
+                  ? `Company records selected: ${name}`
+                  : 'Company records off for general questions'}
+              </strong>
+              <p>
+                Workspace answers read your latest saved, authorized company records on each
+                question. Save changes in Company first, then ask again or refresh an answer.
+                Earlier answers remain snapshots.
+              </p>
+              <Link href={workspaceHref('/company', organizationId)}>Manage company records</Link>
+            </div>
           )}
           {!demo && (
             <p>
@@ -437,7 +456,9 @@ export default function Assistant({
                   <button
                     className="button secondary"
                     disabled={pending || !available}
-                    onClick={() => void ask(selected?.question ?? prompt, true)}
+                    onClick={() =>
+                      void ask(selected?.question ?? prompt, true, selected?.mode ?? mode)
+                    }
                   >
                     Retry
                   </button>
@@ -461,6 +482,23 @@ export default function Assistant({
                 <article aria-label="Assistant answer">
                   <h3>{demo ? 'Fictional answer' : 'Assistant response'}</h3>
                   <p>{selected.answer.notice}</p>
+                  {!demo && selected.mode === 'workspace' && (
+                    <div>
+                      <p>
+                        {selected.answer.recordsCheckedAt
+                          ? `Records checked: ${new Date(selected.answer.recordsCheckedAt).toLocaleString()}`
+                          : 'Saved-record snapshot'}
+                        . Later edits do not change this answer.
+                      </p>
+                      <button
+                        className="button secondary"
+                        disabled={pending || !available}
+                        onClick={() => void ask(selected.question, false, 'workspace')}
+                      >
+                        Refresh from company records
+                      </button>
+                    </div>
+                  )}
                   <p>{selected.question}</p>
                   {selected.answer.answer.map((item, index) => (
                     <p key={index} style={{ whiteSpace: 'pre-wrap' }}>
