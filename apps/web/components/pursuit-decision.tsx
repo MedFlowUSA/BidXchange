@@ -23,7 +23,7 @@ export default function PursuitDecision({
   const latest = data.decisions?.[0];
   const canDecide = ['organization_admin', 'executive_approver'].includes(data.organization.role);
   return (
-    <section className="panel decision-brief" aria-label="Bid/no-bid decision">
+    <section className="panel decision-brief" id="bid-decision" aria-label="Bid/no-bid decision">
       <h2>Bid/no-bid decision</h2>
       {latest ? (
         <>

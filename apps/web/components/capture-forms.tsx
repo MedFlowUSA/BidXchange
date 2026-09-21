@@ -26,6 +26,7 @@ function CaptureForm({
   initial,
   fields,
   note,
+  confirmSource = false,
 }: {
   label: string;
   action: (state: MutationState, form: FormData) => Promise<MutationState>;
@@ -33,6 +34,7 @@ function CaptureForm({
   initial: Record<string, string>;
   fields: Field[];
   note: string;
+  confirmSource?: boolean;
 }) {
   const [state, submit, pending] = useActionState(action, { message: '' } as MutationState);
   const [expanded, setExpanded] = useState(false);
@@ -85,6 +87,12 @@ function CaptureForm({
                 </label>
               );
             })}
+            {confirmSource && (
+              <label>
+                <input type="checkbox" required /> I checked the quoted wording, its conditions and
+                citation against the original notice.
+              </label>
+            )}
             <button className="button primary" type="submit">
               {pending ? 'Saving…' : label}
             </button>
@@ -115,14 +123,23 @@ export function RequirementForm({
   data,
   pursuitId,
   requirement,
+  sourceDraft,
 }: {
   data: TenantData;
   pursuitId: string;
   requirement?: NonNullable<TenantData['requirements']>[number];
+  sourceDraft?: { requirement: string; citation: string };
 }) {
   return (
     <CaptureForm
-      label={requirement ? 'Edit requirement' : 'Add requirement'}
+      label={
+        requirement
+          ? 'Edit requirement'
+          : sourceDraft
+            ? 'Review and add requirement'
+            : 'Add requirement'
+      }
+      confirmSource={Boolean(sourceDraft)}
       action={saveRequirement}
       hidden={{
         organization_id: data.organization.id,
@@ -131,8 +148,8 @@ export function RequirementForm({
         updated_at: requirement?.updated_at ?? '',
       }}
       initial={{
-        requirement: requirement?.requirement ?? '',
-        citation: requirement?.citation ?? '',
+        requirement: requirement?.requirement ?? sourceDraft?.requirement ?? '',
+        citation: requirement?.citation ?? sourceDraft?.citation ?? '',
         owner_user_id: requirement?.owner_user_id ?? '',
         status:
           requirement?.status && Object.hasOwn(requirementStatuses, requirement.status)

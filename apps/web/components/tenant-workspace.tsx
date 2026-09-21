@@ -7,6 +7,8 @@ import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import PursuitDecisionBrief from './pursuit-decision-brief';
+import BidReview from './bid-review';
+import NoticeExcerptReview from './notice-excerpt-review';
 import EvidenceStressTest from './evidence-stress-test';
 import PursuitDecision from './pursuit-decision';
 import RequirementResolution from './requirement-resolution';
@@ -285,6 +287,7 @@ export default function TenantWorkspace({
         {recordId && opportunity ? (
           recordType === 'pursuit' ? (
             <>
+              {pursuit && <BidReview data={data} pursuitId={pursuit.id} />}
               <PursuitFoundation
                 source={opportunity.source_url ?? opportunity.source_note ?? 'Not provided'}
                 deadline={deadline}
@@ -302,6 +305,13 @@ export default function TenantWorkspace({
                     key={`${data.organization.id}:${pursuit.id}`}
                     data={data}
                     pursuitId={pursuit.id}
+                  />
+                )}
+                {capture && (
+                  <NoticeExcerptReview
+                    key={`${org.id}:${recordId}`}
+                    data={data}
+                    pursuitId={recordId}
                   />
                 )}
                 <section className="panel" aria-labelledby="requirements-heading">
@@ -376,7 +386,7 @@ export default function TenantWorkspace({
                   ))}
                   {capture && <RequirementForm data={data} pursuitId={recordId} />}
                 </section>
-                <section className="panel">
+                <section className="panel" id="pursuit-tasks">
                   <h2>Tasks</h2>
                   {data.tasks
                     .filter((t) => t.pursuit_id === recordId)

@@ -6,8 +6,10 @@ import { createServerClient } from '@supabase/ssr';
 import { chromium, expect } from '@playwright/test';
 import { stagingDatabase, stagingKeys, stagingRef } from './connection.mjs';
 const base = process.argv[2];
+const local = base === 'http://127.0.0.1:3102' && process.env.BIDXCHANGE_STAGING_LOCAL === '1';
 assert(
-  /^https:\/\/bidxchange-[a-z0-9]+-manuel-rodriguezs-projects-f5946c44\.vercel\.app$/.test(base),
+  local ||
+    /^https:\/\/bidxchange-[a-z0-9]+-manuel-rodriguezs-projects-f5946c44\.vercel\.app$/.test(base),
 );
 const db = await stagingDatabase(),
   keys = stagingKeys(),
@@ -42,35 +44,41 @@ try {
     },
   });
   assert(!(await client.auth.signInWithPassword({ email, password })).error);
-  const raw = execFileSync(
-    'cmd.exe',
-    [
-      '/d',
-      '/s',
-      '/c',
-      `npx --yes vercel curl / --deployment ${base} -- --silent --dump-header - --header x-vercel-set-bypass-cookie:true`,
-    ],
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
+  const raw = local
+    ? ''
+    : execFileSync(
+        'cmd.exe',
+        [
+          '/d',
+          '/s',
+          '/c',
+          `npx --yes vercel curl / --deployment ${base} -- --silent --dump-header - --header x-vercel-set-bypass-cookie:true`,
+        ],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      );
   const bypass = raw.match(/^set-cookie: _vercel_jwt=([^;\r\n]+)/im)?.[1];
-  assert(bypass);
+  assert(local || bypass);
   browser = await chromium.launch({ channel: 'msedge', headless: true });
   const context = await browser.newContext();
   await context.addCookies([
-    {
-      name: '_vercel_jwt',
-      value: bypass,
-      url: base,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-    },
+    ...(bypass
+      ? [
+          {
+            name: '_vercel_jwt',
+            value: bypass,
+            url: base,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None',
+          },
+        ]
+      : []),
     ...[...cookies.values()].map((c) => ({
       name: c.name,
       value: c.value,
       url: base,
       httpOnly: true,
-      secure: true,
+      secure: !local,
       sameSite: 'Lax',
     })),
   ]);
@@ -168,14 +176,27 @@ try {
     'PASS pending pursuit links to source; assigned tasks persist and complete; stale edits and bid authorization rejected',
   );
   await page.reload();
-  form = await open(page, 'Add requirement');
+  const intake = page.locator('#notice-intake');
+  await intake.getByLabel('Notice title and version').fill('Synthetic notice, version 1');
+  await intake.getByLabel('Page or section').fill('Synthetic notice section 4.2, page 18');
+  await intake
+    .getByLabel('Source text')
+    .fill('Bidders shall provide a bid bond unless waived by the buyer.');
+  await intake.getByRole('button', { name: 'Find possible requirements' }).click();
+  form = await open(page, 'Review and add requirement');
+  await expect(form.getByLabel('Requirement text', { exact: true })).toHaveValue(
+    'Bidders shall provide a bid bond unless waived by the buyer.',
+  );
+  assert(
+    (await form.getByLabel('Notice citation', { exact: true }).inputValue()).includes(
+      'not independently verified',
+    ),
+  );
   await form.getByLabel('Requirement text', { exact: true }).fill('Synthetic bid bond requirement');
-  await form
-    .getByLabel('Notice citation', { exact: true })
-    .fill('Synthetic notice section 4.2, page 18');
+  await form.getByRole('checkbox').check();
   await form.getByLabel('Requirement owner', { exact: true }).selectOption(user);
   await form.getByLabel('Follow-up status', { exact: true }).selectOption('missing_information');
-  await save(form, 'Add requirement', 'Requirement saved');
+  await save(form, 'Review and add requirement', 'Requirement saved');
   const getRequirement = async () =>
     (
       await db.query(
@@ -187,10 +208,25 @@ try {
   assert(requirement);
   assert.equal(requirement.owner_user_id, user);
   assert.equal(requirement.status, 'missing_information');
+  assert(
+    requirement.citation.includes('Bidders shall provide a bid bond unless waived by the buyer.'),
+  );
   await page.reload();
   await expect(page.locator(`#requirement-${requirement.id}`)).toContainText(
     'Synthetic notice section 4.2, page 18',
   );
+  await expect(
+    page.getByRole('heading', { name: 'From source wording to a decision you can explain' }),
+  ).toBeVisible();
+  const exportEvent = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download review brief' }).click();
+  const exported = await exportEvent;
+  const stream = await exported.createReadStream();
+  let exportedText = '';
+  for await (const chunk of stream) exportedText += chunk.toString();
+  assert(exportedText.includes('Synthetic notice section 4.2, page 18'));
+  assert(exportedText.includes('unless waived by the buyer'));
+  assert(exportedText.includes('not an eligibility finding'));
   await stale.reload();
   const staleRequirement = await open(stale, 'Edit requirement');
   await staleRequirement
@@ -255,6 +291,7 @@ try {
   await page.reload();
   await expect(page.locator('details[aria-label="Add requirement"]')).toHaveCount(0);
   await expect(page.locator('details[aria-label="Edit requirement"]')).toHaveCount(0);
+  await expect(page.locator('#notice-intake')).toHaveCount(0);
   await expect(page.locator(`#requirement-${requirement.id}`)).toBeVisible();
   assert(
     (

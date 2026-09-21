@@ -49,7 +49,7 @@ export default function PursuitFoundation({
           </p>
         </section>
         {decisionPanel ?? (
-          <section className="panel">
+          <section className="panel" id="bid-decision">
             <h2>Bid/no-bid decision</h2>
             <p>
               {demo
