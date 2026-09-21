@@ -19,6 +19,9 @@ test('evidence use is tenant-scoped, version-bound, human-attributed and invalid
     await db.query(
       readFileSync('supabase/migrations/20260919000900_evidence_review_conflict.sql', 'utf8'),
     );
+    await db.query(
+      readFileSync('supabase/migrations/20260921001600_structured_company_profiles.sql', 'utf8'),
+    );
     await db.query('insert into auth.users(id) values($1),($2),($3)', [admin, viewer, foreign]);
     const org = (
       await db.query(

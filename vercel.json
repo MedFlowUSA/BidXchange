@@ -4,6 +4,7 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "env": {
+    "BIDXCHANGE_STRUCTURED_PROFILES_ENABLED": "true",
     "BIDXCHANGE_RELEASES_ENABLED": "true",
     "BIDXCHANGE_AI_ENABLED": "true",
     "BIDXCHANGE_AI_DEMO_ENABLED": "false",

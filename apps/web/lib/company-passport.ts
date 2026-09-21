@@ -220,7 +220,7 @@ export const passportSteps = [
         type: 'proposal_asset',
         label: 'Capability statement and proposal materials',
         prompt:
-          'Reference the document title, version, owner and review date. Uploads and formal proposal-use approvals are not yet available; this entry does not approve reuse.',
+          'Reference the document title, version, owner and review date. Private uploads are not enabled. Requirement-specific evidence-use approval is a separate review; this entry does not approve reuse.',
       },
     ],
   },

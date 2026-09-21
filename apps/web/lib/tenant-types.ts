@@ -9,6 +9,8 @@ export type Organization = OrganizationChoice & {
   organization_type: string;
 };
 export type Fact = {
+  structured_kind?: string | null;
+  structured_fields?: Record<string, string> | null;
   id: string;
   fact_type: string;
   label: string;
@@ -47,6 +49,7 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  structuredProfilesEnabled?: boolean;
   releaseWorkflow?: import('./response-release').ReleaseWorkspace;
   responsePackages?: import('./response-package').SavedResponsePackage[];
   sourceAttention?: number;

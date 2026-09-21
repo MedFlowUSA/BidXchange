@@ -58,11 +58,14 @@ export async function loadTenant(
     db
       .from('profile_facts')
       .select(
-        'id,fact_type,label,value,verification_status,source_reference,source_note,verified_by,verified_at,effective_date,expiration_date,updated_at,owner_user_id,sensitivity',
+        process.env.BIDXCHANGE_STRUCTURED_PROFILES_ENABLED === 'true'
+          ? 'id,fact_type,label,value,verification_status,source_reference,source_note,verified_by,verified_at,effective_date,expiration_date,updated_at,owner_user_id,sensitivity,structured_kind,structured_fields'
+          : 'id,fact_type,label,value,verification_status,source_reference,source_note,verified_by,verified_at,effective_date,expiration_date,updated_at,owner_user_id,sensitivity',
       )
       .eq('organization_id', id)
       .order('created_at')
-      .limit(500),
+      .limit(500)
+      .overrideTypes<TenantData['facts'], { merge: false }>(),
     db
       .from('onboarding_items')
       .select('id,label,status')
@@ -99,6 +102,7 @@ export async function loadTenant(
       'Workspace data could not be loaded. Please retry or contact the administrator.',
     );
   const data = {
+    structuredProfilesEnabled: process.env.BIDXCHANGE_STRUCTURED_PROFILES_ENABLED === 'true',
     reviewAsOf: new Date().toISOString(),
     organization: { ...results[0].data, role: choice.role },
     choices: account.choices,

@@ -1,5 +1,6 @@
 import type { Fact, TenantData } from './tenant-types';
 import { discloseFact, displayDate } from './ai/policy';
+import { companyTemplates, structuredErrors } from './company-fields';
 
 export function exportableFact(f: Fact, now: Date) {
   const day = now.toISOString().slice(0, 10);
@@ -40,7 +41,7 @@ export function responseAutofill(data: TenantData, pursuitId: string, now = new 
           .map((e) => e.fact_id)
       : [],
   );
-  const facts = data.facts
+  let facts = data.facts
     .filter((f) => exportableFact(f, now) && (basics.has(f.fact_type) || approvedIds.has(f.id)))
     .sort(
       (a, b) =>
@@ -70,16 +71,63 @@ export function responseAutofill(data: TenantData, pursuitId: string, now = new 
     { label: 'Source reference', value: opportunity.source_note || '[Not recorded]' },
   ];
   const gaps: string[] = [];
-  for (const [name, pattern] of [
-    ['Company address', /address/i],
-    ['Business phone', /phone|telephone/i],
-    ['Business email', /e-?mail/i],
-    ['Company contact', /contact|representative/i],
-  ] as const)
-    if (!facts.some((f) => f.fact_type === 'identity' && pattern.test(f.label)))
+  if (data.structuredProfilesEnabled) {
+    const rejected = new Set<string>();
+    for (const fact of facts) {
+      if (
+        fact.structured_kind &&
+        (companyTemplates[fact.structured_kind]?.type !== fact.fact_type ||
+          structuredErrors(fact.structured_kind, fact.structured_fields).length)
+      ) {
+        rejected.add(fact.id);
+        gaps.push('A structured company record is invalid and was omitted. Review Company.');
+      }
+      if (fact.fact_type === 'identity' && !fact.structured_kind) rejected.add(fact.id);
+      if (
+        fact.structured_kind === 'entity' &&
+        fact.structured_fields?.legal_name &&
+        fact.structured_fields.legal_name !== data.organization.legal_name
+      ) {
+        rejected.add(fact.id);
+        gaps.push(
+          'Structured legal name conflicts with the workspace legal name. Reconcile Company before use.',
+        );
+      }
+    }
+    const required: Record<string, string[]> = {
+      mailing_address: ['line1', 'city', 'country'],
+      business_phone: ['number'],
+      business_email: ['email'],
+      representative: ['name', 'title', 'authority'],
+    };
+    for (const [kind, template] of Object.entries(companyTemplates).filter(([, t]) => t.autofill)) {
+      const candidates = facts.filter((f) => f.structured_kind === kind && !rejected.has(f.id));
+      if (
+        candidates.length !== 1 ||
+        required[kind].some((key) => !candidates[0]?.structured_fields?.[key])
+      ) {
+        candidates.forEach((f) => rejected.add(f.id));
+        gaps.push(
+          `${template.autofill}: ${candidates.length > 1 ? 'multiple current records; select and reconcile the intended record' : 'no complete current verified structured record'}. Review Company before use.`,
+        );
+      }
+    }
+    if (facts.some((f) => f.fact_type === 'identity' && !f.structured_kind))
       gaps.push(
-        `${name}: no current verified workspace-visible record. Complete or verify it in Company.`,
+        'Legacy identity text has not been mapped to structured document fields and was omitted. Convert and reverify the intended records in Company.',
       );
+    facts = facts.filter((f) => !rejected.has(f.id));
+  } else
+    for (const [name, pattern] of [
+      ['Company address', /address/i],
+      ['Business phone', /phone|telephone/i],
+      ['Business email', /e-?mail/i],
+      ['Company contact', /contact|representative/i],
+    ] as const)
+      if (!facts.some((f) => f.fact_type === 'identity' && pattern.test(f.label)))
+        gaps.push(
+          `${name}: no current verified workspace-visible record. Complete or verify it in Company.`,
+        );
   for (const row of [...company, ...bid].filter((r) => r.value === '[Not recorded]'))
     gaps.push(`${row.label}: not recorded.`);
   if (

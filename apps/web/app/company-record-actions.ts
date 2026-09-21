@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '../lib/tenant';
 import { companyRecordInput } from '../lib/company-record-input';
 import type { MutationState } from './actions';
+import { structuredSummary } from '../lib/company-fields';
 
 export async function saveCompanyRecord(
   _state: MutationState,
@@ -13,6 +14,9 @@ export async function saveCompanyRecord(
     return { message: parsed.error.issues[0]?.message ?? 'Check the record fields.' };
   try {
     const input = parsed.data;
+    const structuredEnabled = process.env.BIDXCHANGE_STRUCTURED_PROFILES_ENABLED === 'true';
+    if (input.structured_kind && !structuredEnabled)
+      return { message: 'Structured profiles are not enabled in this workspace deployment.' };
     const { supabase } = await requireAdmin(input.organization_id);
     const limit = await supabase.rpc('consume_admin_mutation');
     if (limit.error || limit.data !== true)
@@ -26,10 +30,18 @@ export async function saveCompanyRecord(
       .maybeSingle();
     if (owner.error || !owner.data)
       return { message: 'Choose an active member of this organization as the owner.' };
+    const fields = input.structured_kind
+      ? (JSON.parse(input.structured_fields!) as Record<string, string>)
+      : null;
     const values = {
+      ...(structuredEnabled
+        ? { structured_kind: input.structured_kind || null, structured_fields: fields }
+        : {}),
       fact_type: input.fact_type,
       label: input.label,
-      value: input.value || null,
+      value: fields
+        ? structuredSummary(input.structured_kind!, fields) || null
+        : input.value || null,
       source_reference: input.source_reference || null,
       source_note: input.source_note || null,
       owner_user_id: input.owner_user_id,

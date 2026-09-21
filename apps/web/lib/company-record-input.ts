@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { readinessAreas } from './company-readiness';
+import { companyTemplates, structuredErrors } from './company-fields';
 
 export const companyRecordTypes = readinessAreas.flatMap((area) => [...area.types]) as string[];
 export const workspaceRecordTypes = new Set([
@@ -28,8 +29,29 @@ export const companyRecordInput = z
     effective_date: optionalDate,
     expiration_date: optionalDate,
     sensitivity: z.enum(['restricted', 'workspace']),
+    structured_kind: z.string().max(40).optional(),
+    structured_fields: z.string().max(12000).optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.structured_kind) {
+      let fields: unknown;
+      try {
+        fields = JSON.parse(data.structured_fields ?? '');
+      } catch {
+        fields = null;
+      }
+      const errors = structuredErrors(data.structured_kind, fields);
+      if (companyTemplates[data.structured_kind]?.type !== data.fact_type)
+        errors.push('Structured record must match its category.');
+      for (const message of errors)
+        ctx.addIssue({ code: 'custom', message, path: ['structured_fields'] });
+    } else if (data.structured_fields && data.structured_fields !== '{}') {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Select a structured record type.',
+        path: ['structured_kind'],
+      });
+    }
     if (Boolean(data.fact_id) !== Boolean(data.updated_at))
       ctx.addIssue({
         code: 'custom',

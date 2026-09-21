@@ -62,6 +62,7 @@ function FactCard({
   asOf,
   members,
   userId,
+  structuredEnabled,
 }: {
   fact: Fact;
   admin: boolean;
@@ -69,6 +70,7 @@ function FactCard({
   asOf: string;
   members: TenantData['members'];
   userId: string;
+  structuredEnabled?: boolean;
 }) {
   const status = reviewStatus(fact, asOf);
   const verified = status === 'reviewed';
@@ -108,6 +110,7 @@ function FactCard({
           members={members}
           userId={userId}
           fact={fact}
+          structuredEnabled={structuredEnabled}
         />
       )}
       {admin && (
@@ -585,6 +588,7 @@ export default function TenantWorkspace({
                   <CompanyRecordForm
                     organizationId={org.id}
                     types={area.types}
+                    structuredEnabled={data.structuredProfilesEnabled}
                     members={data.members}
                     userId={data.userId}
                   />
@@ -598,6 +602,7 @@ export default function TenantWorkspace({
                   <div className="company-grid">
                     {area.facts.map((f) => (
                       <FactCard
+                        structuredEnabled={data.structuredProfilesEnabled}
                         fact={f}
                         members={data.members}
                         userId={data.userId}
@@ -622,6 +627,7 @@ export default function TenantWorkspace({
                 <div className="company-grid">
                   {readiness.other.map((f) => (
                     <FactCard
+                      structuredEnabled={data.structuredProfilesEnabled}
                       fact={f}
                       members={data.members}
                       userId={data.userId}

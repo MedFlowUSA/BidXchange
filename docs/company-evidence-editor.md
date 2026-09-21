@@ -1,5 +1,7 @@
 # Saved company evidence
 
+September 21: [structured Company Passport and explicit autofill](structured-company-profiles.md) passed staging validation and the approved production migration is installed. The activation release enables dedicated fields alongside the existing free-text evidence editor described below.
+
 Authorized organization administrators can now add and correct evidence records inside the relevant Company readiness area. Records persist in the existing tenant-scoped `profile_facts` table and use its existing RLS, audit triggers and verification guard. The editor does not use a service-role key or add database privileges.
 
 Each record captures a category, label, known information, evidence reference, source/review notes, active member owner, effective/expiration dates and visibility. Unknown values may remain blank. New records default to restricted visibility. Insurance, bonding, personnel, finance and other sensitive categories cannot be reclassified as workspace-visible through the form. Editors load their controls only when opened, keeping large profiles lighter.

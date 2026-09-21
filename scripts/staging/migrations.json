@@ -76,7 +76,12 @@
       "file": "20260921001500_response_release_workflow.sql",
       "sha256": "71a4317a9170e7e715df22b46c1aaa0db7e17a8fb4f1ecd223606c2f641ac7c7",
       "action": "include-schema"
+    },
+    {
+      "file": "20260921001600_structured_company_profiles.sql",
+      "sha256": "7590671c5f3ac55ee7fb1a1c1a0d029de2b1297c1e49cf3de9db465bfddcdafa",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 11
+  "packageRevision": 12
 }

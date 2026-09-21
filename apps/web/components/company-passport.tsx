@@ -91,6 +91,7 @@ export default function CompanyPassport({ data }: { data: TenantData }) {
                     members={data.members}
                     userId={data.userId}
                     suggestion={suggestion}
+                    structuredEnabled={data.structuredProfilesEnabled}
                   />
                 ) : (
                   <>

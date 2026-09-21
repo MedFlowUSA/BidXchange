@@ -3,6 +3,7 @@ import { useActionState, useState } from 'react';
 import { saveCompanyRecord } from '../app/company-record-actions';
 import { companyRecordTypes, workspaceRecordTypes } from '../lib/company-record-input';
 import type { Fact, TenantData } from '../lib/tenant-types';
+import { companyTemplates, suggestedTemplate, structuredSummary } from '../lib/company-fields';
 
 export default function CompanyRecordForm({
   organizationId,
@@ -11,6 +12,7 @@ export default function CompanyRecordForm({
   userId,
   fact,
   suggestion,
+  structuredEnabled = false,
 }: {
   organizationId: string;
   types: readonly string[];
@@ -18,10 +20,16 @@ export default function CompanyRecordForm({
   userId: string;
   fact?: Fact;
   suggestion?: { type: string; label: string; prompt: string };
+  structuredEnabled?: boolean;
 }) {
   const [state, action, pending] = useActionState(saveCompanyRecord, { message: '' });
   const [expanded, setExpanded] = useState(false);
   const [type, setType] = useState(fact?.fact_type ?? suggestion?.type ?? types[0]);
+  const [kind, setKind] = useState(
+    fact?.structured_kind ??
+      (structuredEnabled && suggestion ? suggestedTemplate(suggestion.type, suggestion.label) : ''),
+  );
+  const [fields, setFields] = useState<Record<string, string>>(fact?.structured_fields ?? {});
   const [sensitivity, setSensitivity] = useState(
     fact?.sensitivity === 'workspace' ? 'workspace' : 'restricted',
   );
@@ -77,6 +85,8 @@ export default function CompanyRecordForm({
                 onChange={(event) => {
                   setType(event.target.value);
                   setSensitivity('restricted');
+                  setKind('');
+                  setFields({});
                 }}
               >
                 {types.map((value) => (
@@ -86,6 +96,39 @@ export default function CompanyRecordForm({
                 ))}
               </select>
             </label>
+            {structuredEnabled && (
+              <>
+                <label>
+                  Record format
+                  <select
+                    value={kind}
+                    onChange={(event) => {
+                      setKind(event.target.value);
+                      setFields({});
+                    }}
+                    disabled={Boolean(fact?.structured_kind)}
+                  >
+                    <option value="">Existing free-text evidence</option>
+                    {Object.entries(companyTemplates)
+                      .filter(([, template]) => template.type === type)
+                      .map(([key, template]) => (
+                        <option key={key} value={key}>
+                          {template.label}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <input type="hidden" name="structured_kind" value={kind} />
+                <input type="hidden" name="structured_fields" value={JSON.stringify(fields)} />
+                {kind && (
+                  <p>
+                    Leave unknown fields blank. Use a distinct record label for each license,
+                    policy, project or person. Changing the format clears its unsaved structured
+                    fields. Existing free text is not automatically converted.
+                  </p>
+                )}
+              </>
+            )}
             <label>
               Record label
               <input
@@ -97,17 +140,62 @@ export default function CompanyRecordForm({
                 placeholder="For example: CSLB license, SAM registration, or project reference"
               />
             </label>
-            <label>
-              Known information
-              <textarea
-                name="value"
-                aria-label="Known information"
-                value={draft.value}
-                onChange={(event) => change('value', event.target.value)}
-                maxLength={4000}
-                rows={3}
-              />
-            </label>
+            {!kind && (
+              <label>
+                Known information
+                <textarea
+                  name="value"
+                  aria-label="Known information"
+                  value={draft.value}
+                  onChange={(event) => change('value', event.target.value)}
+                  maxLength={4000}
+                  rows={3}
+                />
+              </label>
+            )}
+            {kind && (
+              <>
+                <input type="hidden" name="value" value="" />
+                {companyTemplates[kind]?.fields.map((field) => (
+                  <label key={field.key}>
+                    {field.label}
+                    <input
+                      value={fields[field.key] ?? ''}
+                      type={
+                        field.format === 'date'
+                          ? 'date'
+                          : field.format === 'email'
+                            ? 'email'
+                            : 'text'
+                      }
+                      inputMode={field.format === 'amount' ? 'decimal' : undefined}
+                      maxLength={field.max ?? 500}
+                      onChange={(event) =>
+                        setFields((current) => ({ ...current, [field.key]: event.target.value }))
+                      }
+                      onBlur={(event) =>
+                        setFields((current) => ({
+                          ...current,
+                          [field.key]: event.target.value.trim(),
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+                {fact && !fact.structured_kind && (
+                  <p>
+                    Previous free text: {fact.value || 'Not recorded'}. Copy every detail you need
+                    into the fields before saving; the prior text remains in audit history.
+                  </p>
+                )}
+                <details>
+                  <summary>Preview saved information</summary>
+                  <p style={{ whiteSpace: 'pre-wrap' }}>
+                    {structuredSummary(kind, fields) || 'No values entered.'}
+                  </p>
+                </details>
+              </>
+            )}
             <p>
               Leave unknown information blank. Do not enter passwords, full tax identifiers or bank
               details.
