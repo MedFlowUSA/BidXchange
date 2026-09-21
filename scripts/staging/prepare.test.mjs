@@ -25,10 +25,10 @@ function fixture() {
 test('only reviewed schema files enter an unlinked idempotent package', () => {
   const { root } = fixture();
   const result = preparePackage(root);
-  assert.equal(result.included.length, 11);
+  assert.equal(result.included.length, 12);
   assert.deepEqual(result.excluded, ['20260919000200_ges_onboarding.sql']);
   assert.deepEqual(preparePackage(root), result);
-  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 11);
+  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 12);
   assert.deepEqual(readdirSync(result.destination).sort(), [
     'README.txt',
     'manifest.json',
@@ -92,6 +92,9 @@ test('schema-only bootstrap has tenant protections and no company or AI activati
       'ai_organization_settings',
       'ai_usage_events',
       'demo_requests',
+      'source_records',
+      'source_inbox',
+      'opportunity_searches',
     ])
       assert.equal((await db.query(`select count(*)::int n from public.${table}`)).rows[0].n, 0);
     assert.equal(
@@ -100,12 +103,12 @@ test('schema-only bootstrap has tenant protections and no company or AI activati
           "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity",
         )
       ).rows[0].n,
-      38,
+      46,
     );
     assert.equal(
       (await db.query("select count(*)::int n from pg_policies where schemaname='public'")).rows[0]
         .n,
-      119,
+      123,
     );
     assert.equal(
       (

@@ -14,6 +14,10 @@ Tenant workspace reads and mutations use the authenticated user's client, never 
 
 `company-private` is a private PDF bucket with a size limit and no client storage policies. Uploads/downloads remain unavailable pending malware scanning, content validation, tenant path policies and authorized expiring signed URLs. Private documents have not been uploaded or committed.
 
+## Source ingestion checkpoint
+
+Migration 013 is local only. [Source ingestion](opportunity-ingestion.md) documents tenant-scoped searches/inbox, restricted raw snapshots, immutable versions, sanitized errors, operator-only synchronization and explicit activation gates. Imported content never automatically enters AI. The [general AI activation report](ai-general-activation.md) supersedes historical disabled-AI statements in this document.
+
 ## Before production use
 
 - Verify delivery to Manuel's actual inbox and complete his first sign-in. Hosted default SMTP has recipient restrictions and low quotas; configure an owned sender/custom SMTP before inviting external users. Automated tests do not exercise actual inbox delivery.

@@ -133,6 +133,42 @@ export async function loadTenant(
     data.resolutionHistory = recordContext.resolutionHistory;
   }
   data.documentsEnabled = process.env.BIDXCHANGE_DOCUMENTS_ENABLED === 'true';
+  if (
+    process.env.BIDXCHANGE_SOURCES_ENABLED === 'true' &&
+    (next.startsWith('/opportunities') || next.startsWith('/dashboard'))
+  ) {
+    const chunks = Array.from({ length: Math.ceil(data.opportunities.length / 100) }, (_, index) =>
+      data.opportunities.slice(index * 100, index * 100 + 100).map((o) => o.id),
+    );
+    const [attention, connection, links] = await Promise.all([
+      db
+        .from('source_inbox')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', id)
+        .or('status.eq.new,status.eq.needs_review,change_pending.eq.true'),
+      db.rpc('source_connection_status', { org: id }),
+      Promise.all(
+        chunks.map((ids) =>
+          db
+            .from('source_inbox')
+            .select('opportunity_id,change_pending')
+            .eq('organization_id', id)
+            .in('opportunity_id', ids)
+            .limit(100),
+        ),
+      ),
+    ]);
+    if (attention.error || connection.error || links.some((r) => r.error))
+      throw new Error('Source status unavailable.');
+    data.sourceAttention = attention.count ?? 0;
+    const status = connection.data?.[0];
+    data.sourceIssue =
+      !status?.enabled ||
+      status.last_status !== 'succeeded' ||
+      !status.last_success ||
+      Date.now() - Date.parse(status.last_success) > 36 * 3600000;
+    data.sourceProvenance = links.flatMap((r) => r.data ?? []);
+  }
   if (data.documentsEnabled && (next.startsWith('/documents') || record?.kind === 'pursuit')) {
     const [libraries, versions, links] = await Promise.all([
       db

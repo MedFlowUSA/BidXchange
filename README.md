@@ -6,6 +6,8 @@ Live: https://bidxapp.vercel.app
 
 ## Run locally
 
+Prepared locally: [official SAM.gov opportunity ingestion](docs/opportunity-ingestion.md), [configuration/runbook](docs/sam-gov-connector.md), and [validation/activation gates](docs/source-ingestion-validation.md). Source sync remains disabled; no real SAM.gov key or import has been used. Existing manual intake and AI are preserved.
+
 Use Node.js 24, npm and Microsoft Edge for browser tests.
 
 ```sh

@@ -47,6 +47,9 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  sourceAttention?: number;
+  sourceIssue?: boolean;
+  sourceProvenance?: { opportunity_id: string; change_pending: boolean }[];
   documentsEnabled?: boolean;
   documentLibraries?: { id: string; title: string }[];
   documentVersions?: {

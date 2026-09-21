@@ -226,6 +226,33 @@ export default function TenantWorkspace({
       records={records}
     >
       <main>
+        {page === 'Today' && (!!data.sourceAttention || data.sourceIssue) && (
+          <section className="panel">
+            <h2>Source review needs attention</h2>
+            {!!data.sourceAttention && <p>{data.sourceAttention} source records need review.</p>}
+            {data.sourceIssue && (
+              <p>
+                Source synchronization is disabled, incomplete or stale. Check source freshness
+                before relying on results.
+              </p>
+            )}
+            <Link href={href('/opportunities/sources')}>Review source inbox →</Link>
+          </section>
+        )}
+        {recordId &&
+          recordType === 'opportunity' &&
+          data.sourceProvenance?.some((s) => s.opportunity_id === recordId) && (
+            <section className="panel">
+              <p>
+                This opportunity was converted from an observed SAM.gov notice. Local edits are
+                company records; current official metadata and source changes are maintained
+                separately.
+              </p>
+              <Link href={href('/opportunities/sources')}>
+                Check source freshness and version history →
+              </Link>
+            </section>
+          )}
         <div className="page-heading">
           <div>
             <div className="eyebrow">
@@ -616,6 +643,13 @@ export default function TenantWorkspace({
         )}
         {!recordId && page === 'Opportunities' && (
           <>
+            <section className="panel">
+              <Link href={href('/opportunities/sources')}>Source inbox →</Link>
+              <p>
+                Review official source matches and observed changes separately from manually
+                recorded opportunities.
+              </p>
+            </section>
             {capture && (
               <section className="panel">
                 <h2>Record an opportunity</h2>
@@ -643,6 +677,11 @@ export default function TenantWorkspace({
                     key={o.id}
                     href={href('/opportunities/' + o.id)}
                   >
+                    <small>
+                      {data.sourceProvenance?.some((s) => s.opportunity_id === o.id)
+                        ? 'Official SAM.gov source · review current metadata in Source inbox'
+                        : 'Manually recorded opportunity'}
+                    </small>
                     <span className="fit amber">Not qualified</span>
                     <h3>{o.title}</h3>
                     <p>{o.buyer ?? 'Buyer not provided'}</p>
