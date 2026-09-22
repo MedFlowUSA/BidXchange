@@ -73,9 +73,12 @@ export default function EvidenceRenewals({ data }: { data: TenantData }) {
       </p>
       <p className="fact-source">
         As of {data.reviewAsOf.slice(0, 10)} (UTC date). Based on up to 500 company entries visible
-        to your role. Human review is required. When the contractor workflow is enabled, opening an
-        affected pursuit reopens requirements linked to stale or expired evidence and creates an
-        owner follow-up task. Earlier decisions remain in history.
+        to your role. Human review is required.{' '}
+        {data.evidenceMonitoring
+          ? 'Scheduled checks also reopen affected requirements and create owner follow-up tasks without opening the pursuit.'
+          : 'When the contractor workflow is enabled, opening an affected pursuit reopens requirements linked to stale or expired evidence and creates an owner follow-up task.'}{' '}
+        Earlier decisions remain in history. Evidence renewal does not automatically approve a
+        requirement or complete a task.
       </p>
     </section>
   );

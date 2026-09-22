@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { createSupabaseServer } from './supabase/server';
 import type { OrganizationChoice } from './routes';
 import type { TenantData } from './tenant-types';
+import { loadEvidenceMonitoring } from './evidence-monitor-records';
 import {
   loadRecordContext,
   opportunityFields,
@@ -125,6 +126,12 @@ export async function loadTenant(
     audit: results[8].data,
     tasks: results[9].data,
   } as TenantData;
+  if (
+    process.env.BIDXCHANGE_EVIDENCE_MONITOR_ENABLED === 'true' &&
+    /^\/(dashboard|company)(\?|$)/.test(next)
+  ) {
+    data.evidenceMonitoring = await loadEvidenceMonitoring(db, id);
+  }
   if (recordContext) {
     // Keep the existing workspace search sample while resolving detail records independently.
     const merge = <T extends { id: string }>(sample: T[], direct: T[]) => [

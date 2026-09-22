@@ -40,6 +40,7 @@ const server = spawn(
       SUPABASE_PUBLISHABLE_KEY: keys.anon,
       SITE_URL: base,
       BIDXCHANGE_SELF_SERVICE_ENABLED: 'true',
+      BIDXCHANGE_EVIDENCE_MONITOR_ENABLED: 'true',
       BIDXCHANGE_STRUCTURED_PROFILES_ENABLED: 'true',
       BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED: 'true',
       BIDXCHANGE_REGISTER_SIGNOFF_ENABLED: 'true',
@@ -118,6 +119,25 @@ try {
   ).rows[0];
   assert.match(fact.value, /Synthetic Onboarding Contractor LLC/);
   assert.notEqual(fact.verification_status, 'verified');
+  step = 'scheduled evidence reminder and real acknowledgement';
+  await db.query(
+    'update public.profile_facts set expiration_date=current_date-1 where organization_id=$1',
+    [org],
+  );
+  await db.query('select private.monitor_organization_evidence($1)', [org]);
+  await owner.page.goto(base + '/dashboard?organization=' + org);
+  const reminders = owner.page.getByRole('region', { name: 'Evidence reminders' });
+  await expect(reminders).toContainText('Evidence expired');
+  await reminders.getByRole('button', { name: 'Acknowledge reminder' }).click();
+  await expect(reminders).toContainText('Acknowledged; evidence still needs review.');
+  assert(
+    (
+      await db.query(
+        'select acknowledged_at from public.evidence_reminders where organization_id=$1',
+        [org],
+      )
+    ).rows[0].acknowledged_at,
+  );
   step = 'first opportunity and pursuit';
   await owner.page.goto(base + '/opportunities?organization=' + org);
   const add = owner.page
@@ -174,7 +194,11 @@ try {
       .screenshot({ path: '.tmp/onboarding-staging-failure.png', fullPage: true })
       .catch(() => {});
   }
-  console.error(String(error.message).replace(/(token_hash|token|code)=[^&\s"']+/g,'$1=[redacted]').slice(0,1200));
+  console.error(
+    String(error.message)
+      .replace(/(token_hash|token|code)=[^&\s"']+/g, '$1=[redacted]')
+      .slice(0, 1200),
+  );
   console.error(
     'Hosted onboarding browser check failed at: ' + step + '. Session/provider details withheld.',
   );

@@ -50,6 +50,7 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  evidenceMonitoring?: import('./evidence-monitor').EvidenceMonitoring;
   selfServiceEnabled?: boolean;
   contractorWorkflowEnabled?: boolean;
   amendments?: {

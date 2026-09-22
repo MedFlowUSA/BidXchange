@@ -136,7 +136,12 @@
       "file": "20260921002700_workspace_onboarding.sql",
       "sha256": "1c89c5207b8d851c3b3802f00fdd91d78de0a42ac89cb2f91ac5b5d18dc3c0b7",
       "action": "include-schema"
+    },
+    {
+      "file": "20260922002800_scheduled_evidence_monitor.sql",
+      "sha256": "7a5908ce590f7ca553de4b32cf5eb21593294d77f87509c7fdaa9aa42deef28c",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 15
+  "packageRevision": 16
 }

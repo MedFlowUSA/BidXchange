@@ -4,6 +4,7 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "env": {
+    "BIDXCHANGE_EVIDENCE_MONITOR_ENABLED": "true",
     "BIDXCHANGE_SELF_SERVICE_ENABLED": "true",
     "BIDXCHANGE_REGISTER_SIGNOFF_ENABLED": "true",
     "BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED": "true",

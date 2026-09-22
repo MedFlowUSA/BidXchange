@@ -32,6 +32,7 @@ import CompanyPassport from './company-passport';
 import PortalShortcuts from './portal-shortcuts';
 import EvidenceUseReview from './evidence-use-review';
 import EvidenceRenewals from './evidence-renewals';
+import EvidenceReminders from './evidence-reminders';
 import { OpportunityForm, StartPursuitForm, TaskForm, RequirementForm } from './capture-forms';
 import { requirementStatuses } from '../lib/capture-input';
 import { workspaceHref } from '../lib/routes';
@@ -512,6 +513,7 @@ export default function TenantWorkspace({
         {!recordId && page === 'Today' && (
           <>
             <TodayTaskQueue data={data} />
+            <EvidenceReminders data={data} />
             <EvidenceRenewals key={org.id} data={data} />
             <div className="stats-grid">
               {[
@@ -602,6 +604,7 @@ export default function TenantWorkspace({
               Pending facts are working research, not approved proposal evidence. CSLB and SAM
               status are not assumed active. Unknown values remain unfilled.
             </div>
+            <EvidenceReminders data={data} />
             <EvidenceRenewals key={org.id + '-renewals'} data={data} />
             <CompanyPassport key={org.id} data={data} />
             <section className="panel" id="company-readiness">
