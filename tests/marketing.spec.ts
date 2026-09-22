@@ -5,7 +5,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
 }) => {
   await page.goto('/');
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toContainText(
-    'One workspace from notice to reviewed response.',
+    'Bid review for contractors who do the work',
   );
   await expect(page.locator('#capabilities')).toContainText('before committing estimating time');
   await expect(page.locator('#workflow')).toContainText('BidXchange does not submit bids for you.');
@@ -37,7 +37,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
   );
   await expect(page.locator('#questions')).toContainText('does not guarantee eligibility');
   await expect(page.locator('#request-demo')).toContainText(
-    'Bring one live opportunity. See the decision process.',
+    'Bring one real notice. We will walk the review with you.',
   );
   await expect(page.locator('#request-demo')).toContainText('Do not email confidential records.');
   for (const href of ['#capabilities', '#workflow', '#questions', '#request-demo']) {
@@ -53,7 +53,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Know what the bid requires. See what your company still needs.',
+    'See the notice beside the company — then decide if the bid is worth the week.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),

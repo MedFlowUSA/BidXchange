@@ -70,16 +70,17 @@ export default async function Home() {
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
               <div className={styles.heroEyebrow}>
-                <span /> CALIFORNIA PUBLIC WORKS & UTILITY CONTRACTS
+                <span /> CALIFORNIA PUBLIC WORKS, SCHOOL, MUNICIPAL, AND UTILITY CONTRACTS
               </div>
               <h1 id="hero-title">
-                Know what the bid requires.{' '}
-                <span>See what your company still needs.</span>
+                See the notice beside the company —{' '}
+                <span>then decide if the bid is worth the week.</span>
               </h1>
               <p className={styles.heroDescription}>
-                Compare bid requirements with your licenses, insurance, bonding information, and
-                past projects. Assign missing items, track deadlines, and prepare a response for
-                your team to review.
+                BidXchange is for contractors who already do the work and still rebuild the same
+                qualifications file for every solicitation. It holds licenses, insurance, bonding,
+                and past projects next to the requirements so your bid lead can pursue or pass
+                before the estimator starts.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -90,8 +91,8 @@ export default async function Home() {
                 </Link>
               </div>
               <p className={clean.heroNote}>
-                Built for California electrical, energy-efficiency and other field contractors
-                bidding on public works, school facilities, municipal and utility projects.
+                Built for California electrical, energy-efficiency, and other field contractors
+                bidding public works, school facilities, municipal, and utility projects.
               </p>
             </div>
             <div className={`${styles.heroVisual} ${clean.visual}`}>
@@ -99,16 +100,56 @@ export default async function Home() {
             </div>
           </div>
         </section>
-        <section className={clean.definition} aria-label="What BidXchange is">
-          <p>
-            <strong>One workspace from notice to reviewed response.</strong> Company records, bid
-            requirements, estimating tasks, drafts, assigned team members and approvals stay
-            connected to the same opportunity.
-          </p>
-          <p>
-            <strong>Spend bid time on work you can actually deliver.</strong> Reuse what is already
-            documented, see what is missing, and assign someone to follow up.
-          </p>
+        <section id="who-we-are" className={clean.orientation} aria-label="What BidXchange is">
+          <div>
+            <span className={styles.eyebrow}>WHO WE ARE</span>
+            <h2>
+              Bid review for contractors who do the work — not a department that only writes
+              proposals.
+            </h2>
+            <p>
+              Most public-works teams do not have a capture office. They have a license book, a
+              surety contact, a shared drive, and a deadline. BidXchange is the record between the
+              notice and the submission: what the owner asked for, what the company can show, what
+              is still missing, and who owns the next step. Your people still price, sign, and
+              submit through the official channel.
+            </p>
+            <p className={clean.scopeNote}>
+              Not a bid board. Not an eligibility engine. Not an auto-bidder. Not a guarantee of
+              award.
+            </p>
+          </div>
+          <div className={clean.purpose}>
+            <div>
+              <h3>Mission</h3>
+              <p>
+                Help contractors pursue work they can perform, and walk away from work they cannot,
+                with the evidence in one place and the decision still in their hands.
+              </p>
+            </div>
+            <div>
+              <h3>Vision</h3>
+              <p>
+                Every notice a contractor opens should already stand next to their licenses,
+                bonding, registrations, and past performance — so “can we do this?” is a recorded
+                review, not a week of reconstruction.
+              </p>
+            </div>
+          </div>
+        </section>
+        <section id="bid-cost" className={clean.pain} aria-labelledby="bid-cost-title">
+          <h2 id="bid-cost-title">The costly bid is the one you never should have estimated.</h2>
+          <ul>
+            <li>
+              A missing license class, registration, bond capacity, or mandatory walk can kill a job
+              after takeoff is done.
+            </li>
+            <li>
+              The same insurance certificates, project list, and key-person information get rebuilt
+              because they live in inboxes and shared drives.
+            </li>
+            <li>“We should have passed” has no record when the next similar notice appears.</li>
+          </ul>
         </section>
         <section id="capabilities" className={clean.workspace} aria-labelledby="capabilities-title">
           <div className={clean.sectionIntro}>
@@ -126,19 +167,19 @@ export default async function Home() {
               {
                 icon: FolderCheck,
                 number: '01',
-                title: 'Decide where to spend bid effort',
+                title: 'Pass early, on evidence',
                 text: 'Review license, DIR registration, insurance and bonding requirements against your company records before committing estimating time.',
               },
               {
                 icon: FileSearch,
                 number: '02',
-                title: 'Prepare the response without starting over',
+                title: 'Draft from what you already proved',
                 text: 'Reuse reviewed license details and past-project records, assign missing information, and draft a response to the bid requirements.',
               },
               {
                 icon: ListChecks,
                 number: '03',
-                title: 'Keep the bid deadline in view',
+                title: 'Close the file when you submit',
                 text: 'Track assigned tasks, draft versions, approvals and who will submit. Your team submits through the agency or utility’s required channel, then records the confirmation.',
               },
             ].map((feature) => (
@@ -156,12 +197,11 @@ export default async function Home() {
         <section id="company-passport" className={clean.passport} aria-labelledby="passport-title">
           <div>
             <span className={styles.eyebrow}>COMPANY PASSPORT</span>
-            <h2 id="passport-title">Keep your company records ready for the next bid.</h2>
+            <h2 id="passport-title">Start the next bid with the company you already are.</h2>
             <p>
-              Your Company Passport brings license details, registrations, insurance, bonding
-              information, service areas and past projects into one reusable record. Keep sources
-              and renewal dates alongside them so your team can review each new bid without
-              searching through old files.
+              The Company Passport is the reusable file: licenses and registrations, insurance and
+              bonding, territories, past performance, capacity. Sources and renewal dates stay with
+              the record. Each new notice is a review against that file — not a scavenger hunt.
             </p>
           </div>
           <div>
@@ -192,7 +232,7 @@ export default async function Home() {
           <div className={clean.sectionIntro}>
             <div>
               <span className={styles.eyebrow}>THE WORKFLOW</span>
-              <h2 id="workflow-title">From opportunity to submission</h2>
+              <h2 id="workflow-title">What a pursuit looks like in BidXchange</h2>
             </div>
           </div>
           <ol className={clean.steps}>

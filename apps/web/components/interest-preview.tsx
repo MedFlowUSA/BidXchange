@@ -8,7 +8,7 @@ export default function InterestPreview() {
     <section id="request-demo" className={styles.requestSection} aria-labelledby="request-title">
       <div className={styles.requestIntro}>
         <span className={styles.eyebrow}>REQUEST A BID REVIEW</span>
-        <h2 id="request-title">Bring one live opportunity. See the decision process.</h2>
+        <h2 id="request-title">Bring one real notice. We will walk the review with you.</h2>
         <p>
           Bring a public-works, school-facility, municipal or utility bid your company is
           considering. Manuel Rodriguez will walk through how to organize its requirements, review
