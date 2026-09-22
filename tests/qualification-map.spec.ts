@@ -157,6 +157,14 @@ test('interactive evidence trail, responsive layout and explicit task handoff', 
   page,
 }) => {
   await mount(page);
+  await expect(
+    page.getByRole('heading', { name: 'What stands between this opportunity and a reviewed bid?' }),
+  ).toBeVisible();
+  await expect(page.getByText('Delivery capacity not established', { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Manage owners and deadlines' })).toHaveAttribute(
+    'href',
+    /#pursuit-tasks$/,
+  );
   await expect(page.getByRole('status')).toContainText('recorded blocker');
   await page
     .getByLabel('Follow an evidence record')

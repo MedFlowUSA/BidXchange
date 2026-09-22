@@ -1,0 +1,37 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.grid > div {
+  padding: 20px;
+  background: #f3f6fb;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.grid h3 {
+  margin-top: 0;
+  color: #152646;
+}
+.grid strong {
+  color: #173e9d;
+}
+.actions {
+  padding: 16px 0;
+  border-top: 1px solid #dbe3ef;
+}
+.actions summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.actions li {
+  margin: 14px 0;
+  overflow-wrap: anywhere;
+}
+.note {
+  font-size: 0.875rem;
+  color: #53627b;
+  overflow-wrap: anywhere;
+}
