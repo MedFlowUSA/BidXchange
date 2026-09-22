@@ -73,14 +73,13 @@ export default async function Home() {
                 <span /> CALIFORNIA PUBLIC WORKS, SCHOOL, MUNICIPAL, AND UTILITY CONTRACTS
               </div>
               <h1 id="hero-title">
-                See the notice beside the company —{' '}
-                <span>then decide if the bid is worth the week.</span>
+                Review the requirements.{' '}
+                <span>Prepare your bid in one place.</span>
               </h1>
               <p className={styles.heroDescription}>
-                BidXchange is for contractors who already do the work and still rebuild the same
-                qualifications file for every solicitation. It holds licenses, insurance, bonding,
-                and past projects next to the requirements so your bid lead can pursue or pass
-                before the estimator starts.
+                  Compare each contract’s requirements with your company’s licenses, insurance,
+                  bonding and past projects. Identify missing information, assign tasks and prepare
+                  a response for your team to review.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
