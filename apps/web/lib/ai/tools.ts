@@ -42,6 +42,8 @@ export const toolSchemas = {
     })
     .strict(),
   get_pursuit: record,
+  get_pursuit_releases: record,
+  get_response_release: record,
   get_pursuit_tasks: z.object({ id: z.uuid().nullable(), overdue_only: z.boolean() }).strict(),
   compare_opportunities: z.object({ ids: z.array(z.uuid()).min(2).max(2) }).strict(),
   get_recent_record_changes: record,
@@ -94,6 +96,7 @@ export class EvidenceTools {
       fact: '/company',
       requirement: '/pursuits/' + parent,
       audit: '/assistant',
+      release: '/pursuits/' + parent,
     };
     const href =
       type === 'workspace'
@@ -184,6 +187,96 @@ export class EvidenceTools {
           effectiveStatus(r, this.now),
         ),
       );
+  }
+  private async release(id: string) {
+    if (this.remaining < 6) throw new AiError('tool_limit', 429);
+    const r = (
+      await this.rows(
+        this.query('response_release_versions', 'id,pursuit_id,sequence,created_at')
+          .eq('id', id)
+          .limit(1),
+      )
+    )[0];
+    if (!r) throw new AiError('forbidden', 403);
+    const gates = ['pricing', 'compliance', 'final', 'submission'] as const;
+    const [statusResult, submissionRows, ...approvalRows] = await Promise.all([
+      this.db.rpc('response_release_status', { org: this.org, release: id }),
+      this.rows(
+        this.query(
+          'response_submission_history',
+          'id,kind,submitted_at,recorded_at,submitted_by,recorded_by,previous_id',
+        )
+          .eq('release_id', id)
+          .order('sequence', { ascending: false })
+          .limit(1),
+      ),
+      ...gates.map((gate) =>
+        this.rows(
+          this.query('response_approval_history', 'id,approval_type,decision,approver,decided_at')
+            .eq('release_id', id)
+            .eq('approval_type', gate)
+            .order('sequence', { ascending: false })
+            .limit(1),
+        ),
+      ),
+    ]);
+    const parsed = z
+      .object({
+        current: z.boolean(),
+        approvals: z.object({
+          pricing: z.boolean(),
+          compliance: z.boolean(),
+          final: z.boolean(),
+          submission: z.boolean(),
+        }),
+        approval_ids: z.record(z.string(), z.string()),
+        submission_id: z.string().nullable(),
+      })
+      .safeParse(statusResult.data);
+    if (statusResult.error || !parsed.success) throw new AiError('service_unavailable', 503);
+    const status = parsed.data;
+    const submission = submissionRows[0];
+    if ((submission?.id ?? null) !== status.submission_id)
+      throw new AiError('service_unavailable', 503);
+    const fields: Record<string, unknown> = {
+      releaseSequence: r.sequence,
+      releaseCurrent: status.current,
+      reviewedAt: this.now.toISOString(),
+      approvalScope:
+        'Human approvals apply only to this release. Historical approval does not authorize an edited or stale draft. Conditions and rationale are not included; review them in the workspace.',
+      submission: submission ? 'user_recorded' : 'no_record_for_this_release',
+      submissionNotice:
+        'Submission information was recorded by a user and was not independently verified by BidXchange. This does not establish buyer receipt. Other releases and legacy submission records are not included.',
+    };
+    for (const [index, gate] of gates.entries()) {
+      const latest = approvalRows[index][0];
+      if (status.approvals[gate] && status.approval_ids[gate] !== latest?.id)
+        throw new AiError('service_unavailable', 503);
+      fields[gate + 'ApprovalCurrent'] = status.current && status.approvals[gate];
+      fields[gate + 'LastDecision'] = latest?.decision ?? 'not_recorded';
+      fields[gate + 'ApprovalRecord'] = latest?.id ?? null;
+      fields[gate + 'Approver'] = latest?.approver ?? null;
+      fields[gate + 'DecidedAt'] = latest?.decided_at ?? null;
+    }
+    if (submission)
+      Object.assign(fields, {
+        submissionRecord: submission.id,
+        submissionKind: submission.kind,
+        submittedAt: submission.submitted_at,
+        recordedAt: submission.recorded_at,
+        submittedBy: submission.submitted_by,
+        recordedBy: submission.recorded_by,
+        previousSubmissionRecord: submission.previous_id,
+      });
+    return this.add(
+      'release',
+      { ...r, title: `Response release ${r.sequence}` },
+      fields,
+      status.current
+        ? 'current release; human review required'
+        : 'stale release; historical records only',
+      String(r.pursuit_id),
+    );
   }
   async run(name: string, args: unknown): Promise<unknown> {
     const schema = toolSchemas[name as keyof typeof toolSchemas];
@@ -316,11 +409,41 @@ export class EvidenceTools {
             status: r.status,
             submission: 'not_checked',
             submissionNotice:
-              'Submission records were not read. Open the pursuit release history; absence here does not mean no submission occurred.',
+              'Use get_pursuit_releases and get_response_release to read version-bound approval and user-recorded submission history. Absence here does not mean no submission occurred.',
           },
           'pending human review',
         );
       }
+      case 'get_pursuit_releases': {
+        const pursuit = (await this.rows(this.query('pursuits', 'id').eq('id', a.id!).limit(1)))[0];
+        if (!pursuit) throw new AiError('forbidden', 403);
+        const releases = await this.rows(
+          this.query('response_release_versions', 'id,pursuit_id,sequence,created_at')
+            .eq('pursuit_id', a.id!)
+            .order('sequence', { ascending: false })
+            .limit(Math.min(10, this.remaining)),
+        );
+        return {
+          records: releases.map((r) =>
+            this.add(
+              'release',
+              { ...r, title: `Response release ${r.sequence}` },
+              {
+                releaseSequence: r.sequence,
+                createdAt: r.created_at,
+                approvalReview: 'not_checked',
+                submission: 'not_checked',
+              },
+              'release metadata only',
+              String(r.pursuit_id),
+            ),
+          ),
+          scope:
+            'Up to 10 most recent releases, newest first. Use get_response_release for each relevant release. Older releases and legacy submission records are not included; no result is not proof that a bid was never submitted.',
+        };
+      }
+      case 'get_response_release':
+        return this.release(a.id!);
       case 'get_pursuit_tasks': {
         if (a.id) await this.run('get_pursuit', { id: a.id });
         let q = this.query(
@@ -419,7 +542,8 @@ export class EvidenceTools {
     }
   }
   async source(kind: string, id: string): Promise<Evidence> {
-    if (kind === 'opportunity') await this.opportunityById(id);
+    if (kind === 'release') await this.release(id);
+    else if (kind === 'opportunity') await this.opportunityById(id);
     else if (kind === 'pursuit') await this.run('get_pursuit', { id });
     else if (kind === 'fact') {
       const r = (await this.rows(this.query('profile_facts', factFields).eq('id', id).limit(1)))[0];

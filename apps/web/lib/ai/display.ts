@@ -19,7 +19,9 @@ export function evidenceLabel(key: string) {
     decisionRecordedAt: 'Decision recorded at',
     submissionNotice: 'Submission record scope',
   };
-  return labels[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
+  return (
+    labels[key] ?? (key.charAt(0).toUpperCase() + key.slice(1)).replace(/([a-z])([A-Z])/g, '$1 $2')
+  );
 }
 export function evidenceValue(value: unknown) {
   if (value === null || value === undefined) return 'Unknown';

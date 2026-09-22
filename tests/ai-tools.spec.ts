@@ -15,10 +15,19 @@ const org = '11111111-1111-4111-8111-111111111111',
   id = '33333333-3333-4333-8333-333333333333';
 const now = new Date('2026-09-19T12:00:00Z');
 type Row = Record<string, unknown>;
-function fakeDb(tables: Record<string, Row[]>, context = 'current-context') {
+function fakeDb(
+  tables: Record<string, Row[]>,
+  context = 'current-context',
+  releaseStatus?: unknown,
+) {
   const queries: { table: string; fields: string; scope?: string }[] = [];
   const db = {
-    async rpc(name: string, args: { org: string; pursuit: string }) {
+    async rpc(name: string, args: { org: string; pursuit?: string; release?: string }) {
+      if (name === 'response_release_status') {
+        expect(args.org).toBe(org);
+        expect(args.release).toBe(id);
+        return { data: releaseStatus, error: null };
+      }
       expect(name).toBe('pursuit_decision_context');
       expect(args.org).toBe(org);
       expect(args.pursuit).toBe(id);
@@ -288,6 +297,149 @@ test('company search and source details use the saved source-check date without 
   expect(records).toMatchObject([{ fields: { status: 'stale', sourceFreshness: 'stale' } }]);
   expect(source.fields).toMatchObject({ status: 'stale', sourceFreshness: 'stale' });
   expect(JSON.stringify([records, source])).not.toContain('DO NOT TRANSMIT');
+});
+
+test('release citations report version-bound current approvals and corrected user submissions without private snapshots', async () => {
+  const tables = {
+    pursuits: [{ id, organization_id: org }],
+    response_release_versions: [
+      {
+        id,
+        organization_id: org,
+        pursuit_id: id,
+        sequence: 7,
+        created_at: now.toISOString(),
+        snapshot: 'PRIVATE RESPONSE',
+      },
+    ],
+    response_approval_history: [
+      {
+        id: 'approval',
+        organization_id: org,
+        release_id: id,
+        approval_type: 'final',
+        decision: 'approved',
+        approver: id,
+        decided_at: now.toISOString(),
+        rationale: 'PRIVATE PRICING',
+        conditions: 'PRIVATE CONDITIONS',
+      },
+      {
+        id: 'foreign',
+        organization_id: other,
+        release_id: id,
+        approval_type: 'pricing',
+        decision: 'approved',
+      },
+    ],
+    response_submission_history: [
+      {
+        id: 'receipt',
+        organization_id: org,
+        release_id: id,
+        kind: 'correction',
+        submitted_at: now.toISOString(),
+        recorded_at: now.toISOString(),
+        submitted_by: id,
+        recorded_by: id,
+        previous_id: 'initial',
+        details: 'PRIVATE RECEIPT',
+      },
+    ],
+  };
+  const status = {
+    current: true,
+    approvals: { pricing: false, compliance: false, final: true, submission: false },
+    approval_ids: { final: 'approval' },
+    submission_id: 'receipt',
+  };
+  const { db, queries } = fakeDb(tables, 'current', status);
+  const tool = new EvidenceTools(db, org, 'viewer', now);
+  const list = await tool.run('get_pursuit_releases', { id });
+  expect(list).toMatchObject({
+    records: [{ citation: { type: 'release', id }, fields: { submission: 'not_checked' } }],
+  });
+  const result = await tool.run('get_response_release', { id });
+  expect(result).toMatchObject({
+    fields: {
+      releaseSequence: 7,
+      finalApprovalCurrent: true,
+      finalLastDecision: 'approved',
+      pricingLastDecision: 'not_recorded',
+      submission: 'user_recorded',
+      submissionKind: 'correction',
+      previousSubmissionRecord: 'initial',
+    },
+  });
+  expect(JSON.stringify(result)).toContain('not independently verified');
+  expect(JSON.stringify(result)).not.toMatch(/PRIVATE|foreign/);
+  expect((await tool.source('release', id)).fields).toMatchObject({ submissionRecord: 'receipt' });
+  expect(queries.every((q) => q.scope === org)).toBe(true);
+  expect(queries.every((q) => !/snapshot|rationale|conditions|details/.test(q.fields))).toBe(true);
+});
+
+test('stale releases never turn historical approval into current authorization and missing records remain scoped', async () => {
+  const { db } = fakeDb(
+    {
+      response_release_versions: [{ id, organization_id: org, pursuit_id: id, sequence: 1 }],
+      response_approval_history: [
+        {
+          id: 'old',
+          organization_id: org,
+          release_id: id,
+          approval_type: 'submission',
+          decision: 'revoked',
+        },
+      ],
+      response_submission_history: [{ id: 'foreign', organization_id: other, release_id: id }],
+    },
+    '',
+    {
+      current: false,
+      approvals: { pricing: false, compliance: false, final: false, submission: false },
+      approval_ids: {},
+      submission_id: null,
+    },
+  );
+  const result = await new EvidenceTools(db, org, 'viewer', now).run('get_response_release', {
+    id,
+  });
+  expect(result).toMatchObject({
+    fields: {
+      releaseCurrent: false,
+      submissionApprovalCurrent: false,
+      submissionLastDecision: 'revoked',
+      submission: 'no_record_for_this_release',
+    },
+  });
+  expect(JSON.stringify(result)).toContain(
+    'Other releases and legacy submission records are not included',
+  );
+});
+
+test('release sources deny foreign IDs and fail closed on unavailable or racing approval status', async () => {
+  const foreignDb = fakeDb({ response_release_versions: [{ id, organization_id: other }] }).db;
+  await expect(
+    new EvidenceTools(foreignDb, org, 'viewer').source('release', id),
+  ).rejects.toMatchObject({ code: 'forbidden' });
+  for (const status of [
+    null,
+    {
+      current: true,
+      approvals: { pricing: false, compliance: false, final: true, submission: false },
+      approval_ids: { final: 'changed' },
+      submission_id: null,
+    },
+  ]) {
+    const { db } = fakeDb(
+      { response_release_versions: [{ id, organization_id: org, pursuit_id: id }] },
+      '',
+      status,
+    );
+    await expect(
+      new EvidenceTools(db, org, 'viewer').run('get_response_release', { id }),
+    ).rejects.toMatchObject({ code: 'service_unavailable' });
+  }
 });
 test('cross-tenant records are absent even with a valid foreign UUID', async () => {
   const { db, queries } = fakeDb({ opportunities: [{ ...opportunity, organization_id: other }] });

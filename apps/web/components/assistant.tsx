@@ -54,7 +54,11 @@ export default function Assistant({
           'Brainstorm ways to improve our estimating process.',
         ]
       : context?.kind === 'pursuit'
-        ? ['Summarize this pursuit.', 'What tasks are overdue?']
+        ? [
+            'Summarize this pursuit.',
+            'What tasks are overdue?',
+            'Which response approvals are current, and what submissions have users recorded for this pursuit?',
+          ]
         : context
           ? ['Why should we review this opportunity?', 'What could disqualify us?']
           : [

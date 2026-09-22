@@ -26,6 +26,9 @@ export default async function Page({
       <section className="panel">
         <Link href={`/assistant?organization=${organization}`}>Back to assistant</Link>
         <h1>{source.citation.title}</h1>
+        {typeof source.fields.workspaceRoute === 'string' && (
+          <Link href={source.fields.workspaceRoute}>Open the workspace record</Link>
+        )}
         <p>
           {source.citation.type} · {source.citation.status} · Organization: {organization}
         </p>
