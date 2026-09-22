@@ -141,6 +141,8 @@ export async function loadTenant(
     data.pursuits = merge(data.pursuits, recordContext.pursuits);
     data.tasks = merge(data.tasks, recordContext.tasks);
     data.requirements = recordContext.requirements ?? [];
+    data.archivedRequirements = recordContext.archivedRequirements;
+    data.requirementLifecycle = recordContext.requirementLifecycle;
     data.evidenceReviewsEnabled = recordContext.evidenceReviewsEnabled;
     data.evidenceReviews = recordContext.evidenceReviews;
     data.decisionsEnabled = recordContext.decisionsEnabled;

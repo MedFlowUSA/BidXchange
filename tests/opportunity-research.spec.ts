@@ -141,6 +141,10 @@ test('retrieval scopes local records and excludes restricted company evidence fo
       const filters: [string, unknown][] = [];
       queries.push({ table, filters });
       const chain = {
+        is(k: string, v: unknown) {
+          filters.push([k, v]);
+          return chain;
+        },
         select() {
           return chain;
         },
@@ -159,7 +163,9 @@ test('retrieval scopes local records and excludes restricted company evidence fo
         },
         then(resolve: (v: unknown) => unknown) {
           return Promise.resolve({
-            data: (tables[table] ?? []).filter((r) => filters.every(([k, v]) => r[k] === v)),
+            data: (tables[table] ?? []).filter((r) =>
+              filters.every(([k, v]) => (r[k] ?? null) === v),
+            ),
             error: null,
           }).then(resolve);
         },

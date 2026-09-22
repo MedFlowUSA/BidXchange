@@ -179,8 +179,9 @@ export async function retrieveResearch(
     const ids = pursuits.data.slice(0, 200).map((p) => p.id);
     if (ids.length) {
       const blocked = await db
-        .from('pursuit_requirements')
-        .select('id,pursuit_id,requirement,status')
+          .from('pursuit_requirements')
+          .select('id,pursuit_id,requirement,status')
+          .is('archived_at', null)
         .eq('organization_id', org)
         .in('pursuit_id', ids)
         .limit(201);

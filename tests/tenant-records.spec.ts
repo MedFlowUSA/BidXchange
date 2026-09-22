@@ -17,11 +17,14 @@ function database(tables: Record<string, Row[]>, failure?: string) {
           queries.push(query);
           let limit = Infinity;
           let order: string | undefined;
+          const predicates: ((row: Row) => boolean)[] = [];
           const result = () => {
-            let rows = (tables[table] ?? []).filter((row) =>
-              query.filters.every(([key, value]) =>
-                Array.isArray(value) ? value.includes(row[key]) : row[key] === value,
-              ),
+            let rows = (tables[table] ?? []).filter(
+              (row) =>
+                predicates.every((p) => p(row)) &&
+                query.filters.every(([key, value]) =>
+                  Array.isArray(value) ? value.includes(row[key]) : row[key] === value,
+                ),
             );
             if (order)
               rows = [...rows].sort((a, b) => String(a[order!]).localeCompare(String(b[order!])));
@@ -34,6 +37,15 @@ function database(tables: Record<string, Row[]>, failure?: string) {
             };
           };
           const chain = {
+            is(key: string, value: unknown) {
+              predicates.push((r) => (r[key] ?? null) === value);
+              return chain;
+            },
+            not(key: string, operator: string, value: unknown) {
+              expect(operator).toBe('is');
+              predicates.push((r) => (r[key] ?? null) !== value);
+              return chain;
+            },
             overrideTypes() {
               return chain;
             },
@@ -125,6 +137,26 @@ test('foreign UUID and absent records have the same unavailable result', async (
     const { db } = database({ opportunities: rows });
     expect(await loadRecordContext(db, org, { kind: 'opportunity', id })).toBeNull();
   }
+});
+
+test('archived rows and correction history are scoped and excluded from active requirements', async () => {
+  const { db } = database({
+    pursuits: [{ id, organization_id: org, opportunity_id: parent }],
+    opportunities: [{ id: parent, organization_id: org }],
+    pursuit_requirements: [
+      { id: 'active', organization_id: org, pursuit_id: id, archived_at: null },
+      { id: 'archived', organization_id: org, pursuit_id: id, archived_at: '2026-09-22' },
+      { id: 'foreign', organization_id: foreign, pursuit_id: id, archived_at: '2026-09-22' },
+    ],
+    requirement_lifecycle_history: [
+      { id: 'event', organization_id: org, pursuit_id: id },
+      { id: 'foreign-event', organization_id: foreign, pursuit_id: id },
+    ],
+  });
+  const data = await loadRecordContext(db, org, { kind: 'pursuit', id });
+  expect(data?.requirements?.map((r) => r.id)).toEqual(['active']);
+  expect(data?.archivedRequirements?.map((r) => r.id)).toEqual(['archived']);
+  expect(data?.requirementLifecycle?.map((r) => r.id)).toEqual(['event']);
 });
 
 test('a pursuit never resolves a foreign parent or retrieves its tasks', async () => {

@@ -137,6 +137,23 @@ export type TenantData = {
     owner_user_id: string | null;
     updated_at: string;
   }[];
+  archivedRequirements?: (NonNullable<TenantData['requirements']>[number] & {
+    archived_at: string;
+    archived_by: string;
+    archive_reason: string;
+    merged_into_id: string | null;
+  })[];
+  requirementLifecycle?: {
+    id: string;
+    requirement_id: string;
+    target_id: string | null;
+    action: 'archive' | 'restore' | 'merge';
+    reason: string;
+    recorded_by: string;
+    recorded_at: string;
+    before_source: { requirement: string; citation: string | null };
+    before_target: { requirement: string; citation: string | null } | null;
+  }[];
   reviewAsOf: string;
   organization: Organization;
   choices: OrganizationChoice[];

@@ -141,7 +141,12 @@
       "file": "20260922002800_scheduled_evidence_monitor.sql",
       "sha256": "7a5908ce590f7ca553de4b32cf5eb21593294d77f87509c7fdaa9aa42deef28c",
       "action": "include-schema"
+    },
+    {
+      "file": "20260922002900_requirement_lifecycle.sql",
+      "sha256": "fce88e48a92fb07f53ddb579b13eb929c420d5f49dbd89665d7a74cd712d539c",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 16
+  "packageRevision": 17
 }

@@ -66,6 +66,7 @@ export async function saveResponsePackage(
       .select('id,updated_at')
       .eq('organization_id', v.organization_id)
       .eq('pursuit_id', v.pursuit_id)
+      .is('archived_at', null)
       .limit(101);
     if (requirements.error || (requirements.data?.length ?? 0) > 100)
       return {

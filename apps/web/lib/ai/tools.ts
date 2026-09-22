@@ -487,6 +487,7 @@ export class EvidenceTools {
         return (
           await this.rows(
             this.query('pursuit_requirements', 'id,pursuit_id,status,created_at,updated_at')
+              .is('archived_at', null)
               .in(
                 'pursuit_id',
                 pursuits.map((r) => r.id),
@@ -587,6 +588,7 @@ export class EvidenceTools {
       const r = (
         await this.rows(
           this.query('pursuit_requirements', 'id,pursuit_id,status,created_at,updated_at')
+            .is('archived_at', null)
             .eq('id', id)
             .limit(1),
         )

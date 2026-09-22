@@ -105,3 +105,7 @@ The checklist uses the selected pursuit, not another opportunity. An administrat
 ## 26. Rehearse the complete review sequence
 
 Open /pursuits/DEMO-001?workspace=demo. Use only made-up text. Exercise state resets on leaving or reload. The training export is text; real authenticated response exports support PDF and Word. No-bid prevents advancement in the exercise. Editing a draft clears its approval. Amendment and insurance-expiration controls make the decision stale and prevent reuse of the old approval. Historical events remain visible until reset. This rehearsal is not proof of production permissions or a real submission.
+
+## 27. Correct the register without losing history
+
+Administrators and capture managers can correct requirements. Evidence approvals and tasks remain on their original rows; merge does not transfer approval to the target. Review and link appropriate evidence to the combined requirement. Existing decisions and frozen draft snapshots stay in history, but their context becomes stale. Restore does not undo a later target edit. Archived rows are excluded from active sign-off, new outlines and active AI/research requirements. Saved response answers need reconciliation before another release. Do not archive an obligation just to remove a blocker: review the official source and document the reason.

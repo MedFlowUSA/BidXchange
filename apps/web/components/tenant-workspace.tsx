@@ -16,6 +16,7 @@ import PursuitDecisionBrief from './pursuit-decision-brief';
 import ContractReadinessBrief from './contract-readiness-brief';
 import DeliveryReview from './delivery-review';
 import RegisterSignoff from './register-signoff';
+import { RequirementCorrection, RequirementArchive } from './requirement-lifecycle';
 import ContractorTaskTemplate from './contractor-task-template';
 import OpportunityAmendments from './opportunity-amendments';
 import BidReview from './bid-review';
@@ -429,6 +430,13 @@ export default function TenantWorkspace({
                         <RequirementResolution data={data} requirement={requirement} />
                       )}
                       {capture && <RequirementAmendment data={data} requirement={requirement} />}
+                      {capture && (
+                        <RequirementCorrection
+                          key={`correct:${requirement.id}:${requirement.updated_at}`}
+                          data={data}
+                          requirement={requirement}
+                        />
+                      )}
                       {data.documentsEnabled && (
                         <RequirementDocuments data={data} requirement={requirement} />
                       )}
@@ -438,6 +446,7 @@ export default function TenantWorkspace({
                     </article>
                   ))}
                   {capture && <RequirementForm data={data} pursuitId={recordId} />}
+                  <RequirementArchive data={data} />
                 </section>
                 <ResponsePackages
                   key={`response:${org.id}:${recordId}`}
@@ -460,6 +469,14 @@ export default function TenantWorkspace({
                             : (t.assigned_user_id ?? 'Unassigned')}
                         </p>
                         <p>Due: {displayDate(t.due_at, t.due_timezone ?? org.default_timezone)}</p>
+                        {t.requirement_id &&
+                          data.archivedRequirements?.some((r) => r.id === t.requirement_id) && (
+                            <p>
+                              This task remains linked to an archived requirement. Review the{' '}
+                              <a href="#requirement-archive-title">correction history</a> before
+                              completing or updating it.
+                            </p>
+                          )}
                         {capture && <TaskForm data={data} pursuitId={recordId} task={t} />}
                       </div>
                     ))}

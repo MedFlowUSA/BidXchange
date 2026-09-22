@@ -42,6 +42,10 @@ function fakeDb(
           let limit = Infinity;
           let offset = 0;
           const q = {
+            is(k: string, v: unknown) {
+              rows = rows.filter((r) => (r[k] ?? null) === v);
+              return q;
+            },
             eq(k: string, v: unknown) {
               if (k === 'organization_id') record.scope = String(v);
               rows = rows.filter((r) => r[k] === v);
@@ -128,6 +132,24 @@ function model(responses: unknown[]): ModelClient {
     },
   } as unknown as ModelClient;
 }
+
+test('assistant active requirement retrieval excludes archived and foreign records', async () => {
+  const archived = '44444444-4444-4444-8444-444444444444';
+  const { db } = fakeDb({
+    opportunities: [{ id, organization_id: org, title: 'Training opportunity' }],
+    pursuits: [{ id, organization_id: org, opportunity_id: id }],
+    pursuit_requirements: [
+      { id, organization_id: org, pursuit_id: id, status: 'needs_review', archived_at: null },
+      { id: archived, organization_id: org, pursuit_id: id, status: 'blocked', archived_at: '2026-09-22' },
+      { id: 'foreign', organization_id: other, pursuit_id: id, archived_at: null },
+    ],
+  });
+  const result = await new EvidenceTools(db, org, 'viewer', now).run('get_opportunity_requirements', { id });
+  expect(JSON.stringify(result)).toContain(id);
+  expect(JSON.stringify(result)).not.toContain(archived);
+  expect(JSON.stringify(result)).not.toContain('foreign');
+  await expect(new EvidenceTools(db, org, 'viewer', now).source('requirement', archived)).rejects.toThrow();
+});
 const final = (sources: string[] = []) => ({
   output: [
     {

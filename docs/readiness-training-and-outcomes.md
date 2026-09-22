@@ -18,7 +18,7 @@ No RLS, membership, storage, credentials or production schema changes. Live outc
 
 ## Remaining work
 
-Production requirement merge/restore is not implemented. It needs atomic, audited changes that invalidate sign-off and preserve linked evidence, tasks and draft history. This should be the next implementation slice. Outcome-to-past-performance promotion still requires a deliberate, permission-controlled workflow; collecting disclosure permission is not that promotion. Outcome details are readable history text, not normalized analytics fields. The rehearsal does not reproduce all production roles, dates, release gates or exports.
+The subsequent [requirement correction release](requirement-corrections-release.md) implements atomic archive, merge and restore with preserved history and review invalidation. Outcome-to-past-performance promotion still requires a deliberate, permission-controlled workflow; collecting disclosure permission is not that promotion. Outcome details are readable history text, not normalized analytics fields. The rehearsal does not reproduce all production roles, dates, release gates or exports.
 
 Real users must still validate onboarding time and day-to-day usefulness. Use the pilot exercise below; no automated result establishes customer acceptance or legal adequacy.
 

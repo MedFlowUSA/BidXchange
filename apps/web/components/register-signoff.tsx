@@ -22,6 +22,13 @@ export default function RegisterSignoff({
         Candidate requirements may be incomplete or inaccurate until a person reviews and signs off
         on the Requirements Register.
       </p>
+      {!!data.archivedRequirements?.length && (
+        <p>
+          Archived requirements are excluded from this sign-off. Review the{' '}
+          <a href="#requirement-archive-title">archived rows and correction history</a> against the
+          official notice; archiving does not waive a buyer requirement.
+        </p>
+      )}
       <p>
         {current
           ? 'A human sign-off matches this review context.'

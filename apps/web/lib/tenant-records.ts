@@ -19,6 +19,8 @@ type RecordContext = Pick<
   | 'pursuits'
   | 'tasks'
   | 'requirements'
+  | 'archivedRequirements'
+  | 'requirementLifecycle'
   | 'evidenceReviews'
   | 'evidenceReviewsEnabled'
   | 'decisionsEnabled'
@@ -99,9 +101,29 @@ export async function loadRecordContext(
     'id,pursuit_id,requirement,citation,status,owner_user_id,updated_at',
   )
     .eq('pursuit_id', pursuit.id)
+    .is('archived_at', null)
     .order('id')
     .limit(501);
   if (requirements.error) throw new Error('Record data could not be loaded. Please retry.');
+  const [archived, lifecycle] = await Promise.all([
+    scoped(
+      'pursuit_requirements',
+      'id,pursuit_id,requirement,citation,status,owner_user_id,updated_at,archived_at,archived_by,archive_reason,merged_into_id',
+    )
+      .eq('pursuit_id', pursuit.id)
+      .not('archived_at', 'is', null)
+      .order('archived_at', { ascending: false })
+      .limit(101),
+    scoped(
+      'requirement_lifecycle_history',
+      'id,requirement_id,target_id,action,reason,recorded_by,recorded_at,before_source,before_target',
+    )
+      .eq('pursuit_id', pursuit.id)
+      .order('sequence', { ascending: false })
+      .limit(51),
+  ]);
+  if (archived.error || lifecycle.error)
+    throw new Error('Requirement history unavailable. Please retry.');
   const evidenceReviewsEnabled = process.env.BIDXCHANGE_EVIDENCE_REVIEWS_ENABLED === 'true';
   let evidenceReviews: NonNullable<TenantData['evidenceReviews']> = [];
   if (evidenceReviewsEnabled && requirements.data?.length) {
@@ -184,6 +206,8 @@ export async function loadRecordContext(
     amendments = result.data ?? [];
   }
   return {
+    archivedRequirements: archived.data ?? [],
+    requirementLifecycle: lifecycle.data ?? [],
     amendments,
     registerSignoffsEnabled,
     registerSignoffs,
