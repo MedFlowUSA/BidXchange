@@ -850,6 +850,9 @@ export default function TenantWorkspace({
           <>
             <div className="info-note">
               Signed in as {data.userEmail}. Your role: {org.role.replaceAll('_', ' ')}.
+              <p>
+                <Link href="/settings/security">Account security and sign out all devices</Link>
+              </p>
             </div>
             <section className="panel">
               <h2>Organization profile</h2>

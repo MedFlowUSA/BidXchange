@@ -15,6 +15,12 @@ export default async function Login({
         <img src="/brand/bidxchange-logo.png?v=2" alt="BidXchange" />
         <h1>Welcome to your contract desk.</h1>
         <p>Sign in with your email. No password needed.</p>
+        {params.notice === 'sessions-ended' && (
+          <p role="status">
+            Your sessions can no longer renew. Other devices may retain access until their current
+            session token expires. Request a new sign-in email to return.
+          </p>
+        )}
         {!configured && (
           <div className="info-note">
             Sign-in is temporarily unavailable. Please contact your organization administrator. You
