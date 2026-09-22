@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { notFound, redirect } from 'next/navigation';
 import { z } from 'zod';
 import { accountContext } from '../../../../lib/tenant';
@@ -15,6 +16,7 @@ export default async function Team({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await connection();
   if (process.env.BIDXCHANGE_SELF_SERVICE_ENABLED !== 'true') notFound();
   const query = await searchParams;
   const id = z.uuid().safeParse(query.organization);

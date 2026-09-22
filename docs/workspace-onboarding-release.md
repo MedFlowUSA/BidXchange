@@ -31,6 +31,8 @@ Migration 027 passed local SQL/bootstrap checks, was applied to staging and pass
 
 The first browser attempts used incorrect assertions for editors that disappear after a successful save and the app’s custom access-denied page. Those assertions were corrected and hosted timeouts increased; the complete rerun passed.
 
+The first production smoke check caught prerendering of the new pages while the runtime-only activation flag was absent at build time. Signup, onboarding and team administration now call Next.js `connection()` before evaluating that flag so availability is determined at request time.
+
 ## Boundaries and remaining work
 
 Supabase staging and production report signup allowed, email authentication enabled and email confirmation required. The browser test consumes a generated confirmation link without sending mail; real-inbox delivery and spam-folder placement were not tested. Existing provider rate limits and mail delivery configuration still apply. No custom mail provider, bulk invitation email service or new paid infrastructure was provisioned.

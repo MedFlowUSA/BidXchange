@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 import LoginForm from '../login/form';
 import { authConfig } from '../../lib/supabase/config';
 
-export default function Signup() {
+export default async function Signup() {
+  await connection();
   const enabled = process.env.BIDXCHANGE_SELF_SERVICE_ENABLED === 'true';
   const configured = enabled && !!authConfig() && !!process.env.SITE_URL;
   return (

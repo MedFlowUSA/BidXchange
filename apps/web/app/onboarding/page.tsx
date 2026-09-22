@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { notFound, redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -14,6 +15,7 @@ export default async function Onboarding({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await connection();
   if (process.env.BIDXCHANGE_SELF_SERVICE_ENABLED !== 'true')
     return (
       <main className="auth-page">
