@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url);
@@ -6,17 +6,17 @@ const PptxGenJS=require('../../.tmp/presentation-tools/node_modules/pptxgenjs');
 const out=path.resolve('docs/presentations');
 const slides=[];
 const add=(title,section,cards,takeaway,notes)=>slides.push({title,section,cards,takeaway,notes});
-slides.push({cover:true,title:'How to use\nBidXchange',subtitle:'A practical guide for California contractor teams',notes:'Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, release 0107d2c, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.'});
+slides.push({cover:true,title:'How to use\nBidXchange',subtitle:'A practical guide for California contractor teams',notes:'Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, including company signup and invitations, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.'});
 add('One bid. One connected review trail.','YOUR WORKFLOW',[
  ['Company → Opportunity','Record reusable company evidence. Capture the buyer’s notice and official source.'],
  ['Requirements → Decision → Tasks','Review the register, identify gaps, sign off and record human bid intent. Assign the remaining work.'],
  ['Draft → Approval → Submission record','Prepare and review a specific response version. A person submits externally and records what happened.']
 ],'BidXchange organizes the work. People determine eligibility, price, approve, sign and submit.','Define an opportunity as the source notice and a pursuit as the team’s workspace for evaluating and responding. Evidence approval for one requirement is different from approval of an entire response. Never describe the app as the bid submitter.');
-add('Sign in and confirm your company','01 / GET STARTED',[
- ['Use your own account','Open bidxapp.vercel.app and sign in using your work email and the sign-in instructions.'],
- ['Check the workspace','Confirm the selected company before entering evidence, researching a bid or creating a draft.'],
- ['If you cannot enter','An account needs active organization membership. Ask the workspace administrator to arrange access.']
-],'Use the fictional demo to explore navigation—not to store real company information.','Account provisioning and organization membership are currently managed; do not promise self-service organization creation. Never share credentials. Users with several companies must check the selected organization on every task. A missing button may reflect their role.');
+add('Create or join your company','01 / GET STARTED',[
+ ['Confirm your work email','Open /signup for a new account or /login to sign in. Use the confirmation link or email code.'],
+ ['Create or accept an invitation','Open /onboarding. Create a company you administer, or accept the invitation for your exact confirmed email.'],
+ ['Follow the setup checklist','Open each Passport area, save supported evidence, then record your first opportunity. Confirm the selected company.']
+],'Use the fictional demo to explore navigation—not to store real company information.','Company creation and joining are under /onboarding. Administrators create invitations in Settings → Create and manage team invitations, then share the join address themselves. No invitation email is sent automatically. Invitations last seven days and require the exact confirmed email. Existing active roles are preserved. Creating a company saves workspace names but does not attest Passport evidence. Each account can create up to three companies; contact support for more. Never share sign-in links or codes. Users with several companies must confirm the selected organization on every task.');
 slides.push({title:'Find your way around',section:'02 / NAVIGATION',image:'dashboard.png',cards:[['Today','Start with deadlines, open work and evidence that needs attention.'],['Your bid workspace','Company: evidence.\nOpportunities: notices.\nPursuits: reviews and drafts.'],['Assistant','Ask general questions or select Workspace records for authorized company context.']],takeaway:'Live public-demo screenshot · all displayed company and bid data are fictional.',notes:'Point to the left navigation. The real company workspace includes role-controlled contractor features not all represented in this demo. Avoid reading fictional metrics as a real company assessment. Use the same top-level route names in the live demonstration.'});
 add('Start with the Company Passport','03 / COMPANY',[
  ['Identity and registrations','Enter legal name, DBA, entity type and headquarters. Record SAM/UEI and DIR status as claimed.'],

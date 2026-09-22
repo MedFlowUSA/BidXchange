@@ -50,6 +50,7 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  selfServiceEnabled?: boolean;
   contractorWorkflowEnabled?: boolean;
   amendments?: {
     id: string;

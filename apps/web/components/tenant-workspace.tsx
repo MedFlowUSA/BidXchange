@@ -250,6 +250,13 @@ export default function TenantWorkspace({
         </Dialog>
       )}
       <main>
+        {data.selfServiceEnabled && !recordId && (page === 'Company' || page === 'Today') && (
+          <div className="info-note">
+            <Link href={workspaceHref('/onboarding', org.id)}>
+              Continue company setup and your first opportunity →
+            </Link>
+          </div>
+        )}
         {page === 'Today' && <GettingStarted data={data} onOpen={() => setGuideOpen(true)} />}
         {['Today', 'Company', 'Opportunities', 'Pursuits'].includes(page) && (
           <NextActions
@@ -859,6 +866,11 @@ export default function TenantWorkspace({
               <p>
                 <Link href="/settings/security">Account security and sign out all devices</Link>
               </p>
+              {data.selfServiceEnabled && (
+                <p>
+                  <Link href="/onboarding">Your companies, invitations and setup checklist</Link>
+                </p>
+              )}
             </div>
             <section className="panel">
               <h2>Organization profile</h2>
@@ -936,13 +948,15 @@ export default function TenantWorkspace({
                 </div>
               ))}
               <h3>Invitations</h3>
-              <p>
-                Donn’s login has not been created. His exact email and an administrator-approved
-                role are required. Invitation sending will be enabled in a later phase.
-              </p>
-              <button className="button secondary" disabled>
-                Invite user — not enabled yet
-              </button>
+              {data.selfServiceEnabled && admin ? (
+                <p>
+                  <Link className="button secondary" href={workspaceHref('/settings/team', org.id)}>
+                    Create and manage team invitations
+                  </Link>
+                </p>
+              ) : (
+                <p>Your company administrator manages invitations and access.</p>
+              )}
             </section>
             <div className="company-grid settings-panel">
               {['Qualification settings', 'Notification settings', 'Audit/history access'].map(

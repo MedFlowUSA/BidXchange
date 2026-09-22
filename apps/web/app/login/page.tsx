@@ -38,8 +38,16 @@ export default async function Login({
           Explore Apex Energy Demo →
         </Link>
         <p className="auth-footnote">
-          New to BidXchange? Your organization administrator needs to arrange access before you can
-          sign in. Use the email address they registered for you.
+          {process.env.BIDXCHANGE_SELF_SERVICE_ENABLED === 'true' ? (
+            <Link href="/signup">
+              New to BidXchange? Create an account or accept a company invitation.
+            </Link>
+          ) : (
+            <>
+              New to BidXchange? Your organization administrator needs to arrange access before you
+              can sign in. Use the email address they registered for you.
+            </>
+          )}
         </p>
         <details className="code-signin">
           <summary>Need help signing in?</summary>

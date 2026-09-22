@@ -436,6 +436,9 @@ export default async function Home() {
           </div>
           <nav aria-label="Footer access links">
             <Link href="/login">Sign In</Link>
+            {process.env.BIDXCHANGE_SELF_SERVICE_ENABLED === 'true' && (
+              <Link href="/signup">Create a company workspace</Link>
+            )}
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Use</Link>
           </nav>

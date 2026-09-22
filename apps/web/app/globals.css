@@ -2211,6 +2211,47 @@ a.nav-item {
   width: 100%;
   padding: 32px;
 }
+.setup-card {
+  width: 100%;
+  max-width: 860px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: clamp(18px, 4vw, 36px);
+}
+.setup-card h1 {
+  font-size: clamp(23px, 4vw, 32px);
+}
+.setup-card h2 {
+  margin: 24px 0 12px;
+}
+.setup-card p {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+.setup-card ul,
+.setup-card ol {
+  padding-left: 22px;
+}
+.setup-card li {
+  margin: 18px 0;
+}
+.setup-card summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 18px 0;
+}
+.setup-card .opportunity-form {
+  padding: 16px 0;
+  min-width: 0;
+}
+.setup-card select {
+  min-width: 0;
+  max-width: 100%;
+}
+.setup-card .button {
+  white-space: normal;
+  max-width: 100%;
+}
 .auth-card > img {
   width: 220px;
   margin-bottom: 25px;

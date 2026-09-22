@@ -131,7 +131,12 @@
       "file": "20260921002600_monotonic_record_versions.sql",
       "sha256": "9b5665c04d0ea8e150954ca536ce2b330ee6dc52d7cdb56df8d27f30fe76a591",
       "action": "include-schema"
+    },
+    {
+      "file": "20260921002700_workspace_onboarding.sql",
+      "sha256": "1c89c5207b8d851c3b3802f00fdd91d78de0a42ac89cb2f91ac5b5d18dc3c0b7",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 14
+  "packageRevision": 15
 }

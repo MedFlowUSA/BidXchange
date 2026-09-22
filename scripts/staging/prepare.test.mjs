@@ -25,10 +25,10 @@ function fixture() {
 test('only reviewed schema files enter an unlinked idempotent package', () => {
   const { root } = fixture();
   const result = preparePackage(root);
-  assert.equal(result.included.length, 25);
+  assert.equal(result.included.length, 26);
   assert.deepEqual(result.excluded, ['20260919000200_ges_onboarding.sql']);
   assert.deepEqual(preparePackage(root), result);
-  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 25);
+  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 26);
   assert.deepEqual(readdirSync(result.destination).sort(), [
     'README.txt',
     'manifest.json',
@@ -80,7 +80,7 @@ test('schema-only bootstrap has tenant protections and no company or AI activati
   try {
     await db.exec(`create role anon; create role authenticated; create role service_role;
       create schema auth; create schema storage;
-      create table auth.users(id uuid primary key);
+      create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema auth,public to authenticated,anon;
       create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);

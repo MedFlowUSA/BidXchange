@@ -4,15 +4,15 @@
 
 ## 1. How to use BidXchange
 
-Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, release 0107d2c, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.
+Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, including company signup and invitations, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.
 
 ## 2. One bid. One connected review trail.
 
 Define an opportunity as the source notice and a pursuit as the team’s workspace for evaluating and responding. Evidence approval for one requirement is different from approval of an entire response. Never describe the app as the bid submitter.
 
-## 3. Sign in and confirm your company
+## 3. Create or join your company
 
-Account provisioning and organization membership are currently managed; do not promise self-service organization creation. Never share credentials. Users with several companies must check the selected organization on every task. A missing button may reflect their role.
+Company creation and joining are under /onboarding. Administrators create invitations in Settings → Create and manage team invitations, then share the join address themselves. No invitation email is sent automatically. Invitations last seven days and require the exact confirmed email. Existing active roles are preserved. Creating a company saves workspace names but does not attest Passport evidence. Each account can create up to three companies; contact support for more. Never share sign-in links or codes. Users with several companies must confirm the selected organization on every task.
 
 ## 4. Find your way around
 

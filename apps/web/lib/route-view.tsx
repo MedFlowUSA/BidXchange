@@ -60,7 +60,9 @@ export async function renderWorkspace(
               <div>
                 <p>
                   You’re signed in, but your account does not have an active company workspace yet.
-                  Ask your organization administrator to confirm access for {account.user?.email}.
+                  {process.env.BIDXCHANGE_SELF_SERVICE_ENABLED === 'true'
+                    ? ' Create a company or accept an invitation to get started.'
+                    : ` Ask your organization administrator to confirm access for ${account.user?.email}.`}
                 </p>
                 <p>
                   <a href="mailto:mrodriguez@oaisinc.com?subject=BidXchange%20workspace%20access">
@@ -72,6 +74,13 @@ export async function renderWorkspace(
                   <code>{account.user?.id}</code>
                 </details>
               </div>
+            )}
+            {process.env.BIDXCHANGE_SELF_SERVICE_ENABLED === 'true' && (
+              <p>
+                <Link className="button primary" href="/onboarding">
+                  Create or join a company
+                </Link>
+              </p>
             )}
             <Link href="/dashboard?workspace=demo">Explore the fictional demo →</Link>
           </section>

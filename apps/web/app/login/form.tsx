@@ -1,8 +1,18 @@
 'use client';
 import { useActionState } from 'react';
-import { requestSignIn, verifyCode } from './actions';
-export default function LoginForm({ next, configured }: { next: string; configured: boolean }) {
-  const [state, action, pending] = useActionState(requestSignIn, { message: '' });
+import { requestSignIn, requestSignup, verifyCode } from './actions';
+export default function LoginForm({
+  next,
+  configured,
+  signup = false,
+}: {
+  next: string;
+  configured: boolean;
+  signup?: boolean;
+}) {
+  const [state, action, pending] = useActionState(signup ? requestSignup : requestSignIn, {
+    message: '',
+  });
   const [codeState, codeAction, verifying] = useActionState(verifyCode, { message: '' });
   return (
     <>
@@ -13,7 +23,7 @@ export default function LoginForm({ next, configured }: { next: string; configur
           <input name="email" type="email" autoComplete="email" required maxLength={254} />
         </label>
         <button className="button primary full" disabled={pending || !configured}>
-          {pending ? 'Sending…' : 'Email a sign-in link'}
+          {pending ? 'Sending…' : signup ? 'Email a confirmation link' : 'Email a sign-in link'}
         </button>
         <p role="status">{state.message}</p>
       </form>

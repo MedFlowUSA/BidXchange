@@ -3,7 +3,7 @@
     "cover": true,
     "title": "How to use\nBidXchange",
     "subtitle": "A practical guide for California contractor teams",
-    "notes": "Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, release 0107d2c, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature."
+    "notes": "Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, including company signup and invitations, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature."
   },
   {
     "title": "One bid. One connected review trail.",
@@ -26,24 +26,24 @@
     "notes": "Define an opportunity as the source notice and a pursuit as the team’s workspace for evaluating and responding. Evidence approval for one requirement is different from approval of an entire response. Never describe the app as the bid submitter."
   },
   {
-    "title": "Sign in and confirm your company",
+    "title": "Create or join your company",
     "section": "01 / GET STARTED",
     "cards": [
       [
-        "Use your own account",
-        "Open bidxapp.vercel.app and sign in using your work email and the sign-in instructions."
+        "Confirm your work email",
+        "Open /signup for a new account or /login to sign in. Use the confirmation link or email code."
       ],
       [
-        "Check the workspace",
-        "Confirm the selected company before entering evidence, researching a bid or creating a draft."
+        "Create or accept an invitation",
+        "Open /onboarding. Create a company you administer, or accept the invitation for your exact confirmed email."
       ],
       [
-        "If you cannot enter",
-        "An account needs active organization membership. Ask the workspace administrator to arrange access."
+        "Follow the setup checklist",
+        "Open each Passport area, save supported evidence, then record your first opportunity. Confirm the selected company."
       ]
     ],
     "takeaway": "Use the fictional demo to explore navigation—not to store real company information.",
-    "notes": "Account provisioning and organization membership are currently managed; do not promise self-service organization creation. Never share credentials. Users with several companies must check the selected organization on every task. A missing button may reflect their role."
+    "notes": "Company creation and joining are under /onboarding. Administrators create invitations in Settings → Create and manage team invitations, then share the join address themselves. No invitation email is sent automatically. Invitations last seven days and require the exact confirmed email. Existing active roles are preserved. Creating a company saves workspace names but does not attest Passport evidence. Each account can create up to three companies; contact support for more. Never share sign-in links or codes. Users with several companies must confirm the selected organization on every task."
   },
   {
     "title": "Find your way around",

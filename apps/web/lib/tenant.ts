@@ -107,6 +107,7 @@ export async function loadTenant(
       'Workspace data could not be loaded. Please retry or contact the administrator.',
     );
   const data = {
+    selfServiceEnabled: process.env.BIDXCHANGE_SELF_SERVICE_ENABLED === 'true',
     structuredProfilesEnabled: process.env.BIDXCHANGE_STRUCTURED_PROFILES_ENABLED === 'true',
     reviewAsOf: new Date().toISOString(),
     organization: { ...results[0].data, role: choice.role },

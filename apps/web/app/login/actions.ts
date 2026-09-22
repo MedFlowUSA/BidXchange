@@ -7,6 +7,14 @@ import { signInUnavailable } from '../../lib/sign-in-recovery';
 
 export type AuthState = { message: string; sent?: boolean };
 export async function requestSignIn(_state: AuthState, form: FormData): Promise<AuthState> {
+  return sendEmailLink(form, false);
+}
+export async function requestSignup(_state: AuthState, form: FormData): Promise<AuthState> {
+  if (process.env.BIDXCHANGE_SELF_SERVICE_ENABLED !== 'true')
+    return { message: 'New account setup is not available yet.' };
+  return sendEmailLink(form, true);
+}
+async function sendEmailLink(form: FormData, signup: boolean): Promise<AuthState> {
   const email = z.string().trim().pipe(z.email().max(254)).safeParse(form.get('email'));
   if (!email.success) return { message: 'Enter a valid email address.' };
   try {
@@ -18,7 +26,7 @@ export async function requestSignIn(_state: AuthState, form: FormData): Promise<
     const { error } = await supabase.auth.signInWithOtp({
       email: email.data,
       options: {
-        shouldCreateUser: false,
+        shouldCreateUser: signup,
         emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
@@ -31,8 +39,9 @@ export async function requestSignIn(_state: AuthState, form: FormData): Promise<
           'The sign-in email could not be sent. Please try again or contact your administrator.',
       };
     return {
-      message:
-        'If this email has access, a sign-in link is on its way. Open it in this browser. You can also enter a one-time code if your email contains one.',
+      message: signup
+        ? 'If account setup is available for this address, a confirmation link is on its way. Open it in this browser, or enter the one-time code if your email contains one.'
+        : 'If this email has access, a sign-in link is on its way. Open it in this browser. You can also enter a one-time code if your email contains one.',
       sent: true,
     };
   } catch {
