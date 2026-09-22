@@ -1,4 +1,5 @@
 'use client';
+import { hasCurrentRegisterSignoff } from '../lib/workspace-guide';
 import { useActionState, useState } from 'react';
 import { recordDecision } from '../app/decision-actions';
 import type { TenantData, LivePursuit } from '../lib/tenant-types';
@@ -102,7 +103,7 @@ export default function PursuitDecision({
                         disabled={
                           data.registerSignoffsEnabled &&
                           ['bid', 'no_bid'].includes(value) &&
-                          data.registerSignoffs?.[0]?.context_token !== data.decisionContext
+                          !hasCurrentRegisterSignoff(data)
                         }
                       >
                         {label}

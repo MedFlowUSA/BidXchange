@@ -6,7 +6,7 @@ const PptxGenJS=require('../../.tmp/presentation-tools/node_modules/pptxgenjs');
 const out=path.resolve('docs/presentations');
 const slides=[];
 const add=(title,section,cards,takeaway,notes)=>slides.push({title,section,cards,takeaway,notes});
-slides.push({cover:true,title:'How to use\nBidXchange',subtitle:'A practical guide for California contractor teams',notes:'Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, including company signup and invitations, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.'});
+slides.push({cover:true,title:'How to use\nBidXchange',subtitle:'A practical guide for California contractor teams',notes:'Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, including company signup and invitations, September 22, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.'});
 add('One bid. One connected review trail.','YOUR WORKFLOW',[
  ['Company → Opportunity','Record reusable company evidence. Capture the buyer’s notice and official source.'],
  ['Requirements → Decision → Tasks','Review the register, identify gaps, sign off and record human bid intent. Assign the remaining work.'],
@@ -31,8 +31,8 @@ add('Save evidence with a source','03 / COMPANY',[
 add('Use the Radar before the next deadline','04 / EVIDENCE FRESHNESS',[
  ['Choose a window','In Company or Today, filter the Radar: expired, 0–30, 31–60, 61–90 days, stale, or missing dates.'],
  ['Open the record','Check the source, expiration and owner. Correct the evidence and obtain the required human review.'],
- ['Revisit affected pursuits','Opening a pursuit can reopen linked requirements and create a follow-up task. Reaffirm stale decisions.']
-],'A reminder is not renewed coverage. Update and review the underlying evidence.','The source-check date falls back to the attestation date when no explicit check date exists. Stale means last checked over 90 days ago. Follow-up creation runs on pursuit access; there is no background email notification. Previous decisions remain in history. Restricted records may be hidden from the current role.');
+ ['Revisit affected pursuits','Scheduled checks and pursuit access can reopen linked requirements. Review reminders and reaffirm stale decisions.']
+],'A reminder is not renewed coverage. Update and review the underlying evidence.','The source-check date falls back to the attestation date when no explicit check date exists. Stale means last checked over 90 days ago. A scheduled monitor checks enabled organizations once per UTC day, processed in batches. Opening a pursuit also checks linked evidence. In-app reminders appear in Today and Company. Acknowledging a reminder does not renew evidence or clear a blocker. No email or SMS notification is sent. Previous decisions remain in history. Restricted records may be hidden from the current role.');
 slides.push({title:'Capture the notice, not just its title',section:'05 / OPPORTUNITY INTAKE',image:'opportunities.png',cards:[['Record an opportunity','Enter buyer, title, solicitation number, source and notice excerpt.'],['Confirm the deadline','Record the exact date, time and time zone from official instructions.'],['Keep the source current','Preserve the portal URL and source-review note. Check for changes at the official site.']],takeaway:'Live public-demo screenshot · fictional opportunities; not a live market feed.',notes:'Demonstrate the Record an opportunity area in an authorized workspace. A URL alone does not import all solicitation content. Paste relevant public notice text and preserve its source. Only record estimated value when explicitly stated. Open the resulting opportunity, then start a pursuit using its planning control.'});
 add('Use official portals deliberately','05 / EXTERNAL SOURCES',[
  ['Open a portal shortcut','Find official links for SAM.gov, Cal eProcure, SCE PEPMA, LADWP, LAUSD and other supported sources.'],
@@ -98,12 +98,12 @@ add('Handle amendments and stale evidence','15 / CHANGE CONTROL',[
  ['Record the amendment','Add its label, date, official URL, summary and public excerpt in Opportunity amendments.'],
  ['Review the official change','Read it at the source. Record human amendment review; update affected requirements and tasks.'],
  ['Reaffirm the work','Re-sign the register, record a fresh decision and prepare a new release version when context changes.']
-],'Previous sign-offs and decisions remain in history. A new amendment requires fresh review.','The amendment review control asks you to type reviewed. That acknowledgment does not automatically sign off the register. Expired/stale linked evidence can also reopen review when a pursuit is opened. There is no background email notification. Context includes a UTC review-date boundary, so next-day work can require renewed review.');
+],'Previous sign-offs and decisions remain in history. A new amendment requires fresh review.','The amendment review control asks you to type reviewed. That acknowledgment does not automatically sign off the register. Expired or stale linked evidence can reopen review through the scheduled monitor or pursuit access. Check in-app reminders; no email or SMS notification is sent. Context includes a UTC review-date boundary, so next-day work can require renewed review.');
 add('Close the loop—and know who can act','16 / FOLLOW-UP & ACCESS',[
- ['Record the outcome','Use release follow-up for questions, clarification, award/loss, cancellation, debrief and lessons learned.'],
+ ['Record the outcome','Open Post-submission follow-up. Record an award, loss or cancellation with date, official source, reason and debrief.'],
  ['Use the right role','Admins manage company evidence/access. Capture managers organize bids and drafts. Approvers review decisions/releases.'],
  ['If a control is missing','Check organization and role. Refresh changed records. Ask your administrator for the appropriate access.']
-],'An award or past-performance claim must come from a documented human record.','Do not promise automatic award detection or outcome-to-past-performance promotion; the complete promotion workflow is still unfinished. Estimator and viewer privileges differ from approver privileges. Do not borrow an account to bypass a missing permission. The same person may hold several authorized responsibilities; strict four-person separation is not enforced.');
+],'An award or past-performance claim must come from a documented human record.','Outcome details are saved in existing follow-up history. Leave unofficial awardee/amount unknown. Permission to disclose defaults to not granted and is available for recorded awards only. An award is not completed past performance; reuse is never automatic. The full outcome-to-past-performance promotion workflow remains unfinished. Estimator and viewer privileges differ from approver privileges. Do not borrow an account to bypass a missing permission. The same person may hold several authorized responsibilities; strict four-person separation is not enforced.');
 add('Practice with one fictional training bid','17 / GUIDED EXERCISE',[
  ['Set up the example','In an authorized training workspace, label it “TRAINING — not for submission”. Cite a numbered training brief.'],
  ['Build the review trail','Add two requirements, one clarification and one assigned task. Review evidence and record a preliminary decision.'],
@@ -115,6 +115,16 @@ add('Make it a daily operating routine','YOUR NEXT SESSION',[
  ['Keep learning','Use Workspace guide for contextual help. Open the official source whenever instructions are uncertain.']
 ],'Open bidxapp.vercel.app → choose your company → take the next documented action.','Close by having each attendee name their next task and who reviews it. Reiterate the boundary: Human review required. BidXchange organizes contracting information but does not determine legal eligibility, set pricing or submit bids. This deck describes the deployed contractor release, not every future capability in the broader roadmap.');
 
+add('Use the thirteen-step pursuit checklist','WORKSPACE GUIDE',[
+ ['Open it inside a pursuit','Choose ?Open this pursuit?s workflow checklist.? Each step links to the relevant record or control.'],
+ ['Follow the current records','Requirements sign-off comes before a final bid/no-bid decision. A current no-bid stops response recommendations.'],
+ ['Read the status carefully','Recorded means a saved record exists. It does not mean eligible, compliant or submitted by BidXchange.']
+],'A changed source or evidence record can require renewed human review.','The checklist uses the selected pursuit, not another opportunity. An administrator or executive approver signs off the Requirements Register. Missing sign-off is not treated as current. The source, review, decision and release controls remain subject to role permissions.');
+add('Rehearse the complete review sequence','FICTIONAL PRACTICE',[
+ ['Open the municipal retrofit','In the demo, choose Practice the municipal retrofit bid. Renew the sample insurance and review ten requirements.'],
+ ['Record the review trail','Add review notes, sign off, record a reasoned decision and finish the three assigned training tasks.'],
+ ['Test what changes','Create an outline, replace placeholders with fictional text, approve and record a fictional receipt. Then simulate an amendment.']
+],'Fictional local exercise only. Nothing is submitted or saved to a company.','Open /pursuits/DEMO-001?workspace=demo. Use only made-up text. Exercise state resets on leaving or reload. The training export is text; real authenticated response exports support PDF and Word. No-bid prevents advancement in the exercise. Editing a draft clears its approval. Amendment and insurance-expiration controls make the decision stale and prevent reuse of the old approval. Historical events remain visible until reset. This rehearsal is not proof of production permissions or a real submission.');
 const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';pptx.author='BidXchange';pptx.company='BidXchange LLC';pptx.subject='How to use the deployed California contractor workflow';pptx.title='How to Use BidXchange — California Contractor Edition';pptx.lang='en-US';pptx.theme={headFontFace:'Aptos Display',bodyFontFace:'Aptos',lang:'en-US'};
 const C={navy:'0D1933',blue:'235AF5',gold:'F2B337',ink:'172641',muted:'506178',paper:'F3F6FB',line:'DCE4F0',white:'FFFFFF'};
 for(const [i,d] of slides.entries()){
@@ -142,6 +152,6 @@ for(const [i,d] of slides.entries()){
  }
 }
 await pptx.writeFile({fileName:path.join(out,'BidXchange-How-To-Use.pptx')});
-fs.writeFileSync(path.join(out,'How-To-Presenter-Notes.md'),'# How to use BidXchange\n\n25–30 minute walkthrough plus practice. Deployed workflow: 0107d2c.\n\n'+slides.map((d,i)=>`## ${i+1}. ${d.title.replaceAll('\n',' ')}\n\n${d.notes}\n`).join('\n'));
+fs.writeFileSync(path.join(out,'How-To-Presenter-Notes.md'),'# How to use BidXchange\n\n25–30 minute walkthrough plus practice. Workflow edition: September 22, 2026; includes pursuit checklist, scheduled reminders and fictional rehearsal.\n\n'+slides.map((d,i)=>`## ${i+1}. ${d.title.replaceAll('\n',' ')}\n\n${d.notes}\n`).join('\n'));
 fs.writeFileSync(path.join(out,'how-to-content.json'),JSON.stringify(slides,null,2)+'\n');
 console.log(`Created ${slides.length} editable slides with speaker notes.`);

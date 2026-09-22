@@ -2,6 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { accountContext } from '../lib/tenant';
 import { releaseActionInput } from '../lib/response-release';
+import { outcomeNote } from '../lib/outcome-note';
 export async function saveReleaseAction(
   _state: { message: string; success?: boolean },
   form: FormData,
@@ -69,7 +70,7 @@ export async function saveReleaseAction(
                 org: d.organization,
                 release: d.release,
                 event_type: d.event,
-                note: d.note,
+                note: outcomeNote(d.note, d.outcome),
                 due_at: d.due || null,
               });
     if (result.error)

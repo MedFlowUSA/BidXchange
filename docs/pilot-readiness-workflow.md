@@ -23,6 +23,6 @@ This pass closes concrete navigation and status-reporting gaps, not the entire c
 
 ## Remaining readiness work
 
-The public demo still contains scaffolded steps and is not a complete equivalent of an authenticated company workspace. The downloadable presentation/PDF has not been regenerated for the thirteen-step checklist or scheduled reminder feature. Requirement merge/restore and fuller outcome workflows remain in the broader implementation backlog. Real contractor timing/usability validation and legal/commercial review cannot be established by automated tests.
+Follow-up implementation replaces the scaffolded pursuit demo with a connected local rehearsal and regenerates the presentation/PDF/HTML for the thirteen-step checklist, scheduled reminders and outcome follow-up. See `readiness-training-and-outcomes.md`. The demo remains a fictional simulation, not an authenticated workflow or authorization test. Production requirement merge/restore and outcome-to-past-performance promotion remain in the broader implementation backlog. Real contractor timing/usability validation and legal/commercial review cannot be established by automated tests.
 
 No database migrations, role changes, payments, outbound messages, document submissions or external services were introduced. Unrelated local files remain untouched.

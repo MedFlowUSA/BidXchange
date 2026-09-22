@@ -70,4 +70,22 @@ function App() {
     </main>
   );
 }
+if (new URL(location.href).searchParams.has('submitted')) {
+  data.releaseWorkflow!.submissions = [
+    {
+      id: release,
+      release_id: release,
+      sequence: 1,
+      kind: 'submission',
+      previous_id: null,
+      submitted_by: user,
+      recorded_by: user,
+      submitted_at: '2026-09-21T00:00:00Z',
+      recorded_at: '2026-09-21T00:00:00Z',
+      details: { confirmation: 'Fictional receipt' },
+      authorization_id: release,
+      checksum: 'b'.repeat(64),
+    },
+  ];
+}
 createRoot(document.getElementById('root')!).render(<App />);

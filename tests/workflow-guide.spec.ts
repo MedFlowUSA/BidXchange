@@ -159,3 +159,35 @@ test('viewer cannot act as approver or submitter', async ({ page }) => {
   await page.getByText('Record an actual human submission', { exact: true }).click();
   await expect(page.getByRole('button', { name: 'Record human submission' })).toHaveCount(0);
 });
+
+test('award form preserves official source and defaults to no disclosure permission', async ({
+  page,
+}) => {
+  await page.route('**/workflow-harness*', (r) =>
+    r.fulfill({ contentType: 'text/html', body: '<div id="root"></div>' }),
+  );
+  await page.goto('/workflow-harness?submitted=1');
+  await page.addStyleTag({ content: css });
+  await page.addScriptTag({ content: js });
+  await page.getByText('Post-submission follow-up', { exact: true }).click();
+  await page.getByLabel('Event', { exact: true }).selectOption('award');
+  await page
+    .getByLabel('What happened / next action', { exact: true })
+    .fill('Fictional award only');
+  await page.getByLabel('Outcome date', { exact: true }).fill('2026-09-22');
+  await page
+    .getByLabel('Official outcome source URL or reference', { exact: true })
+    .fill('Fictional buyer notice');
+  await page.getByLabel('Outcome reason', { exact: true }).fill('Fictional award announcement');
+  await expect(page.getByLabel('Permission to disclose', { exact: true })).toHaveValue(
+    'not_granted',
+  );
+  await page.getByRole('button', { name: 'Record follow-up', exact: true }).click();
+  await expect(
+    page
+      .getByRole('status')
+      .filter({ hasText: 'Official source / reference: Fictional buyer notice' }),
+  ).toBeVisible();
+  await page.getByLabel('Event', { exact: true }).selectOption('loss');
+  await expect(page.getByLabel('Permission to disclose', { exact: true })).toHaveCount(0);
+});

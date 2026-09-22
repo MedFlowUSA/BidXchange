@@ -7,7 +7,7 @@ import AppShell from './app-shell';
 import Dialog from './dialog';
 import Assistant from './assistant';
 import PublicDemoAssistant from './public-demo-assistant';
-import PursuitFoundation from './pursuit-foundation';
+import DemoBidRehearsal from './demo-bid-rehearsal';
 import { sections, workspaceHref, type OrganizationChoice } from '../lib/routes';
 import {
   ArrowDownToLine,
@@ -370,6 +370,19 @@ export default function Workspace({
           </button>
         </div>
 
+        {(page === 'Today' || page === 'Company' || page === 'Pursuits') && !recordId && (
+          <div className="panel">
+            <h2>Try the connected bid workflow</h2>
+            <p>
+              Review fictional evidence, sign off requirements, record a decision and rehearse
+              version approval. Then see what an amendment changes. Exercise changes reset when you
+              leave.
+            </p>
+            <Link className="button" href={workspaceHref('/pursuits/DEMO-001')}>
+              Practice the municipal retrofit bid
+            </Link>
+          </div>
+        )}
         {page === 'Today' && (
           <>
             <div className="stats-grid">
@@ -700,7 +713,8 @@ export default function Workspace({
                 {
                   title: 'Insurance evidence',
                   value: 'Evidence required',
-                  detail: 'Upload and verification workflow is planned for the secure pilot.',
+                  detail:
+                    'Review expiration, source and attestation in the live Passport. The rehearsal includes an expired-policy example.',
                   status: 'Needs review',
                 },
                 {
@@ -725,8 +739,8 @@ export default function Workspace({
             </div>
             <div className="info-note">
               <ShieldCheck size={20} />
-              Real company facts will retain source, owner, verification history, and expiration
-              dates. This preview does not verify or publish credentials.
+              Real company facts retain source, owner, attestation history, and expiration dates.
+              This preview does not verify or publish credentials.
             </div>
           </>
         )}
@@ -839,7 +853,10 @@ export default function Workspace({
         )}
         {recordId &&
           loaded &&
-          (!selected || (recordType === 'pursuit' && selected.stage === 'Inbox')) && (
+          (!selected ||
+            (recordType === 'pursuit' &&
+              selected.stage === 'Inbox' &&
+              selected.id !== 'DEMO-001')) && (
             <div className="panel">
               <h2>Record not found</h2>
               <p>This record does not exist in this demo workspace.</p>
@@ -873,131 +890,128 @@ export default function Workspace({
             expanded={page === 'Assistant'}
           />
         )}
-        {selected && (recordType !== 'pursuit' || selected.stage !== 'Inbox') && (
-          <section className="panel record-page" aria-label="Opportunity details">
-            <Link
-              className="text-button"
-              href={workspaceHref(recordType === 'pursuit' ? '/pursuits' : '/opportunities')}
-            >
-              Back to {recordType === 'pursuit' ? 'pursuits' : 'opportunities'}
-            </Link>
-            {recordType === 'pursuit' && (
-              <PursuitFoundation
-                demo
-                source={selected.source + ' ? fictional'}
-                deadline={due(selected)}
-                timezone={selected.timezone}
-                opportunityHref={workspaceHref('/opportunities/' + selected.id)}
-              />
-            )}
-            <div className="detail-content">
-              <div className="card-top">
-                <span className="category">{selected.category}</span>
-                <span className="outline-tag">{selected.id} · Fictional</span>
-              </div>
-              <h2 className="detail-title">{selected.title}</h2>
-              <p>
-                {selected.buyer} · {selected.location}
-              </p>
-              <div className="detail-metrics">
-                <div>
-                  <small>ESTIMATED VALUE</small>
-                  <strong>{money(selected.value)}</strong>
+        {selected &&
+          (recordType !== 'pursuit' ||
+            selected.stage !== 'Inbox' ||
+            selected.id === 'DEMO-001') && (
+            <section className="panel record-page" aria-label="Opportunity details">
+              <Link
+                className="text-button"
+                href={workspaceHref(recordType === 'pursuit' ? '/pursuits' : '/opportunities')}
+              >
+                Back to {recordType === 'pursuit' ? 'pursuits' : 'opportunities'}
+              </Link>
+              {recordType === 'pursuit' && (
+                <DemoBidRehearsal key={selected.id} opportunity={selected} />
+              )}
+              <div className="detail-content">
+                <div className="card-top">
+                  <span className="category">{selected.category}</span>
+                  <span className="outline-tag">{selected.id} · Fictional</span>
                 </div>
-                <div>
-                  <small>RESPONSE DEADLINE</small>
-                  <strong>{due(selected)}</strong>
-                  <small>{selected.timezone}</small>
-                </div>
-              </div>
-              <h3>Scope at a glance</h3>
-              <p>{selected.summary}</p>
-              <div className="source-note">
-                Source: {selected.source} · Sample data, no live source verification
-              </div>
-              <div className="detail-section-title">
-                <h3>Requirements need human review</h3>
-                <span
-                  className={`fit ${reviewState(selected.gates, selected.factors).band === 'Evidence recorded' ? 'green' : 'amber'}`}
-                >
-                  {selected.gates.some((g) => g.status === 'fail')
-                    ? 'Potential blocker'
-                    : 'Human review required'}
-                </span>
-              </div>
-              {selected.gates.map((g) => (
-                <div className="gate-row" key={g.name}>
-                  {g.status === 'pass' ? (
-                    <CheckCircle2 className="green" size={19} />
-                  ) : g.status === 'fail' ? (
-                    <X className="red" size={19} />
-                  ) : (
-                    <CircleHelp className="amber-text" size={19} />
-                  )}
+                <h2 className="detail-title">{selected.title}</h2>
+                <p>
+                  {selected.buyer} · {selected.location}
+                </p>
+                <div className="detail-metrics">
                   <div>
-                    <b>{g.name}</b>
-                    <p>{g.evidence}</p>
+                    <small>ESTIMATED VALUE</small>
+                    <strong>{money(selected.value)}</strong>
                   </div>
-                  <span>
-                    {g.status === 'unknown'
-                      ? 'Needs review'
-                      : g.status === 'fail'
-                        ? 'Potential blocker'
-                        : 'Evidence recorded'}
+                  <div>
+                    <small>RESPONSE DEADLINE</small>
+                    <strong>{due(selected)}</strong>
+                    <small>{selected.timezone}</small>
+                  </div>
+                </div>
+                <h3>Scope at a glance</h3>
+                <p>{selected.summary}</p>
+                <div className="source-note">
+                  Source: {selected.source} · Sample data, no live source verification
+                </div>
+                <div className="detail-section-title">
+                  <h3>Requirements need human review</h3>
+                  <span
+                    className={`fit ${reviewState(selected.gates, selected.factors).band === 'Evidence recorded' ? 'green' : 'amber'}`}
+                  >
+                    {selected.gates.some((g) => g.status === 'fail')
+                      ? 'Potential blocker'
+                      : 'Human review required'}
                   </span>
                 </div>
-              ))}
-              <h3 className="task-title">Response checklist</h3>
-              {selected.tasks.map((task, index) => (
-                <label className="checklist-row" key={task.title}>
-                  <input
-                    type="checkbox"
-                    checked={task.done}
-                    onChange={() => {
-                      setItems((prev) =>
-                        prev.map((o) =>
-                          o.id === selected.id
-                            ? {
-                                ...o,
-                                tasks: o.tasks.map((t, i) =>
-                                  i === index ? { ...t, done: !t.done } : t,
-                                ),
-                              }
-                            : o,
-                        ),
-                      );
-                      record(
-                        `${selected.id}: ${task.title} ${task.done ? 'reopened' : 'completed'}.`,
-                      );
-                    }}
-                  />
-                  <span>{task.title}</span>
-                </label>
-              ))}
-              <div className="stage-controls">
-                <label>
-                  Demo workflow stage
-                  <select
-                    aria-label="Demo workflow stage"
-                    value={selected.stage}
-                    onChange={(e) => stage(selected, e.target.value as Stage)}
-                  >
-                    <option>Inbox</option>
-                    <option>In review</option>
-                    <option disabled={reviewState(selected.gates, selected.factors).needsReview}>
-                      Pursuing
-                    </option>
-                    <option>Passed</option>
-                  </select>
-                </label>
-                <p>
-                  Unresolved demo requirements pause advancement to pursuit. Live approval and
-                  submission are not available in this preview.
-                </p>
+                {selected.gates.map((g) => (
+                  <div className="gate-row" key={g.name}>
+                    {g.status === 'pass' ? (
+                      <CheckCircle2 className="green" size={19} />
+                    ) : g.status === 'fail' ? (
+                      <X className="red" size={19} />
+                    ) : (
+                      <CircleHelp className="amber-text" size={19} />
+                    )}
+                    <div>
+                      <b>{g.name}</b>
+                      <p>{g.evidence}</p>
+                    </div>
+                    <span>
+                      {g.status === 'unknown'
+                        ? 'Needs review'
+                        : g.status === 'fail'
+                          ? 'Potential blocker'
+                          : 'Evidence recorded'}
+                    </span>
+                  </div>
+                ))}
+                <h3 className="task-title">Response checklist</h3>
+                {selected.tasks.map((task, index) => (
+                  <label className="checklist-row" key={task.title}>
+                    <input
+                      type="checkbox"
+                      checked={task.done}
+                      onChange={() => {
+                        setItems((prev) =>
+                          prev.map((o) =>
+                            o.id === selected.id
+                              ? {
+                                  ...o,
+                                  tasks: o.tasks.map((t, i) =>
+                                    i === index ? { ...t, done: !t.done } : t,
+                                  ),
+                                }
+                              : o,
+                          ),
+                        );
+                        record(
+                          `${selected.id}: ${task.title} ${task.done ? 'reopened' : 'completed'}.`,
+                        );
+                      }}
+                    />
+                    <span>{task.title}</span>
+                  </label>
+                ))}
+                <div className="stage-controls">
+                  <label>
+                    Demo workflow stage
+                    <select
+                      aria-label="Demo workflow stage"
+                      value={selected.stage}
+                      onChange={(e) => stage(selected, e.target.value as Stage)}
+                    >
+                      <option>Inbox</option>
+                      <option>In review</option>
+                      <option disabled={reviewState(selected.gates, selected.factors).needsReview}>
+                        Pursuing
+                      </option>
+                      <option>Passed</option>
+                    </select>
+                  </label>
+                  <p>
+                    Unresolved demo requirements pause advancement to pursuit. Live approval and
+                    submission are not available in this preview.
+                  </p>
+                </div>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
 
         <footer>
           <span>

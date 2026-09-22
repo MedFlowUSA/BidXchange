@@ -1,10 +1,10 @@
 # How to use BidXchange
 
-25–30 minute walkthrough plus practice. Deployed workflow: 0107d2c.
+25–30 minute walkthrough plus practice. Workflow edition: September 22, 2026; includes pursuit checklist, scheduled reminders and fictional rehearsal.
 
 ## 1. How to use BidXchange
 
-Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, including company signup and invitations, September 21, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.
+Allow 25–30 minutes plus practice. This guide follows the deployed contractor workflow, including company signup and invitations, September 22, 2026. Open https://bidxapp.vercel.app/. Screenshots are public fictional demo data. Use an authorized training workspace for changes; the public demo does not reproduce every authenticated feature.
 
 ## 2. One bid. One connected review trail.
 
@@ -28,7 +28,7 @@ Some existing controls call attestation verification. Explain that this records 
 
 ## 7. Use the Radar before the next deadline
 
-The source-check date falls back to the attestation date when no explicit check date exists. Stale means last checked over 90 days ago. Follow-up creation runs on pursuit access; there is no background email notification. Previous decisions remain in history. Restricted records may be hidden from the current role.
+The source-check date falls back to the attestation date when no explicit check date exists. Stale means last checked over 90 days ago. A scheduled monitor checks enabled organizations once per UTC day, processed in batches. Opening a pursuit also checks linked evidence. In-app reminders appear in Today and Company. Acknowledging a reminder does not renew evidence or clear a blocker. No email or SMS notification is sent. Previous decisions remain in history. Restricted records may be hidden from the current role.
 
 ## 8. Capture the notice, not just its title
 
@@ -84,11 +84,11 @@ The app does not log into portals, upload the bid for you, sign, or send it. Rec
 
 ## 21. Handle amendments and stale evidence
 
-The amendment review control asks you to type reviewed. That acknowledgment does not automatically sign off the register. Expired/stale linked evidence can also reopen review when a pursuit is opened. There is no background email notification. Context includes a UTC review-date boundary, so next-day work can require renewed review.
+The amendment review control asks you to type reviewed. That acknowledgment does not automatically sign off the register. Expired or stale linked evidence can reopen review through the scheduled monitor or pursuit access. Check in-app reminders; no email or SMS notification is sent. Context includes a UTC review-date boundary, so next-day work can require renewed review.
 
 ## 22. Close the loop—and know who can act
 
-Do not promise automatic award detection or outcome-to-past-performance promotion; the complete promotion workflow is still unfinished. Estimator and viewer privileges differ from approver privileges. Do not borrow an account to bypass a missing permission. The same person may hold several authorized responsibilities; strict four-person separation is not enforced.
+Outcome details are saved in existing follow-up history. Leave unofficial awardee/amount unknown. Permission to disclose defaults to not granted and is available for recorded awards only. An award is not completed past performance; reuse is never automatic. The full outcome-to-past-performance promotion workflow remains unfinished. Estimator and viewer privileges differ from approver privileges. Do not borrow an account to bypass a missing permission. The same person may hold several authorized responsibilities; strict four-person separation is not enforced.
 
 ## 23. Practice with one fictional training bid
 
@@ -97,3 +97,11 @@ Allow 10–15 minutes with facilitator help. Use synthetic information only; do 
 ## 24. Make it a daily operating routine
 
 Close by having each attendee name their next task and who reviews it. Reiterate the boundary: Human review required. BidXchange organizes contracting information but does not determine legal eligibility, set pricing or submit bids. This deck describes the deployed contractor release, not every future capability in the broader roadmap.
+
+## 25. Use the thirteen-step pursuit checklist
+
+The checklist uses the selected pursuit, not another opportunity. An administrator or executive approver signs off the Requirements Register. Missing sign-off is not treated as current. The source, review, decision and release controls remain subject to role permissions.
+
+## 26. Rehearse the complete review sequence
+
+Open /pursuits/DEMO-001?workspace=demo. Use only made-up text. Exercise state resets on leaving or reload. The training export is text; real authenticated response exports support PDF and Word. No-bid prevents advancement in the exercise. Editing a draft clears its approval. Amendment and insurance-expiration controls make the decision stale and prevent reuse of the old approval. Historical events remain visible until reset. This rehearsal is not proof of production permissions or a real submission.

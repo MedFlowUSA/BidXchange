@@ -26,8 +26,13 @@ test('direct demo routes survive refresh and browser history', async ({ page }) 
   await page.reload();
   await expect(page.getByLabel('Demo workflow stage')).toBeVisible();
   await page.goto('/pursuits/DEMO-002?workspace=demo');
-  await expect(page.getByRole('heading', { name: 'Pursuit overview', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Compliance matrix', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', {
+      name: 'Practice one bid from review to submission record',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^2\. Requirements Register/ })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Prepare cost estimate' })).toBeVisible();
 });
 test('protected routes redirect and unauthorized IDs never switch tenant', async ({ page }) => {

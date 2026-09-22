@@ -254,6 +254,8 @@ function Freeze({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
   );
 }
 function Version({ data, release: v }: { data: TenantData; release: ResponseRelease }) {
+  const [followupEvent, setFollowupEvent] = useState('agency_question');
+  const isOutcome = ['award', 'loss', 'cancelled'].includes(followupEvent);
   const workflow = data.releaseWorkflow!,
     role = data.organization.role,
     org = data.organization.id;
@@ -503,11 +505,29 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
                 event: value(f, 'event'),
                 note: value(f, 'note'),
                 due: value(f, 'due'),
+                ...(isOutcome
+                  ? {
+                      outcome: {
+                        date: value(f, 'outcome_date'),
+                        source: value(f, 'outcome_source'),
+                        awardee: value(f, 'outcome_awardee'),
+                        amount: value(f, 'outcome_amount'),
+                        reason: value(f, 'outcome_reason'),
+                        debrief: value(f, 'outcome_debrief'),
+                        disclosure: value(f, 'outcome_disclosure') || 'not_granted',
+                      },
+                    }
+                  : {}),
               })}
             >
               <label>
                 Event
-                <select name="event" aria-label="Event">
+                <select
+                  name="event"
+                  aria-label="Event"
+                  value={followupEvent}
+                  onChange={(e) => setFollowupEvent(e.target.value)}
+                >
                   {Object.entries(followupLabels).map(([k, l]) => (
                     <option key={k} value={k}>
                       {l}
@@ -516,6 +536,50 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
                 </select>
               </label>
               <Field name="note" label="What happened / next action" />
+              {isOutcome && (
+                <fieldset>
+                  <legend>Document the outcome</legend>
+                  <p>
+                    Record only what the buyer or official notice states. Leave unknown award
+                    details blank. These details are saved in the existing follow-up history, not
+                    independently verified.
+                  </p>
+                  <label>
+                    Outcome date
+                    <input type="date" name="outcome_date" required />
+                  </label>
+                  <Field name="outcome_source" label="Official outcome source URL or reference" />
+                  <Field
+                    name="outcome_awardee"
+                    label="Awardee, if officially known"
+                    required={false}
+                  />
+                  <Field
+                    name="outcome_amount"
+                    label="Official award amount and currency (example: 850000 USD)"
+                    required={false}
+                  />
+                  <Field name="outcome_reason" label="Outcome reason" />
+                  <Field name="outcome_debrief" label="Debrief notes" required={false} />
+                  {followupEvent === 'award' && (
+                    <label>
+                      Permission to disclose
+                      <select
+                        name="outcome_disclosure"
+                        aria-label="Permission to disclose"
+                        defaultValue="not_granted"
+                      >
+                        <option value="not_granted">Not granted / unknown</option>
+                        <option value="granted">I have permission to disclose this award</option>
+                      </select>
+                    </label>
+                  )}
+                  <p>
+                    An award is not completed past performance. No company evidence is created or
+                    reused automatically.
+                  </p>
+                </fieldset>
+              )}
               <Field
                 name="due"
                 label="Due date (optional ISO timestamp with timezone)"
@@ -527,7 +591,7 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
             <p key={h.id}>
               {followupLabels[h.event_type]} · {h.recorded_at} · {h.recorded_by}
               <br />
-              {h.note}
+              <span style={{ whiteSpace: 'pre-wrap' }}>{h.note}</span>
               {h.due_at && ` · Due ${h.due_at}`}
             </p>
           ))}

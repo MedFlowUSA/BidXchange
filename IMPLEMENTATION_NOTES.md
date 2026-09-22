@@ -1,5 +1,9 @@
 # California contractor implementation
 
+## Readiness continuation — September 22
+
+Preserve the Next/React and Supabase architecture, production role/RLS gates and existing demo routes. Extend the browser-only fictional workspace with a connected rehearsal (requirements, evidence freshness, sign-off, decisions, version-bound approval and user-recorded submission). Reuse its opportunity seed and existing visual classes; do not add production tables or treat rehearsal clicks as production authority. State resets when leaving/reloading the rehearsal and never reaches organization records. Add desktop/mobile transition tests, including invalidation and preserved history. Update the existing how-to generator, editable PowerPoint, accessible HTML and tagged PDF, with text/layout checks. No migrations or permission changes are proposed. Real-user usability and legal review remain external validation. Requirement merge/restore and production outcome promotion require separate database-backed work; the rehearsal must not claim those exist in production.
+
 ## Inventory
 
 - Runtime: Node 24, npm lockfile, Next.js 16 App Router, React 19, TypeScript. Existing CSS modules/global styles and lucide icons; no new UI framework.

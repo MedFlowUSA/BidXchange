@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { outcomeDetails, outcomeNote } from './outcome-note';
 export const checklistLabels = {
   instructions: 'Official submission instructions',
   attachments: 'Required attachments',
@@ -214,6 +215,19 @@ export const releaseActionInput = z.discriminatedUnion('action', [
       ]),
       note: z.string().trim().min(1).max(2000),
       due: z.union([z.iso.datetime({ offset: true }), z.literal('')]),
+      outcome: outcomeDetails.optional(),
     })
-    .strict(),
+    .strict()
+    .refine(
+      (d) => !d.outcome || ['award', 'loss', 'cancelled'].includes(d.event),
+      'Outcome details require an award, loss or cancellation event.',
+    )
+    .refine(
+      (d) => d.event === 'award' || d.outcome?.disclosure !== 'granted',
+      'Disclosure permission may only be recorded with an award.',
+    )
+    .refine(
+      (d) => outcomeNote(d.note, d.outcome).length <= 2000,
+      'Shorten the outcome notes to fit the record.',
+    ),
 ]);
