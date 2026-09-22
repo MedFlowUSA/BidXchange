@@ -19,9 +19,27 @@ export function effectiveStatus(record: Record<string, unknown>, now = new Date(
   if (typeof record.expiration_date === 'string' && record.expiration_date < day) return 'expired';
   if (typeof record.effective_date === 'string' && record.effective_date > day)
     return 'not_yet_effective';
-  if (record.verification_status === 'verified' && (!record.verified_at || !record.verified_by))
-    return 'unverified';
+  if (['verified', 'expiring'].includes(String(record.verification_status))) {
+    if (!record.verified_at || !record.verified_by) return 'unverified';
+    const checked = sourceFreshness(record, now);
+    if (checked !== 'current') return checked === 'stale' ? 'stale' : 'needs_review';
+    return record.verification_status === 'verified' ? 'human_attested' : 'expiring';
+  }
   return String(record.verification_status ?? 'unverified');
+}
+export function sourceFreshness(record: Record<string, unknown>, now = new Date()) {
+  const date =
+    typeof record.last_checked === 'string' && record.last_checked
+      ? record.last_checked
+      : typeof record.verified_at === 'string'
+        ? record.verified_at.slice(0, 10)
+        : null;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return 'check_date_missing_or_invalid';
+  const timestamp = Date.parse(date + 'T00:00:00Z');
+  if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== date)
+    return 'check_date_missing_or_invalid';
+  const age = (Date.parse(now.toISOString().slice(0, 10)) - timestamp) / 86400000;
+  return age < 0 ? 'future_check_date' : age > 90 ? 'stale' : 'current';
 }
 export function displayDate(value: unknown, timezone: unknown = 'UTC') {
   if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) return 'Not provided';
@@ -48,4 +66,5 @@ Use tools for every factual answer. Separate sourced facts from analysis and rec
 For company questions, use search_company_records with a relevant label or fact_type. Search again with a broader label or use nextOffset when necessary within tool limits; the first ten records are not the entire company profile. Saved structured company fields are represented by their current record value. Each request reads the database anew; previous answers are snapshots, not continuously synchronized documents. Do not claim to save or update company records.
 No procurement connectors exist. Manual added-to-BidXchange dates are NOT official publication dates. Official publication and source synchronization dates are unavailable. Never claim you searched procurement portals. Explain stale/unverified/expired states exactly as provided.
 Do not calculate qualification, scores, thresholds, expiration or deadlines. Use deterministic values only. BidXchange does not determine legal eligibility, license coverage, pricing or win probability. Refuse requests to certify license coverage, set a bid price, sign, submit, guarantee qualification or guarantee a win. Redirect to the cited requirements, missing evidence, authorized human reviewer or official external portal. Never claim successful submission or award unless describing an explicitly user-recorded event with that attribution. Estimated contract value is not revenue. Human review is required. Never repeat confidential details from a user's prompt as established facts.
+Recorded decisions are historical human choices, not AI recommendations. Always state decisionReview alongside recordedDecision: stale requires human reaffirmation; no_recorded_review is not a current approval. submission=not_checked means the submission history was not consulted, never that no submission occurred. human_attested describes a recorded human attestation, not independent verification or legal qualification. A current source-check date does not override expired or unverified evidence status.
 Return the required JSON shape. answer contains short factual statements with evidence keys; risks contains uncertainty and general cautions only; nextAction is a recommendation for human review, never an action taken. Do not use markdown links or raw URLs; the UI provides validated sources.`;

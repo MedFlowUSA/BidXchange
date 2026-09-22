@@ -6,6 +6,7 @@ import {
   effectiveStatus,
   displayDate,
   SYSTEM_POLICY,
+  sourceFreshness,
 } from '../apps/web/lib/ai/policy';
 import { requestSchema, roles, AiError, NO_EVIDENCE } from '../apps/web/lib/ai/contracts';
 import { runAssistant, type ModelClient } from '../apps/web/lib/ai/engine';
@@ -14,9 +15,15 @@ const org = '11111111-1111-4111-8111-111111111111',
   id = '33333333-3333-4333-8333-333333333333';
 const now = new Date('2026-09-19T12:00:00Z');
 type Row = Record<string, unknown>;
-function fakeDb(tables: Record<string, Row[]>) {
+function fakeDb(tables: Record<string, Row[]>, context = 'current-context') {
   const queries: { table: string; fields: string; scope?: string }[] = [];
   const db = {
+    async rpc(name: string, args: { org: string; pursuit: string }) {
+      expect(name).toBe('pursuit_decision_context');
+      expect(args.org).toBe(org);
+      expect(args.pursuit).toBe(id);
+      return { data: context, error: null };
+    },
     from(table: string) {
       return {
         select(fields: string) {
@@ -73,7 +80,20 @@ function fakeDb(tables: Record<string, Row[]>) {
                 resolve({
                   data: rows
                     .slice(offset, offset + limit)
-                    .map((r) => Object.fromEntries(fields.split(',').map((k) => [k, r[k]]))),
+                    .map((r) =>
+                      Object.fromEntries(
+                        fields
+                          .split(',')
+                          .map((k) =>
+                            k === 'last_checked:structured_fields->>last_checked'
+                              ? [
+                                  'last_checked',
+                                  (r.structured_fields as Row | undefined)?.last_checked,
+                                ]
+                              : [k, r[k]],
+                          ),
+                      ),
+                    ),
                   error: null,
                 }),
               );
@@ -177,6 +197,97 @@ test('effective statuses and dates are computed outside model including invalid 
   expect(effectiveStatus({ verification_status: 'verified' }, now)).toBe('unverified');
   expect(displayDate('2026-09-25T18:00:00Z', 'invalid')).toContain('2026');
   expect(displayDate('2026-09-25T18:00:00Z', 'invalid')).toContain('UTC');
+});
+
+test('assistant evidence uses UTC freshness boundaries and never presents old attestation as current', () => {
+  const fact = {
+    verification_status: 'verified',
+    verified_at: '2026-06-21T12:00:00Z',
+    verified_by: id,
+  };
+  expect(sourceFreshness(fact, now)).toBe('current');
+  expect(effectiveStatus(fact, now)).toBe('human_attested');
+  expect(effectiveStatus({ ...fact, last_checked: '2026-06-20' }, now)).toBe('stale');
+  for (const last_checked of ['2026-09-20', '2026-02-30', 'bad']) {
+    expect(effectiveStatus({ ...fact, last_checked }, now)).toBe('needs_review');
+  }
+  expect(
+    effectiveStatus({ ...fact, last_checked: '2026-09-19', expiration_date: '2026-09-18' }, now),
+  ).toBe('expired');
+  expect(
+    effectiveStatus({ ...fact, verification_status: 'expiring', verified_by: null }, now),
+  ).toBe('unverified');
+});
+
+test('pursuit answers distinguish stale decisions and unchecked submissions without exposing decision notes', async () => {
+  for (const token of ['current-context', 'old-context', null]) {
+    const { db, queries } = fakeDb({
+      pursuits: [{ id, organization_id: org, decision: 'bid', status: 'active' }],
+      pursuit_decision_history: [
+        ...(token
+          ? [
+              {
+                id: 'history',
+                organization_id: org,
+                pursuit_id: id,
+                decision: 'bid',
+                context_token: token,
+                decided_at: '2026-09-19T10:00:00Z',
+                reason: 'private reason',
+              },
+            ]
+          : []),
+        {
+          id: 'foreign-history',
+          organization_id: other,
+          pursuit_id: id,
+          context_token: 'foreign secret',
+        },
+      ],
+    });
+    const tool = new EvidenceTools(db, org, 'viewer', now);
+    const result = await tool.run('get_pursuit', { id });
+    expect(result).toMatchObject({
+      fields: {
+        recordedDecision: 'bid',
+        submission: 'not_checked',
+        decisionReview:
+          token === null
+            ? 'no_recorded_review'
+            : token === 'current-context'
+              ? 'current_recorded_review'
+              : 'stale_requires_human_reaffirmation',
+      },
+    });
+    expect(JSON.stringify(result)).not.toMatch(
+      /private reason|foreign secret|not_submitted|current-context|old-context/,
+    );
+    expect(queries.every((q) => q.scope === org)).toBe(true);
+  }
+});
+
+test('company search and source details use the saved source-check date without disclosing structured private fields', async () => {
+  const { db } = fakeDb({
+    profile_facts: [
+      {
+        id,
+        organization_id: org,
+        label: 'License',
+        fact_type: 'license',
+        sensitivity: 'workspace',
+        verification_status: 'verified',
+        verified_at: now.toISOString(),
+        verified_by: id,
+        structured_fields: { last_checked: '2026-01-01', private_detail: 'DO NOT TRANSMIT' },
+      },
+    ],
+  });
+  const tool = new EvidenceTools(db, org, 'viewer', now);
+  const records = await tool.run('get_authorized_company_facts', {});
+  const source = await tool.source('fact', id);
+  expect(records).toMatchObject([{ fields: { status: 'stale', sourceFreshness: 'stale' } }]);
+  expect(source.fields).toMatchObject({ status: 'stale', sourceFreshness: 'stale' });
+  expect(JSON.stringify([records, source])).not.toContain('DO NOT TRANSMIT');
 });
 test('cross-tenant records are absent even with a valid foreign UUID', async () => {
   const { db, queries } = fakeDb({ opportunities: [{ ...opportunity, organization_id: other }] });

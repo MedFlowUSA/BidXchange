@@ -1,7 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { AiError, FEED_NOTICE, LIMITS, type Evidence, type Role } from './contracts';
-import { discloseFact, displayDate, effectiveStatus, publicFactTypes } from './policy';
+import {
+  discloseFact,
+  displayDate,
+  effectiveStatus,
+  publicFactTypes,
+  sourceFreshness,
+} from './policy';
 const empty = z.object({}).strict();
 const record = z.object({ id: z.uuid() }).strict();
 export const toolSchemas = {
@@ -52,7 +58,7 @@ type Row = Record<string, unknown> & { id: string };
 const opportunityFields =
   'id,title,solicitation_number,buyer,official_deadline,deadline_timezone,status,created_at,updated_at';
 const factFields =
-  'id,fact_type,label,value,sensitivity,verification_status,effective_date,expiration_date,verified_at,verified_by,created_at,updated_at';
+  'id,fact_type,label,value,sensitivity,verification_status,effective_date,expiration_date,verified_at,verified_by,last_checked:structured_fields->>last_checked,created_at,updated_at';
 export class EvidenceTools {
   readonly evidence = new Map<string, Evidence>();
   private remaining = LIMITS.records;
@@ -170,6 +176,7 @@ export class EvidenceTools {
             label: r.label,
             value: typeof r.value === 'string' ? r.value.slice(0, 1000) : null,
             status: effectiveStatus(r, this.now),
+            sourceFreshness: sourceFreshness(r, this.now),
             expiration: r.expiration_date,
             effectiveDate: r.effective_date,
             lastUpdated: r.updated_at,
@@ -276,15 +283,40 @@ export class EvidenceTools {
           )
         )[0];
         if (!r) throw new AiError('forbidden', 403);
+        const history = (
+          await this.rows(
+            this.query('pursuit_decision_history', 'id,decision,context_token,decided_at')
+              .eq('pursuit_id', a.id!)
+              .order('decided_at', { ascending: false })
+              .limit(1),
+          )
+        )[0];
+        let decisionReview = 'no_recorded_review';
+        if (history) {
+          const context = await this.db.rpc('pursuit_decision_context', {
+            org: this.org,
+            pursuit: a.id!,
+          });
+          if (context.error || typeof context.data !== 'string')
+            throw new AiError('service_unavailable', 503);
+          decisionReview =
+            history.context_token === context.data && history.decision === r.decision
+              ? 'current_recorded_review'
+              : 'stale_requires_human_reaffirmation';
+        }
         return this.add(
           'pursuit',
           r,
           {
             title: r.title,
             opportunityId: r.opportunity_id,
-            decision: r.decision,
+            recordedDecision: r.decision,
+            decisionReview,
+            decisionRecordedAt: history?.decided_at ?? null,
             status: r.status,
-            submission: 'not_submitted',
+            submission: 'not_checked',
+            submissionNotice:
+              'Submission records were not read. Open the pursuit release history; absence here does not mean no submission occurred.',
           },
           'pending human review',
         );
@@ -403,6 +435,7 @@ export class EvidenceTools {
           lastUpdated: r.updated_at,
           effectiveDate: r.effective_date,
           status: effectiveStatus(r, this.now),
+          sourceFreshness: sourceFreshness(r, this.now),
           expiration: r.expiration_date,
         },
         effectiveStatus(r, this.now),

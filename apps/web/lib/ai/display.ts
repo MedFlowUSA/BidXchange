@@ -13,6 +13,11 @@ export function evidenceLabel(key: string) {
     liveFeeds: 'Live procurement feeds',
     sourceNotes: 'Source notes',
     asOf: 'As of',
+    sourceFreshness: 'Source-check freshness',
+    recordedDecision: 'Recorded decision',
+    decisionReview: 'Decision review status',
+    decisionRecordedAt: 'Decision recorded at',
+    submissionNotice: 'Submission record scope',
   };
   return labels[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
 }
