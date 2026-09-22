@@ -113,12 +113,30 @@ try {
   });
   const fact = (
     await db.query(
-      'select verification_status,value from public.profile_facts where organization_id=$1',
+      'select id,verification_status,value from public.profile_facts where organization_id=$1',
       [org],
     )
   ).rows[0];
   assert.match(fact.value, /Synthetic Onboarding Contractor LLC/);
   assert.notEqual(fact.verification_status, 'verified');
+  step = 'Passport recognition, collapsed evidence and direct record links';
+  await owner.page.goto(base + '/onboarding?organization=' + org);
+  await expect(owner.page.getByText(/1 related records saved/)).toBeVisible();
+  await owner.page.goto(base + '/company?organization=' + org);
+  await expect(owner.page.locator('#fact-' + fact.id)).not.toBeVisible();
+  await owner.page.goto(base + '/company?organization=' + org + '#fact-' + fact.id);
+  await expect(owner.page.locator('#fact-' + fact.id)).toBeVisible();
+  await expect(owner.page.locator('#fact-' + fact.id)).toHaveJSProperty('open', true);
+  await owner.page
+    .getByLabel('Search saved evidence', { exact: true })
+    .fill('no matching synthetic record');
+  await expect(owner.page.locator('#fact-' + fact.id)).toHaveCount(0);
+  await owner.page.getByLabel('Search saved evidence', { exact: true }).fill('Legal business name');
+  await expect(owner.page.locator('#fact-' + fact.id)).toBeVisible();
+  await owner.page.goto(base + '/pursuits?organization=' + org);
+  await expect(
+    owner.page.getByRole('link', { name: 'Record or choose an opportunity' }),
+  ).toBeVisible();
   step = 'scheduled evidence reminder and real acknowledgement';
   await db.query(
     'update public.profile_facts set expiration_date=current_date-1 where organization_id=$1',
@@ -165,10 +183,14 @@ try {
   step = 'pursuit checklist and sign-off navigation';
   await expect(owner.page.getByText('Planned pursuit tools', { exact: true })).toHaveCount(0);
   const checklist = owner.page.locator('details').filter({
-    has: owner.page.locator('summary').filter({ hasText: /^Open this pursuit’s workflow checklist$/ }),
+    has: owner.page
+      .locator('summary')
+      .filter({ hasText: /^Open this pursuit’s workflow checklist$/ }),
   });
   await checklist.locator('summary').click();
-  await checklist.getByRole('link', { name: 'Sign off the Requirements Register', exact: true }).click();
+  await checklist
+    .getByRole('link', { name: 'Sign off the Requirements Register', exact: true })
+    .click();
   await expect(owner.page).toHaveURL(/#register-signoff$/);
   await expect(owner.page.locator('#register-signoff')).toContainText('Human sign-off is required');
   step = 'requirement correction: create source and target';
@@ -177,50 +199,100 @@ try {
     const addRequirement = owner.page.getByRole('group', { name: 'Add requirement', exact: true });
     await addRequirement.locator('summary').click();
     await addRequirement.getByLabel('Requirement text', { exact: true }).fill(wording);
-    await addRequirement.getByLabel('Notice citation', { exact: true }).fill('Training notice section ' + wording);
+    await addRequirement
+      .getByLabel('Notice citation', { exact: true })
+      .fill('Training notice section ' + wording);
     await addRequirement.getByRole('button', { name: 'Add requirement', exact: true }).click();
     await expect(addRequirement.getByRole('status')).toContainText('Requirement saved');
     await owner.page.reload();
   }
-  const requirementRows = (await db.query('select id,requirement from public.pursuit_requirements where organization_id=$1 and pursuit_id=$2 order by requirement',[org,pursuitId])).rows;
+  const requirementRows = (
+    await db.query(
+      'select id,requirement from public.pursuit_requirements where organization_id=$1 and pursuit_id=$2 order by requirement',
+      [org, pursuitId],
+    )
+  ).rows;
   const sourceId = requirementRows.find((r) => r.requirement === 'Synthetic original form').id;
   const targetId = requirementRows.find((r) => r.requirement === 'Synthetic duplicate form').id;
   step = 'archive source on mobile';
   await owner.page.setViewportSize({ width: 390, height: 844 });
   let sourceRow = owner.page.locator('#requirement-' + sourceId);
-  await sourceRow.locator('summary').filter({ hasText: /^Archive or merge requirement$/ }).click();
+  await sourceRow
+    .locator('summary')
+    .filter({ hasText: /^Archive or merge requirement$/ })
+    .click();
   let correction = sourceRow.getByRole('form', { name: 'Correct requirement', exact: true });
-  await correction.getByLabel('Correction reason', { exact: true }).fill('Synthetic duplicate needs review');
+  await correction
+    .getByLabel('Correction reason', { exact: true })
+    .fill('Synthetic duplicate needs review');
   await correction.getByRole('checkbox').check();
   await correction.getByRole('button', { name: 'Archive requirement', exact: true }).click();
-  await expect(owner.page.getByRole('region', { name: 'Archived requirements and correction history' }).locator('summary').filter({ hasText: /^Synthetic original form$/ })).toBeVisible();
+  await expect(
+    owner.page
+      .getByRole('region', { name: 'Archived requirements and correction history' })
+      .locator('summary')
+      .filter({ hasText: /^Synthetic original form$/ }),
+  ).toBeVisible();
   await owner.page.reload();
   step = 'restore original source';
-  const archivedRow = owner.page.getByRole('region', { name: 'Archived requirements and correction history' }).locator('details.panel').filter({ hasText: 'Synthetic original form' });
+  const archivedRow = owner.page
+    .getByRole('region', { name: 'Archived requirements and correction history' })
+    .locator('details.panel')
+    .filter({ hasText: 'Synthetic original form' });
   await archivedRow.locator('summary').first().click();
-  await archivedRow.locator('summary').filter({ hasText: /^Restore requirement$/ }).click();
+  await archivedRow
+    .locator('summary')
+    .filter({ hasText: /^Restore requirement$/ })
+    .click();
   const restore = archivedRow.getByRole('form', { name: 'Restore requirement', exact: true });
-  await restore.getByLabel('Correction reason', { exact: true }).fill('Restore to compare the source wording');
+  await restore
+    .getByLabel('Correction reason', { exact: true })
+    .fill('Restore to compare the source wording');
   await restore.getByRole('checkbox').check();
   await restore.getByRole('button', { name: 'Restore requirement for review' }).click();
-  await expect(owner.page.locator('#requirement-' + sourceId).getByRole('heading', { name: 'Synthetic original form', exact: true })).toBeVisible();
+  await expect(
+    owner.page
+      .locator('#requirement-' + sourceId)
+      .getByRole('heading', { name: 'Synthetic original form', exact: true }),
+  ).toBeVisible();
   await owner.page.reload();
   step = 'merge duplicate on desktop';
   await owner.page.setViewportSize({ width: 1440, height: 1000 });
   sourceRow = owner.page.locator('#requirement-' + sourceId);
-  await sourceRow.locator('summary').filter({ hasText: /^Archive or merge requirement$/ }).click();
+  await sourceRow
+    .locator('summary')
+    .filter({ hasText: /^Archive or merge requirement$/ })
+    .click();
   correction = sourceRow.getByRole('form', { name: 'Correct requirement', exact: true });
   await correction.getByLabel('Correction action', { exact: true }).selectOption('merge');
-  await correction.getByLabel('Keep this target requirement', { exact: true }).selectOption(targetId);
-  await correction.getByLabel('Combined requirement wording', { exact: true }).fill('Synthetic combined form instructions');
-  await correction.getByLabel('Correction reason', { exact: true }).fill('Two references describe the same training form');
+  await correction
+    .getByLabel('Keep this target requirement', { exact: true })
+    .selectOption(targetId);
+  await correction
+    .getByLabel('Combined requirement wording', { exact: true })
+    .fill('Synthetic combined form instructions');
+  await correction
+    .getByLabel('Correction reason', { exact: true })
+    .fill('Two references describe the same training form');
   await correction.getByRole('checkbox').check();
   await correction.getByRole('button', { name: 'Merge requirements', exact: true }).click();
-  await expect(owner.page.locator('#requirement-' + targetId)).toContainText('Synthetic combined form instructions');
+  await expect(owner.page.locator('#requirement-' + targetId)).toContainText(
+    'Synthetic combined form instructions',
+  );
   await owner.page.reload();
-  await expect(owner.page.locator('#requirement-' + targetId)).toContainText('Synthetic combined form instructions');
-  const lifecycle = (await db.query('select action,recorded_by from public.requirement_lifecycle_history where organization_id=$1 and pursuit_id=$2 order by sequence',[org,pursuitId])).rows;
-  assert.deepEqual(lifecycle.map((r) => r.action), ['archive','restore','merge']);
+  await expect(owner.page.locator('#requirement-' + targetId)).toContainText(
+    'Synthetic combined form instructions',
+  );
+  const lifecycle = (
+    await db.query(
+      'select action,recorded_by from public.requirement_lifecycle_history where organization_id=$1 and pursuit_id=$2 order by sequence',
+      [org, pursuitId],
+    )
+  ).rows;
+  assert.deepEqual(
+    lifecycle.map((r) => r.action),
+    ['archive', 'restore', 'merge'],
+  );
   assert(lifecycle.every((r) => r.recorded_by === owner.id));
   step = 'invitation creation';
   const colleague = await account();

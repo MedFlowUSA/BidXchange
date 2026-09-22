@@ -121,7 +121,7 @@ export function evaluateResearch(
           : 'Unknown',
         reason: verified.some((f) => types.includes(f.fact_type))
           ? 'Verified company records are visible; solicitation-specific compatibility has not been determined.'
-          : 'No current verified evidence is visible for this area.',
+          : 'No current human-attested evidence is visible for this area.',
       })),
       {
         area: 'Submission time',

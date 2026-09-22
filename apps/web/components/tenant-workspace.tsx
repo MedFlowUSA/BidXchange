@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import AppShell from './app-shell';
 import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
@@ -85,21 +85,35 @@ function FactCard({
 }) {
   const status = reviewStatus(fact, asOf);
   const verified = status === 'reviewed';
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    const reveal = () => {
+      if (location.hash === `#fact-${fact.id}`) setExpanded(true);
+    };
+    reveal();
+    window.addEventListener('hashchange', reveal);
+    return () => window.removeEventListener('hashchange', reveal);
+  }, [fact.id]);
   return (
-    <section className="panel fact-card" id={`fact-${fact.id}`}>
-      <div className="flex-between">
-        <h3>{fact.label}</h3>
+    <details
+      className="panel fact-card"
+      id={`fact-${fact.id}`}
+      open={expanded}
+      onToggle={(event) => setExpanded(event.currentTarget.open)}
+    >
+      <summary className="flex-between">
+        <strong>{fact.label}</strong>
         <span className={`fit ${verified ? 'green' : 'amber'}`}>
           {status === 'reviewed' ? 'Evidence reviewed' : status.replaceAll('_', ' ')}
         </span>
-      </div>
+      </summary>
       <strong>{fact.value ?? 'Not provided'}</strong>
       <p>{fact.source_note}</p>
       <div className="fact-source">
         Evidence: {fact.source_reference || 'Not provided'}
         {fact.verified_at && (
           <p>
-            Human verification: {new Date(fact.verified_at).toLocaleDateString()} ·{' '}
+            Human attestation: {new Date(fact.verified_at).toLocaleDateString()} ·{' '}
             {fact.verified_by}
           </p>
         )}
@@ -126,7 +140,7 @@ function FactCard({
       )}
       {admin && (
         <details>
-          <summary>Review verification</summary>
+          <summary>Review and attest evidence</summary>
           <ActionForm action={updateFact} label="Save fact review">
             <input type="hidden" name="organization_id" value={org} />
             <input type="hidden" name="fact_id" value={fact.id} />
@@ -140,7 +154,7 @@ function FactCard({
               />
             </label>
             <label>
-              Verification status
+              Human review status
               <select name="verification_status" defaultValue={fact.verification_status}>
                 {[
                   'unverified',
@@ -151,19 +165,28 @@ function FactCard({
                   'rejected',
                 ].map((s) => (
                   <option value={s} key={s}>
-                    {s.replaceAll('_', ' ')}
+                    {
+                      {
+                        unverified: 'Claimed — not attested',
+                        pending_verification: 'Needs review',
+                        verified: 'Attested by a person',
+                        expiring: 'Expiring',
+                        expired: 'Expired',
+                        rejected: 'Rejected',
+                      }[s]
+                    }
                   </option>
                 ))}
               </select>
             </label>
             <p>
-              Save a new evidence reference as pending first. Then verify only after reviewing an
+              Save a new evidence reference as pending first. Then attest only after reviewing an
               authorized current source.
             </p>
           </ActionForm>
         </details>
       )}
-    </section>
+    </details>
   );
 }
 export default function TenantWorkspace({
@@ -182,6 +205,24 @@ export default function TenantWorkspace({
   const capture = admin || org.role === 'capture_manager';
   const href = (path: string) => workspaceHref(path, org.id);
   const [query, setQuery] = useState('');
+  const [companyQuery, setCompanyQuery] = useState('');
+  const [reviewOnly, setReviewOnly] = useState(false);
+  const [focusedFact, setFocusedFact] = useState('');
+  useEffect(() => {
+    const reveal = () => {
+      if (location.hash.startsWith('#fact-')) {
+        setFocusedFact(location.hash.slice(6));
+        setCompanyQuery('');
+        setReviewOnly(false);
+      }
+    };
+    reveal();
+    window.addEventListener('hashchange', reveal);
+    return () => window.removeEventListener('hashchange', reveal);
+  }, []);
+  const visibleFact = (fact: Fact) =>
+    (!reviewOnly || reviewStatus(fact, data.reviewAsOf) !== 'reviewed') &&
+    `${fact.label} ${fact.value ?? ''}`.toLowerCase().includes(companyQuery.toLowerCase());
   const [notice, setNotice] = useState('');
   const [guideOpen, setGuideOpen] = useState(false);
   const pursuit =
@@ -219,7 +260,7 @@ export default function TenantWorkspace({
     const text = [
       `${org.operating_name} — opportunity brief`,
       `Generated ${new Date().toISOString()}`,
-      `${data.opportunities.length} recorded opportunities. No live feeds connected.`,
+      `${data.opportunities.length} recorded opportunities available in this workspace view.`,
       ...data.opportunities.map(
         (o) =>
           `${o.title}\n${o.buyer ?? 'Buyer not provided'}\nDeadline: ${o.official_deadline ?? 'Not provided'} (${o.deadline_timezone})\nSource: ${o.source_url ?? 'Not provided'}`,
@@ -535,6 +576,26 @@ export default function TenantWorkspace({
         ) : null}
         {!recordId && page === 'Today' && (
           <>
+            <section className="panel">
+              <div className="eyebrow">NEXT ACTION</div>
+              <h2>
+                {!data.opportunities.length
+                  ? 'Record one notice you want to review'
+                  : !data.pursuits.length
+                    ? 'Choose a notice and start a pursuit'
+                    : 'Continue your bid review'}
+              </h2>
+              <p>
+                Start with a PEPMA invitation or another buyer’s notice. You can record it before
+                finishing the Passport; missing evidence stays visible during the review.
+              </p>
+              <Link
+                className="button primary"
+                href={href(data.pursuits.length ? '/pursuits' : '/opportunities')}
+              >
+                {data.pursuits.length ? 'Open pursuits' : 'Open opportunity intake'}
+              </Link>
+            </section>
             <TodayTaskQueue data={data} />
             <EvidenceReminders data={data} />
             <EvidenceRenewals key={org.id} data={data} />
@@ -578,7 +639,11 @@ export default function TenantWorkspace({
                 </Link>
               </section>
             </div>
-            <Assistant organizationId={org.id} name={org.operating_name} />
+            <Assistant
+              hasOpportunities={data.opportunities.length > 0}
+              organizationId={org.id}
+              name={org.operating_name}
+            />
           </>
         )}
         {!recordId && page === 'Assistant' && (
@@ -593,7 +658,12 @@ export default function TenantWorkspace({
                 Open Opportunity Research Assistant
               </Link>
             </section>
-            <Assistant organizationId={org.id} name={org.operating_name} expanded />
+            <Assistant
+              hasOpportunities={data.opportunities.length > 0}
+              organizationId={org.id}
+              name={org.operating_name}
+              expanded
+            />
           </>
         )}
         {!recordId && page === 'Assistant' && admin && <AssistantUsage organizationId={org.id} />}
@@ -649,14 +719,50 @@ export default function TenantWorkspace({
                 View authorized document records →
               </Link>
             </section>
+            <section className="panel" aria-label="Find company evidence">
+              <label>
+                Search saved evidence
+                <input
+                  aria-label="Search saved evidence"
+                  value={companyQuery}
+                  onChange={(e) => setCompanyQuery(e.target.value)}
+                />
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={reviewOnly}
+                  onChange={(e) => setReviewOnly(e.target.checked)}
+                />{' '}
+                Only records needing review
+              </label>
+              {pending[0] && (
+                <p>
+                  <a className="button secondary" href={`#fact-${pending[0].id}`}>
+                    Review next record
+                  </a>
+                </p>
+              )}
+              <p>
+                Open a section, then a record to review its source or edit it. Counts describe saved
+                records, not complete qualifications.
+              </p>
+              {!data.facts.some(visibleFact) && <p role="status">No saved records match these filters. Clear the search or change the review filter.</p>}
+            </section>
             {readiness.groups.map((area) => (
               <details
                 className="panel"
                 key={area.id}
-                open={area.facts.length > 0 || area.id === 'identity'}
+                open={
+                  Boolean(companyQuery) ||
+                  reviewOnly ||
+                  area.facts.some((f) => f.id === focusedFact)
+                }
               >
                 <summary>
-                  {area.title} · {area.facts.length} visible records
+                  {area.title} · {area.facts.filter(visibleFact).length} shown ·{' '}
+                  {area.facts.filter((f) => reviewStatus(f, data.reviewAsOf) === 'reviewed').length}{' '}
+                  of {area.facts.length} reviewed
                 </summary>
                 <p>{area.why}</p>
                 {admin && (
@@ -675,7 +781,7 @@ export default function TenantWorkspace({
                 </p>
                 {area.facts.length ? (
                   <div className="company-grid">
-                    {area.facts.map((f) => (
+                    {area.facts.filter(visibleFact).map((f) => (
                       <FactCard
                         structuredEnabled={data.structuredProfilesEnabled}
                         fact={f}
@@ -700,7 +806,7 @@ export default function TenantWorkspace({
               <section className="panel">
                 <h2>Other company records</h2>
                 <div className="company-grid">
-                  {readiness.other.map((f) => (
+                  {readiness.other.filter(visibleFact).map((f) => (
                     <FactCard
                       structuredEnabled={data.structuredProfilesEnabled}
                       fact={f}
@@ -715,29 +821,48 @@ export default function TenantWorkspace({
                 </div>
               </section>
             )}
-            <section className="panel" id="company-onboarding">
-              <h2>Needs information from {org.operating_name}</h2>
+            <details className="panel" id="company-onboarding">
+              <summary>
+                Information to collect ·{' '}
+                {data.onboarding.filter((i) => i.status === 'needs_information').length} open items
+              </summary>
               <p>
                 Confirm these with an authorized company representative. These checklist entries do
                 not independently verify the company.
               </p>
               <div className="onboarding-grid">
-                {data.onboarding.map((i) => (
-                  <div key={i.id}>
-                    <span>{i.label}</span>
-                    <span className="fit amber">
-                      {i.status === 'needs_information'
-                        ? 'Needs information'
-                        : i.status.replaceAll('_', ' ')}
-                    </span>
-                  </div>
-                ))}
+                {[...data.onboarding]
+                  .sort(
+                    (a, b) =>
+                      Number(!/license|cslb|dir|insurance|bond|approver|sam/i.test(a.label)) -
+                      Number(!/license|cslb|dir|insurance|bond|approver|sam/i.test(b.label)),
+                  )
+                  .map((i) => (
+                    <div key={i.id}>
+                      <span>{i.label}</span>
+                      <span className="fit amber">
+                        {i.status === 'needs_information'
+                          ? 'Needs information'
+                          : i.status.replaceAll('_', ' ')}
+                      </span>
+                    </div>
+                  ))}
               </div>
-            </section>
+            </details>
           </>
         )}
         {!recordId && page === 'Opportunities' && (
           <>
+            {capture && (
+              <section className="panel">
+                <h2>Add your next opportunity</h2>
+                <p>
+                  Open Add opportunity below to enter a buyer’s notice. Save it, then choose Start
+                  pursuit on the saved record.
+                </p>
+                <OpportunityForm data={data} />
+              </section>
+            )}
             <section className="panel">
               <PortalShortcuts />
               <Link href={href('/opportunities/registry')}>
@@ -752,12 +877,7 @@ export default function TenantWorkspace({
                 recorded opportunities.
               </p>
             </section>
-            {capture && (
-              <section className="panel">
-                <h2>Record an opportunity</h2>
-                <OpportunityForm data={data} />
-              </section>
-            )}
+
             <label className="search-field">
               <input
                 aria-label="Search opportunities"
@@ -786,7 +906,7 @@ export default function TenantWorkspace({
                           ? 'PEPMA · manually recorded invitation'
                           : 'Manually recorded opportunity'}
                     </small>
-                    <span className="fit amber">Not qualified</span>
+                    <span className="fit amber">Needs human review</span>
                     <h3>{o.title}</h3>
                     <p>{o.buyer ?? 'Buyer not provided'}</p>
                     <small>{o.solicitation_number ?? 'Solicitation number not provided'}</small>
@@ -817,6 +937,13 @@ export default function TenantWorkspace({
             {!data.pursuits.length && (
               <div className="panel empty-state">
                 <h2>No pursuits yet</h2>
+                <p>
+                  A pursuit is the workspace for reviewing requirements, assigning tasks and
+                  preparing your response to a saved notice.
+                </p>
+                <Link className="button primary" href={href('/opportunities')}>
+                  Record or choose an opportunity
+                </Link>
                 <p>
                   This workspace starts with an empty pipeline. No bid decisions or awards have been
                   assumed.
@@ -857,32 +984,32 @@ export default function TenantWorkspace({
                   {data.opportunities.length} opportunities · {data.pursuits.length} pursuits
                 </p>
                 <p>
-                  No live connectors. These counts reflect only records entered into this
-                  organization.
+                  Counts reflect records available in this workspace, including authorized source
+                  imports when enabled; they are not a count of the external market.
                 </p>
               </section>
               <section className="panel">
-                <h2>Financial measures</h2>
+                <h2>Work needing attention</h2>
                 <p>
-                  Awards, collected revenue, and BidXchange fees have not been recorded. Missing
-                  values are not represented as zero-dollar results.
+                  {data.tasks.filter((t) => t.status !== 'complete').length} open tasks ·{' '}
+                  {pending.length} company records needing review. Open a pursuit to review its
+                  blockers, decision and submission history.
                 </p>
               </section>
             </div>
-            <section className="panel activity-panel">
-              <h2>Organization activity</h2>
-              {data.audit.map((a) => (
-                <div className="activity-row" key={a.id}>
-                  {new Date(a.created_at).toLocaleString()} · {a.action} · {a.entity_table}
-                </div>
-              ))}
-              {!data.audit.length && (
-                <p>
-                  Audit history is restricted to organization administrators and executive
-                  approvers.
-                </p>
-              )}
-            </section>
+            {admin && (
+              <details className="panel activity-panel">
+                <summary>Administrator audit log — technical event history</summary>
+                {data.audit.map((a) => (
+                  <div className="activity-row" key={a.id}>
+                    {new Date(a.created_at).toLocaleString()} · {a.action} · {a.entity_table}
+                  </div>
+                ))}
+                {!data.audit.length && (
+                  <p>No audit events are available in this view.</p>
+                )}
+              </details>
+            )}
           </>
         )}
         {!recordId && page === 'Settings' && (
@@ -1011,7 +1138,7 @@ export default function TenantWorkspace({
           </>
         )}
         <footer>
-          <span>BidXchange · We Find. We Qualify. You Win.</span>
+          <span>BidXchange · Better evidence. Stronger pursuits.</span>
           <span>{org.operating_name}</span>
         </footer>
       </main>

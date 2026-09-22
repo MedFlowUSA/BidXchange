@@ -37,18 +37,13 @@ export function CaptureForm({
   confirmSource?: boolean;
 }) {
   const [state, submit, pending] = useActionState(action, { message: '' } as MutationState);
-  const [expanded, setExpanded] = useState(false);
   const [draft, setDraft] = useState(initial);
   // A refreshed parent must not pair an old draft with a newer write version.
   const [draftIdentity] = useState(hidden);
   return (
-    <details
-      className="company-record-editor"
-      aria-label={label}
-      onToggle={(event) => setExpanded(event.currentTarget.open)}
-    >
-      <summary>{label}</summary>
-      {expanded && (
+    <details className="company-record-editor" aria-label={label}>
+      <summary className={label === 'Add opportunity' ? 'button primary' : 'text-button'}>{label}</summary>
+      {
         <form action={submit} className="opportunity-form admin-form" aria-label={label}>
           {Object.entries(draftIdentity).map(([name, value]) => (
             <input key={name} type="hidden" name={name} value={value} />
@@ -113,7 +108,7 @@ export function CaptureForm({
             </button>
           )}
         </form>
-      )}
+      }
     </details>
   );
 }

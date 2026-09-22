@@ -85,7 +85,7 @@ export default function SourceDetails({
         {available.map((item) => (
           <li key={item.label}>
             {item.label}: {item.requirement ? 'Requirement recorded' : 'Requirements need review'};{' '}
-            {item.count} current verified company records available for human comparison.
+            {item.count} current human-attested company records available for human comparison.
           </li>
         ))}
       </ul>

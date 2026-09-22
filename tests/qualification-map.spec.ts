@@ -179,8 +179,13 @@ test('interactive evidence trail, responsive layout and explicit task handoff', 
     page.locator('article').first().getByText('Synthetic registry', { exact: false }),
   ).toBeVisible();
   await page.locator('article').first().getByText('Assign follow-up work', { exact: true }).click();
-  await page.locator('article').first().getByText('Add task', { exact: true }).click();
-  await expect(page.getByLabel('Task title', { exact: true })).toHaveValue(
+  await page
+    .locator('article')
+    .first()
+    .locator('summary')
+    .filter({ hasText: /^Add task$/ })
+    .click();
+  await expect(page.getByRole('textbox', { name: 'Task title', exact: true })).toHaveValue(
     'Review requirement: Insurance coverage',
   );
   await page.getByRole('button', { name: 'Add task', exact: true }).click();
@@ -200,9 +205,12 @@ test('viewers can follow evidence but cannot assign work', async ({ page }) => {
     page.getByRole('heading', { name: 'Turn review gaps into next actions.' }),
   ).toBeVisible();
   await expect(page.getByText('Assign follow-up work', { exact: true })).toHaveCount(0);
-  await expect(page.locator('#delivery-review').getByText('Add task', { exact: true })).toHaveCount(
-    0,
-  );
+  await expect(
+    page
+      .locator('#delivery-review')
+      .locator('summary')
+      .filter({ hasText: /^Add task$/ }),
+  ).toHaveCount(0);
 });
 
 test('delivery checks create explicit owner-assigned follow-up without implying capacity', async ({
@@ -213,8 +221,12 @@ test('delivery checks create explicit owner-assigned follow-up without implying 
   await expect(
     delivery.getByRole('heading', { name: 'Can your team deliver this work?' }),
   ).toBeVisible();
-  await delivery.getByText('Add task', { exact: true }).first().click();
-  await expect(delivery.getByLabel('Task title', { exact: true })).toHaveValue(
+  await delivery
+    .locator('summary')
+    .filter({ hasText: /^Add task$/ })
+    .first()
+    .click();
+  await expect(delivery.getByRole('textbox', { name: 'Task title', exact: true })).toHaveValue(
     'Delivery review: confirm crew availability and overlapping commitments',
   );
   await delivery.getByRole('button', { name: 'Add task', exact: true }).click();

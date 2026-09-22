@@ -172,13 +172,20 @@ test('registry exposes honest status, category separation and eBuy lock on mobil
   ).toBeVisible();
   await page.getByLabel('Source', { exact: true }).selectOption('gsa-ebuy');
   await expect(page.getByRole('status')).toContainText('locked');
-  await expect(page.getByText('Record source opportunity', { exact: true })).toHaveCount(0);
+  await expect(
+    page.locator('summary').filter({ hasText: /^Record source opportunity$/ }),
+  ).toHaveCount(0);
   await page.getByLabel('Source category').selectOption('vehicles');
   await expect(page.getByRole('heading', { name: 'CMAS', exact: true })).toBeVisible();
-  await expect(page.getByText('Record source opportunity', { exact: true })).toHaveCount(0);
+  await expect(
+    page.locator('summary').filter({ hasText: /^Record source opportunity$/ }),
+  ).toHaveCount(0);
   await page.getByLabel('Source category').selectOption('opportunities');
   await page.getByLabel('Source', { exact: true }).selectOption('cal-eprocure');
-  await page.getByText('Record source opportunity', { exact: true }).click();
+  await page
+    .locator('summary')
+    .filter({ hasText: /^Record source opportunity$/ })
+    .click();
   for (const [label, value] of [
     ['Opportunity title', 'Synthetic'],
     ['Buying agency', 'Test agency'],
@@ -203,5 +210,7 @@ test('read-only member sees no registry or intake mutation controls', async ({ p
   await mount(page, true);
   await expect(page.getByRole('heading', { name: 'Source registry' })).toBeVisible();
   await expect(page.getByText('Update registration evidence', { exact: true })).toHaveCount(0);
-  await expect(page.getByText('Record source opportunity', { exact: true })).toHaveCount(0);
+  await expect(
+    page.locator('summary').filter({ hasText: /^Record source opportunity$/ }),
+  ).toHaveCount(0);
 });

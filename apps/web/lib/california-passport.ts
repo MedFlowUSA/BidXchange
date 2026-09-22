@@ -121,7 +121,8 @@ export function freshnessRadar(facts: Fact[], asOf: string) {
       missingChecked: checkedDays === null,
       missingExpiration:
         !fact.expiration_date &&
-        ['license', 'registration', 'insurance', 'certification'].includes(fact.fact_type),
+        ['license', 'registration', 'insurance', 'certification'].includes(fact.fact_type) &&
+        !/^(uei|cage|uei and cage identifiers)$/i.test(fact.label.trim()),
       window:
         days === null
           ? null

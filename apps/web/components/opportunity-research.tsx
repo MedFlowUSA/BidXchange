@@ -4,7 +4,15 @@ import Link from 'next/link';
 import type { ResearchPlan, ResearchReport } from '../lib/research/contracts';
 import styles from './qualification-workspace.module.css';
 type Saved = { id: string; name: string; prompt: string; plan: ResearchPlan };
-export default function OpportunityResearch({ org, name }: { org: string; name: string }) {
+export default function OpportunityResearch({
+  org,
+  name,
+  hasOpportunities = true,
+}: {
+  org: string;
+  name: string;
+  hasOpportunities?: boolean;
+}) {
   const [prompt, setPrompt] = useState('');
   const [report, setReport] = useState<ResearchReport | null>(null);
   const [history, setHistory] = useState<string[]>([]);
@@ -114,7 +122,7 @@ export default function OpportunityResearch({ org, name }: { org: string; name: 
         <p>
           Ask a question, then refine the filters in a follow-up. Results come from saved workspace
           records and authorized synchronized source records when available. Company comparison uses
-          current verified evidence visible to your role.
+          current human-attested evidence visible to your role.
         </p>
         <nav className={styles.links}>
           <Link href={`/assistant?organization=${org}`}>General and company assistant</Link>
@@ -122,6 +130,17 @@ export default function OpportunityResearch({ org, name }: { org: string; name: 
             Portals and connection status
           </Link>
         </nav>
+        {!hasOpportunities && (
+          <p className="info-note">
+            No saved opportunities are visible yet.{' '}
+            <Link href={`/opportunities?organization=${org}`}>Record your first notice</Link> to
+            compare its requirements with company evidence, or{' '}
+            <Link href={`/assistant?organization=${org}`}>
+              review company information with the assistant
+            </Link>
+            . This page does not browse procurement portals.
+          </p>
+        )}
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -165,12 +184,15 @@ export default function OpportunityResearch({ org, name }: { org: string; name: 
         </form>
         <p role="status">{message}</p>
         <div className={styles.links}>
-          {[
-            'Are there new SAM.gov contracts that fit our company?',
-            'What opportunities were posted today?',
-            'Find electrical and energy-efficiency work',
-            'What changed in tracked opportunities?',
-          ].map((q) => (
+          {(hasOpportunities
+            ? [
+                'Which saved opportunities mention electrical work?',
+                'Which saved opportunities are due in the next 14 days?',
+                'Compare saved energy-efficiency notices with our company records',
+                'What changed in tracked opportunities?',
+              ]
+            : []
+          ).map((q) => (
             <button type="button" key={q} disabled={pending} onClick={() => setPrompt(q)}>
               {q}
             </button>

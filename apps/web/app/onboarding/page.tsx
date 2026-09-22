@@ -62,9 +62,11 @@ export default async function Onboarding({
           </p>
           <ol>
             {californiaPassportSteps.map((step) => {
-              const hasRecords = step.items.some(
-                (item) => passportRecords(data.facts, item).length > 0,
-              );
+              const relatedCount = new Set(
+                step.items.flatMap((item) =>
+                  passportRecords(data.facts, item).map((fact) => fact.id),
+                ),
+              ).size;
               return (
                 <li key={step.id}>
                   <h2>
@@ -74,8 +76,8 @@ export default async function Onboarding({
                   </h2>
                   <p>{step.why}</p>
                   <p>
-                    {hasRecords
-                      ? 'Related records saved — review scope, sources and missing fields.'
+                    {relatedCount
+                      ? `${relatedCount} related records saved — review scope, sources and missing fields. Presence does not mean this section is complete or attested.`
                       : 'No related records visible yet — add what you can support and leave unknowns blank.'}
                   </p>
                 </li>

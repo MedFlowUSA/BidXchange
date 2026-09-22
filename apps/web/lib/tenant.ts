@@ -90,12 +90,14 @@ export async function loadTenant(
       .select('id,user_id,role,status')
       .eq('organization_id', id)
       .limit(500),
-    db
-      .from('audit_events')
-      .select('id,entity_table,action,created_at,actor_user_id')
-      .eq('organization_id', id)
-      .order('created_at', { ascending: false })
-      .limit(100),
+    choice.role === 'organization_admin'
+      ? db
+          .from('audit_events')
+          .select('id,entity_table,action,created_at,actor_user_id')
+          .eq('organization_id', id)
+          .order('created_at', { ascending: false })
+          .limit(100)
+      : Promise.resolve({ data: [], error: null }),
     db
       .from('pursuit_tasks')
       .select(taskFields)

@@ -1015,7 +1015,7 @@ export default function Workspace({
 
         <footer>
           <span>
-            BidXchange <span className="footer-dot">·</span> We Find. We Qualify. You Win.
+            BidXchange <span className="footer-dot">·</span> Better evidence. Stronger pursuits.
           </span>
           <span>Built for a more confident pursuit.</span>
         </footer>

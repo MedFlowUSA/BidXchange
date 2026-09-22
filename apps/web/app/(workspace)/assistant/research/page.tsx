@@ -22,6 +22,13 @@ export default async function Page({ searchParams }: { searchParams: RouteQuery 
         <Link href="/assistant">Open company assistant</Link>
       </main>
     );
+  const available = await account
+    .supabase!.from('opportunities')
+    .select('id')
+    .eq('organization_id', org.id)
+    .limit(1);
+  if (available.error)
+    throw new Error('Workspace opportunity status is unavailable. Retry shortly.');
   return (
     <AppShell
       page="Assistant"
@@ -30,7 +37,12 @@ export default async function Page({ searchParams }: { searchParams: RouteQuery 
       userEmail={account.user.email}
     >
       <main>
-        <OpportunityResearch key={org.id} org={org.id} name={org.operating_name} />
+        <OpportunityResearch
+          key={org.id}
+          org={org.id}
+          name={org.operating_name}
+          hasOpportunities={Boolean(available.data?.length)}
+        />
       </main>
     </AppShell>
   );

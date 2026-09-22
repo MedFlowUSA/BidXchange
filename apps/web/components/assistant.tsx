@@ -22,6 +22,7 @@ export default function Assistant({
   demo = false,
   demoEnabled = false,
   expanded = false,
+  hasOpportunities = false,
 }: {
   organizationId?: string;
   name: string;
@@ -29,6 +30,7 @@ export default function Assistant({
   demo?: boolean;
   demoEnabled?: boolean;
   expanded?: boolean;
+  hasOpportunities?: boolean;
 }) {
   const [open, setOpen] = useState(expanded),
     [available, setAvailable] = useState(demo && demoEnabled),
@@ -62,9 +64,13 @@ export default function Assistant({
         : context
           ? ['Why should we review this opportunity?', 'What could disqualify us?']
           : [
-              `What information needs verification for ${name}?`,
-              'Which opportunities are due in the next 14 days?',
-              'What new opportunities were added today?',
+              `What company information needs human review for ${name}?`,
+              hasOpportunities
+                ? 'Which saved opportunities are due in the next 14 days?'
+                : 'Which registrations and insurance records need review?',
+              hasOpportunities
+                ? 'What saved opportunities were added today?'
+                : 'Which company capabilities lack supporting evidence?',
             ];
   useEffect(() => {
     if (demo) return;
@@ -317,9 +323,9 @@ export default function Assistant({
           )}
           {!demo && (
             <p>
-              Document commands use the open pursuit in either mode. Ask “Create an RFP for this
-              bid” to save a response outline with bid details and requirement sections. Complete
-              and review the answers before exporting.
+              Document commands use the open pursuit in either mode. Ask “Create a response outline
+              for this bid” to save a response outline with bid details and requirement sections.
+              Complete and review the answers before exporting.
             </p>
           )}
           {checking ? (

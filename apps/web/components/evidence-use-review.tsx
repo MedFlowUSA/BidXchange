@@ -120,7 +120,7 @@ export default function EvidenceUseReview({
                 />
               </label>
               <p>
-                Approval requires current verified evidence and a cited requirement. Notes share the
+                Approval requires current human-attested evidence and a cited requirement. Notes share the
                 evidence’s visibility. This does not authorize pricing, certifications or
                 submission.
               </p>

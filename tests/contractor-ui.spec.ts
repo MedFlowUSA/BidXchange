@@ -98,7 +98,7 @@ for (const width of [390, 1440])
     await expect(
       page.getByRole('link', { name: 'Official source · external site' }),
     ).toHaveAttribute('rel', 'noopener noreferrer');
-    await page.getByText('Record human amendment review', { exact: true }).click();
+    await page.locator('summary').filter({ hasText: /^Record human amendment review$/ }).click();
     await page.getByLabel('Type reviewed after reading the official change').fill('reviewed');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,

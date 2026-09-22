@@ -8,13 +8,14 @@ import { freshnessRadar } from '../lib/california-passport';
 export default function EvidenceRenewals({ data }: { data: TenantData }) {
   const [expanded, setExpanded] = useState(false);
   const radar = freshnessRadar(data.facts, data.reviewAsOf);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('expiration');
   const attention = radar.filter(
     (r) => r.window || r.stale || r.missingChecked || r.missingExpiration,
   );
   const shown = attention.filter(
     (r) =>
       filter === 'all' ||
+      (filter === 'expiration' && Boolean(r.window || r.missingExpiration)) ||
       r.window === filter ||
       (filter === 'stale' && r.stale) ||
       (filter === 'missing' && (r.missingChecked || r.missingExpiration)),
@@ -26,13 +27,14 @@ export default function EvidenceRenewals({ data }: { data: TenantData }) {
       <label>
         Radar window{' '}
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="expiration">Expirations and missing renewal dates</option>
           <option value="all">All attention items</option>
           <option value="expired">Already expired</option>
           <option value="30">Expires in 0–30 days</option>
           <option value="60">Expires in 31–60 days</option>
           <option value="90">Expires in 61–90 days</option>
           <option value="stale">Last checked over 90 days ago</option>
-          <option value="missing">Missing dates</option>
+          <option value="missing">Missing review or expiration dates</option>
         </select>
       </label>
       <ul>
@@ -46,7 +48,9 @@ export default function EvidenceRenewals({ data }: { data: TenantData }) {
                 ? 'Expired'
                 : r.days !== null
                   ? `Expiration in ${r.days} days`
-                  : 'Expiration not recorded'}{' '}
+                  : r.missingExpiration
+                    ? 'Expiration date needed'
+                    : 'Review source and recorded facts'}{' '}
               · Last checked: {r.checked || 'Not recorded'}
               {r.stale ? ' · Needs review: last checked over 90 days ago' : ''}
             </p>

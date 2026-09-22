@@ -125,7 +125,7 @@ export function responseAutofill(data: TenantData, pursuitId: string, now = new 
       ) {
         candidates.forEach((f) => rejected.add(f.id));
         gaps.push(
-          `${template.autofill}: ${candidates.length > 1 ? 'multiple current records; select and reconcile the intended record' : 'no complete current verified structured record'}. Review Company before use.`,
+          `${template.autofill}: ${candidates.length > 1 ? 'multiple current records; select and reconcile the intended record' : 'no complete current human-attested structured record'}. Review Company before use.`,
         );
       }
     }
@@ -143,7 +143,7 @@ export function responseAutofill(data: TenantData, pursuitId: string, now = new 
     ] as const)
       if (!facts.some((f) => f.fact_type === 'identity' && pattern.test(f.label)))
         gaps.push(
-          `${name}: no current verified workspace-visible record. Complete or verify it in Company.`,
+          `${name}: no current human-attested workspace-visible record. Complete or attest it in Company.`,
         );
   for (const row of [...company, ...bid].filter(
     (r) => r.value === '[Not recorded]' || r.value.startsWith('[HUMAN INPUT REQUIRED'),

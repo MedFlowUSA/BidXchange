@@ -4,6 +4,47 @@ import { qualificationData } from './fixtures/qualification-data';
 import { passportRecords } from '../apps/web/lib/passport-records';
 import { structuredErrors } from '../apps/web/lib/company-fields';
 
+test('legacy records are related to Passport questions without implying attestation or filling another program', () => {
+  const base = qualificationData().facts[0];
+  const facts = [
+    ['identity', 'Legal entity'],
+    ['federal', 'UEI'],
+    ['license', 'CSLB license number'],
+    ['territory', 'Southern California counties'],
+    ['naics', 'Primary NAICS'],
+  ].map(([fact_type, label], i) => ({
+    ...base,
+    id: String(i),
+    fact_type,
+    label,
+    structured_kind: null,
+    verification_status: 'pending_verification',
+  }));
+  for (const step of californiaPassportSteps.slice(0, 4))
+    expect(step.items.some((item) => passportRecords(facts, item).length > 0)).toBe(true);
+  expect(
+    passportRecords(facts, { type: 'registration', label: 'DIR public-works registration' }),
+  ).toHaveLength(0);
+  expect(facts.every((f) => f.verification_status === 'pending_verification')).toBe(true);
+});
+
+test('descriptive facts and permanent identifiers do not request expiration dates', () => {
+  const base = qualificationData().facts[0];
+  for (const [fact_type, label] of [
+    ['identity', 'Legal entity'],
+    ['registration', 'UEI'],
+    ['territory', 'Counties served'],
+  ]) {
+    const [radar] = freshnessRadar(
+      [{ ...base, fact_type, label, expiration_date: null, verified_at: null }],
+      '2026-09-22',
+    );
+    expect(radar.missingExpiration).toBe(false);
+    expect(radar.window).toBeNull();
+    expect(radar.missingChecked).toBe(true);
+  }
+});
+
 test('California Level 1 covers contractor core fields without numeric readiness', () => {
   const labels = californiaPassportSteps.flatMap((s) => s.items.map((i) => i.label));
   expect(labels).toContain('DIR public-works registration');

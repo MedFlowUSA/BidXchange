@@ -108,7 +108,10 @@ test('intake saves through capture and follow-ups remain editable review tasks',
   page,
 }) => {
   await mount(page);
-  await page.getByText('Record PEPMA bid', { exact: true }).click();
+  await page
+    .locator('summary')
+    .filter({ hasText: /^Record PEPMA bid$/ })
+    .click();
   for (const [label, value] of [
     ['PEPMA bid name', input.title],
     ['PEPMA bid number', input.solicitation_number],
@@ -124,7 +127,10 @@ test('intake saves through capture and follow-ups remain editable review tasks',
   await page
     .getByRole('button', { name: 'Plan follow-up: Questions and addenda', exact: true })
     .click();
-  await page.getByText('Add task', { exact: true }).click();
+  await page
+    .locator('summary')
+    .filter({ hasText: /^Add task$/ })
+    .click();
   await expect(page.getByLabel('Task title', { exact: true })).toHaveValue(
     'PEPMA: Questions and addenda',
   );

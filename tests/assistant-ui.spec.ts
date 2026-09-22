@@ -9,7 +9,7 @@ test('fictional assistant is interactive without paid requests or real tenant da
   await page.goto('/assistant?workspace=demo');
   await expect(page.getByRole('heading', { name: 'Assistant', exact: true })).toBeVisible();
   await page
-    .getByRole('button', { name: 'What information needs verification for Apex Energy Demo?' })
+    .getByRole('button', { name: 'What company information needs human review for Apex Energy Demo?' })
     .click();
   await expect(page.getByLabel('Ask about Apex Energy Demo')).toHaveValue(/Apex Energy Demo/);
   await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
