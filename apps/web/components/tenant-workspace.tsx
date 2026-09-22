@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useActionState, useState, useEffect } from 'react';
 import AppShell from './app-shell';
+import ProfileCompletion from './profile-completion';
 import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
 import ResponseReleases from './response-release';
@@ -697,6 +698,7 @@ export default function TenantWorkspace({
               Pending facts are working research, not approved proposal evidence. CSLB and SAM
               status are not assumed active. Unknown values remain unfilled.
             </div>
+            <ProfileCompletion key={org.id + '-completion'} data={data} />
             <EvidenceReminders data={data} />
             <EvidenceRenewals key={org.id + '-renewals'} data={data} />
             <CompanyPassport key={org.id} data={data} />
@@ -747,7 +749,12 @@ export default function TenantWorkspace({
                 Open a section, then a record to review its source or edit it. Counts describe saved
                 records, not complete qualifications.
               </p>
-              {!data.facts.some(visibleFact) && <p role="status">No saved records match these filters. Clear the search or change the review filter.</p>}
+              {!data.facts.some(visibleFact) && (
+                <p role="status">
+                  No saved records match these filters. Clear the search or change the review
+                  filter.
+                </p>
+              )}
             </section>
             {readiness.groups.map((area) => (
               <details
@@ -1005,9 +1012,7 @@ export default function TenantWorkspace({
                     {new Date(a.created_at).toLocaleString()} · {a.action} · {a.entity_table}
                   </div>
                 ))}
-                {!data.audit.length && (
-                  <p>No audit events are available in this view.</p>
-                )}
+                {!data.audit.length && <p>No audit events are available in this view.</p>}
               </details>
             )}
           </>

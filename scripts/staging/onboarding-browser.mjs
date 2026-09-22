@@ -123,6 +123,15 @@ try {
   await owner.page.goto(base + '/onboarding?organization=' + org);
   await expect(owner.page.getByText(/1 related records saved/)).toBeVisible();
   await owner.page.goto(base + '/company?organization=' + org);
+  await expect(owner.page.getByRole('progressbar', { name: 'Level-1 profile fields recorded' })).toHaveAttribute('max', '60');
+  await expect(owner.page.getByRole('progressbar', { name: 'Level-1 profile fields recorded' })).toHaveAttribute('value', '2');
+  const completion = owner.page.getByRole('region', { name: 'Level-1 profile completion: 3%' });
+  await completion.locator('summary').filter({ hasText: /^Who is bidding/ }).click();
+  await expect(completion.getByText('To add: Entity type', { exact: true })).toBeVisible();
+  await owner.page.setViewportSize({ width: 390, height: 844 });
+  assert(await owner.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await owner.page.screenshot({ path: '.tmp/profile-completion-mobile.png', fullPage: true });
+  await owner.page.setViewportSize({ width: 1440, height: 1000 });
   await expect(owner.page.locator('#fact-' + fact.id)).not.toBeVisible();
   await owner.page.goto(base + '/company?organization=' + org + '#fact-' + fact.id);
   await expect(owner.page.locator('#fact-' + fact.id)).toBeVisible();

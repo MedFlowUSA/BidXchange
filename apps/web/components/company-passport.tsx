@@ -45,8 +45,8 @@ export default function CompanyPassport({ data }: { data: TenantData }) {
         Each save stays with this company for later review.
       </p>
       <p className={styles.note}>
-        These are suggested questions, not a completeness score. Only information your role can
-        access is shown. Saving does not verify a claim or approve proposal use.
+        These are suggested questions for the Level-1 field checklist. Only information your role
+        can access is shown. Saving does not verify a claim or approve proposal use.
       </p>
       <nav className={styles.steps} aria-label="Company Passport steps">
         {steps.map((step, i) => (
@@ -101,6 +101,22 @@ export default function CompanyPassport({ data }: { data: TenantData }) {
                         </li>
                       ))}
                     </ul>
+                    {admin && saved.every((fact) => fact.fact_type !== suggestion.type) && (
+                      <>
+                        <p>
+                          These earlier records remain available. Add the structured details below
+                          to complete this Passport item.
+                        </p>
+                        <CompanyRecordForm
+                          organizationId={data.organization.id}
+                          types={[suggestion.type]}
+                          members={data.members}
+                          userId={data.userId}
+                          suggestion={suggestion}
+                          structuredEnabled={data.structuredProfilesEnabled}
+                        />
+                      </>
+                    )}
                   </>
                 ) : admin ? (
                   <CompanyRecordForm
