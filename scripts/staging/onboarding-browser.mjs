@@ -162,6 +162,15 @@ try {
     .getByRole('link', { name: 'Open pursuit: Synthetic school lighting retrofit →', exact: true })
     .click();
   await expect(owner.page).toHaveURL(/\/pursuits\//);
+  step = 'pursuit checklist and sign-off navigation';
+  await expect(owner.page.getByText('Planned pursuit tools', { exact: true })).toHaveCount(0);
+  const checklist = owner.page.locator('details').filter({
+    has: owner.page.locator('summary').filter({ hasText: /^Open this pursuit’s workflow checklist$/ }),
+  });
+  await checklist.locator('summary').click();
+  await checklist.getByRole('link', { name: 'Sign off the Requirements Register', exact: true }).click();
+  await expect(owner.page).toHaveURL(/#register-signoff$/);
+  await expect(owner.page.locator('#register-signoff')).toContainText('Human sign-off is required');
   step = 'invitation creation';
   const colleague = await account();
   await owner.page.goto(base + '/settings/team?organization=' + org);

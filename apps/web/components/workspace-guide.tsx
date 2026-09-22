@@ -67,9 +67,7 @@ export function GettingStarted({ data, onOpen }: { data: TenantData; onOpen: () 
     <section className="panel getting-started">
       <div>
         <h2>One pursuit, from source to submission</h2>
-        <p>
-          Use the optional 12-step workspace guide. Your current records determine the next step.
-        </p>
+        <p>Use the workspace checklist. Your current records determine the next step.</p>
       </div>
       <button className="button" onClick={onOpen}>
         Open getting started

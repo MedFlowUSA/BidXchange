@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { build } from 'esbuild';
 import path from 'node:path';
-import { workspaceGuide, nextActions } from '../apps/web/lib/workspace-guide';
+import {
+  workspaceGuide,
+  nextActions,
+  hasCurrentRegisterSignoff,
+} from '../apps/web/lib/workspace-guide';
 import { releaseActionInput } from '../apps/web/lib/response-release';
 import { workflowData, pursuit } from './fixtures/workflow-data';
 test('guide uses actual scoped records and role restrictions; next actions prioritize blockers without duplicates', () => {
   const data = workflowData('viewer');
   const before = JSON.stringify(data),
     steps = workspaceGuide(data, pursuit);
-  expect(steps).toHaveLength(12);
+  expect(steps).toHaveLength(13);
   expect(steps.find((s) => s.id === 'response')?.state).toBe('next');
   expect(steps.find((s) => s.id === 'response')?.locked).toContain('Capture');
   expect(steps.find((s) => s.id === 'evidence')?.state).toBe('next');
@@ -22,6 +26,62 @@ test('guide uses actual scoped records and role restrictions; next actions prior
   expect(workspaceGuide(data, pursuit).find((s) => s.id === 'approval')?.state).toBe('unavailable');
   expect(releaseActionInput.safeParse({ action: 'submit', confirmed: false }).success).toBe(false);
 });
+test('sign-off requires a real record and context; the selected source cannot borrow another opportunity completeness', () => {
+  const data = workflowData();
+  data.registerSignoffsEnabled = true;
+  expect(hasCurrentRegisterSignoff(data)).toBe(false);
+  data.decisionContext = 'current';
+  expect(workspaceGuide(data, pursuit).find((s) => s.id === 'signoff')?.state).toBe('next');
+  data.registerSignoffs = [
+    {
+      id: 'signoff',
+      context_token: 'old',
+      note: 'Reviewed',
+      signed_off_by: data.userId,
+      signed_off_at: data.reviewAsOf,
+      requirement_count: 1,
+      blocker_count: 0,
+      clarification_count: 0,
+    },
+  ];
+  expect(hasCurrentRegisterSignoff(data)).toBe(false);
+  data.registerSignoffs[0].context_token = 'current';
+  expect(hasCurrentRegisterSignoff(data)).toBe(true);
+  data.opportunities.push({ ...data.opportunities[0], id: 'unrelated-complete' });
+  data.opportunities[0].source_url = null;
+  expect(workspaceGuide(data, pursuit).find((s) => s.id === 'source')?.state).toBe('next');
+  expect(workspaceGuide(data, pursuit).find((s) => s.id === 'source')?.href).toContain(
+    '/opportunities/opp?',
+  );
+});
+
+test('current no-bid is a recorded decision and does not recommend response or submission work', () => {
+  const data = workflowData();
+  data.decisionContext = 'current';
+  data.decisions = [
+    {
+      id: 'decision',
+      decision: 'no_bid',
+      reason: 'Capacity',
+      conditions: '',
+      context_token: 'current',
+      decided_by: data.userId,
+      decided_at: data.reviewAsOf,
+    },
+  ];
+  const steps = workspaceGuide(data, pursuit);
+  expect(steps.find((s) => s.id === 'bid')?.state).toBe('recorded');
+  for (const id of ['response', 'gaps', 'approval', 'submission'])
+    expect(steps.find((s) => s.id === id)?.locked).toContain('no-bid');
+  expect(
+    nextActions(data, 'Pursuits', pursuit)
+      .map((a) => a.href)
+      .join(' '),
+  ).not.toMatch(/response-packages|response-release|bid-decision/);
+  data.decisionContext = 'changed';
+  expect(workspaceGuide(data, pursuit).find((s) => s.id === 'bid')?.state).toBe('next');
+});
+
 let js = '',
   css = '';
 test.beforeAll(async () => {
@@ -69,7 +129,7 @@ for (const mobile of [false, true])
     await expect(page.getByRole('button', { name: 'Open getting started' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Workspace guide', exact: true }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('dialog').locator('li')).toHaveCount(12);
+    await expect(page.getByRole('dialog').locator('li')).toHaveCount(13);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByText('Record an actual human submission', { exact: true }).click();

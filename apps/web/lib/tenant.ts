@@ -149,6 +149,9 @@ export async function loadTenant(
     data.resolutionsEnabled = recordContext.resolutionsEnabled;
     data.resolutions = recordContext.resolutions;
     data.resolutionHistory = recordContext.resolutionHistory;
+    data.registerSignoffsEnabled = recordContext.registerSignoffsEnabled;
+    data.registerSignoffs = recordContext.registerSignoffs;
+    data.amendments = recordContext.amendments;
   }
   data.documentsEnabled = process.env.BIDXCHANGE_DOCUMENTS_ENABLED === 'true';
   data.releaseWorkflow = {

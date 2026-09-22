@@ -1,6 +1,7 @@
 'use client';
 import { useActionState, useState } from 'react';
 import type { TenantData } from '../lib/tenant-types';
+import { hasCurrentRegisterSignoff } from '../lib/workspace-guide';
 import { signOffRegister } from '../app/register-signoff-actions';
 export default function RegisterSignoff({
   data,
@@ -13,7 +14,7 @@ export default function RegisterSignoff({
   const [context] = useState(data.decisionContext ?? '');
   if (!data.registerSignoffsEnabled) return null;
   const latest = data.registerSignoffs?.[0];
-  const current = latest?.context_token === data.decisionContext;
+  const current = hasCurrentRegisterSignoff(data);
   return (
     <section className="panel" id="register-signoff">
       <h2>Requirements Register sign-off</h2>

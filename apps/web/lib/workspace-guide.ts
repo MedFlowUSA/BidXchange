@@ -12,6 +12,10 @@ export type GuideStep = {
   state: 'recorded' | 'next' | 'review' | 'unavailable';
   locked?: string;
 };
+export function hasCurrentRegisterSignoff(data: TenantData) {
+  const latest = data.registerSignoffs?.[0];
+  return !!latest && !!data.decisionContext && latest.context_token === data.decisionContext;
+}
 export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[] {
   const href = (path: string) => workspaceHref(path, data.organization.id),
     role = data.organization.role;
@@ -20,6 +24,10 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
     executive = ['organization_admin', 'executive_approver'].includes(role);
   const pursuit = pursuitId ? data.pursuits.find((p) => p.id === pursuitId) : undefined;
   const path = pursuit ? href(`/pursuits/${pursuit.id}`) : href('/pursuits');
+  const opportunity = data.opportunities.find((o) => o.id === pursuit?.opportunity_id);
+  const currentDecision =
+    !!data.decisionContext && data.decisions?.[0]?.context_token === data.decisionContext;
+  const passed = !!pursuit && currentDecision && data.decisions?.[0]?.decision === 'no_bid';
   const requirements = (data.requirements ?? []).filter((r) => r.pursuit_id === pursuitId);
   const reviewed =
     requirements.length > 0 &&
@@ -67,8 +75,8 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
       id: 'source',
       title: 'Record the official opportunity',
       detail: 'Keep the notice, solicitation number, deadline and timezone traceable.',
-      href: href('/opportunities'),
-      state: data.opportunities.some(
+      href: opportunity ? href(`/opportunities/${opportunity.id}`) : href('/opportunities'),
+      state: (pursuitId ? (opportunity ? [opportunity] : []) : data.opportunities).some(
         (o) =>
           o.solicitation_number &&
           (o.source_url || o.source_note) &&
@@ -127,13 +135,33 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
       locked: capture ? undefined : 'Capture manager or administrator required to assign work.',
     },
     {
+      id: 'signoff',
+      title: 'Sign off the Requirements Register',
+      detail:
+        scope +
+        'Review the full notice, omissions and open questions before recording a final bid or no-bid decision.',
+      href: path + '#register-signoff',
+      state:
+        !pursuit || !data.registerSignoffsEnabled
+          ? 'unavailable'
+          : hasCurrentRegisterSignoff(data)
+            ? 'recorded'
+            : 'next',
+      locked: executive
+        ? undefined
+        : 'Ask an administrator or executive approver to sign off the register.',
+    },
+    {
       id: 'bid',
       title: 'Record the human bid decision',
-      detail: scope + 'Pursue bid records intent. It is not final approval or authority to submit.',
+      detail:
+        scope +
+        (passed
+          ? 'A current no-bid decision is recorded. Preserve the reason; reopen the decision only if your team wants to reconsider.'
+          : 'Record pursue or pass after register sign-off. A bid decision is not final approval or authority to submit.'),
       href: path + '#bid-decision',
       state: pursuit
-        ? data.decisions?.[0]?.decision === 'bid' &&
-          data.decisions[0].context_token === data.decisionContext
+        ? ['bid', 'no_bid'].includes(data.decisions?.[0]?.decision ?? '') && currentDecision
           ? 'recorded'
           : 'next'
         : 'unavailable',
@@ -148,7 +176,11 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
         'Ask: “Create a response outline for this solicitation.” Complete and review its answers.',
       href: path + '#response-packages',
       state: pursuit ? (saved ? 'recorded' : 'next') : 'unavailable',
-      locked: capture ? undefined : 'Capture manager or administrator required to save a draft.',
+      locked: passed
+        ? 'A current no-bid decision is recorded. Reconsider it before preparing a response.'
+        : capture
+          ? undefined
+          : 'Capture manager or administrator required to save a draft.',
     },
     {
       id: 'gaps',
@@ -158,6 +190,7 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
         'Resolve unanswered items, placeholders and stale answers. Writing completion is not compliance.',
       href: path + '#response-packages',
       state: pursuit ? (noWritingGaps ? 'recorded' : 'next') : 'unavailable',
+      locked: passed ? 'The team recorded no-bid; response work is not the next step.' : undefined,
     },
     {
       id: 'approval',
@@ -172,11 +205,13 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
           : release?.status?.state === 'Authorized for submission'
             ? 'recorded'
             : 'next',
-      locked: !data.releaseWorkflow?.enabled
-        ? 'Versioned approvals are not activated in this environment.'
-        : executive
-          ? undefined
-          : 'Authorized human reviewers must approve the exact version.',
+      locked: passed
+        ? 'The team recorded no-bid; approval work is not the next step.'
+        : !data.releaseWorkflow?.enabled
+          ? 'Versioned approvals are not activated in this environment.'
+          : executive
+            ? undefined
+            : 'Authorized human reviewers must approve the exact version.',
     },
     {
       id: 'submission',
@@ -190,11 +225,13 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
           : data.releaseWorkflow.submissions.length
             ? 'recorded'
             : 'next',
-      locked: !data.releaseWorkflow?.enabled
-        ? 'Submission recording is not activated.'
-        : release?.snapshot.checklist.submitter === data.userId
-          ? undefined
-          : 'Only the named authorized submitter may record submission.',
+      locked: passed
+        ? 'The team recorded no-bid; submission work is not the next step.'
+        : !data.releaseWorkflow?.enabled
+          ? 'Submission recording is not activated.'
+          : release?.snapshot.checklist.submitter === data.userId
+            ? undefined
+            : 'Only the named authorized submitter may record submission.',
     },
   ];
 }

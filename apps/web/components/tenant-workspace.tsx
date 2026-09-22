@@ -326,6 +326,12 @@ export default function TenantWorkspace({
         {recordId && opportunity ? (
           recordType === 'pursuit' ? (
             <>
+              {pursuit && (
+                <details className="panel">
+                  <summary>Open this pursuit’s workflow checklist</summary>
+                  <GuideContent data={data} pursuitId={pursuit.id} />
+                </details>
+              )}
               {pursuit && <BidReview data={data} pursuitId={pursuit.id} />}
               {pursuit && isPepmaUrl(opportunity.source_url) && (
                 <PepmaWorkflow data={data} pursuitId={pursuit.id} canEdit={capture} />
