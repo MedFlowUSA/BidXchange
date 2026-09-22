@@ -5,27 +5,21 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
 }) => {
   await page.goto('/');
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toContainText(
-    'One workspace for the work between finding a bid and submitting it.',
+    'One workspace from notice to reviewed response.',
   );
-  await expect(page.locator('#capabilities')).toContainText('recorded blockers');
-  await expect(page.locator('#capabilities')).toContainText('PDF or Word working draft');
-  await expect(page.locator('#company-passport')).toContainText('Insurance, bonding');
-  await expect(page.locator('#workflow ol > li')).toHaveCount(6);
-  await expect(page.locator('#workflow')).toContainText(
-    'BidXchange does not automatically submit bids.',
-  );
-  for (const label of ['Available now', 'Limited or manual', 'Not currently enabled']) {
-    const summary = page.locator('summary').filter({ hasText: label });
-    await summary.focus();
-    await page.keyboard.press('Enter');
-    await expect(summary.locator('..')).toHaveAttribute('open', '');
-  }
-  await expect(page.getByText(/The SAM.gov connector is implemented/)).toBeVisible();
-  await expect(page.locator('#workflow')).toContainText('production intake remains manual');
+  await expect(page.locator('#capabilities')).toContainText('before the estimator starts');
+  await expect(page.locator('#workflow')).toContainText('BidXchange does not submit bids for you.');
+  const scope = page.locator('#current-scope summary');
+  await scope.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#current-scope')).toHaveAttribute('open', '');
+  await expect(page.locator('#current-scope')).toContainText('Production intake remains manual');
   await expect(page.locator('#ai-assistance')).toContainText(
-    'General mode does not attach private company records.',
+    'General mode does not access private company records',
   );
-  await expect(page.locator('#ai-assistance')).toContainText('AI cannot approve pricing');
+  await expect(page.locator('#ai-assistance')).toContainText(
+    'approve pricing, verify legal qualifications',
+  );
   await expect(page.locator('#ai-assistance')).toContainText(
     'Create a response outline for this solicitation.',
   );
@@ -43,7 +37,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
   );
   await expect(page.locator('#questions')).toContainText('does not guarantee eligibility');
   await expect(page.locator('#request-demo')).toContainText(
-    'Bring one opportunity. See the decision process.',
+    'Bring one live opportunity. See the decision process.',
   );
   await expect(page.locator('#request-demo')).toContainText('Do not email confidential records.');
   for (const href of ['#capabilities', '#workflow', '#questions', '#request-demo']) {
@@ -59,7 +53,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Pursue work you can deliver. Build the bid that backs it up.',
+    'Know if the bid is worth the week. Then build the response from what you already have.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
@@ -69,7 +63,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.getByRole('link', { name: 'Open Workspace', exact: true })).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText('Green Energy Solutions');
   await expect(
-    page.getByRole('heading', { name: 'Choose the work. Build the response. Manage the finish.' }),
+    page.getByRole('heading', { name: 'Put your bid effort where it counts.' }),
   ).toBeVisible();
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');

@@ -73,12 +73,13 @@ export default async function Home() {
                 <span /> CALIFORNIA PUBLIC WORKS & UTILITY CONTRACTS
               </div>
               <h1 id="hero-title">
-                Pursue work you can deliver. <span>Build the bid that backs it up.</span>
+                Know if the bid is worth the week.{' '}
+                <span>Then build the response from what you already have.</span>
               </h1>
               <p className={styles.heroDescription}>
-                Keep the CSLB record, DIR registration, bond question and mandatory job walk with
-                the bid they affect. Compare notice requirements with company evidence, assign the
-                missing work and prepare a response your team can review and submit externally.
+                BidXchange keeps company evidence next to notice requirements so your team can see
+                blockers, assign the missing work, and review a response before anyone spends a week
+                estimating the wrong job.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -89,8 +90,8 @@ export default async function Home() {
                 </Link>
               </div>
               <p className={clean.heroNote}>
-                Electrical · Energy efficiency · School districts · Municipal improvements ·
-                Utilities · California field contractors
+                Built for electrical, energy-efficiency, school-district, municipal, and utility
+                field contractors in California.
               </p>
             </div>
             <div className={`${styles.heroVisual} ${clean.visual}`}>
@@ -100,22 +101,20 @@ export default async function Home() {
         </section>
         <section className={clean.definition} aria-label="What BidXchange is">
           <p>
-            <strong>One workspace for the work between finding a bid and submitting it.</strong>{' '}
-            Keep the company evidence, notice requirements, estimating tasks, response drafts and
-            approval record together.
+            <strong>One workspace from notice to reviewed response.</strong> Company evidence,
+            notice requirements, estimating tasks, drafts, owners, and approvals live in the same
+            record.
           </p>
           <p>
-            Spend proposal time on work your team has a reason to pursue. Reuse what you have
-            already documented, see what is missing, and give each open item an owner.
+            <strong>Spend bid time on work you can actually deliver.</strong> Reuse what is already
+            documented, surface what is missing, and give every open item an owner.
           </p>
         </section>
         <section id="capabilities" className={clean.workspace} aria-labelledby="capabilities-title">
           <div className={clean.sectionIntro}>
             <div>
               <span className={styles.eyebrow}>HOW IT HELPS YOU COMPETE</span>
-              <h2 id="capabilities-title">
-                Choose the work. Build the response. Manage the finish.
-              </h2>
+              <h2 id="capabilities-title">Put your bid effort where it counts.</h2>
             </div>
             <p>
               Your estimator, bid lead and approver work from the same requirements and evidence,
@@ -127,20 +126,20 @@ export default async function Home() {
               {
                 icon: FolderCheck,
                 number: '01',
-                title: 'Decide where to spend your bid effort',
-                text: 'Compare available opportunities with verified company codes, trace requirements to evidence, and surface recorded blockers before committing to a response.',
+                title: 'Decide where to spend bid effort',
+                text: 'Compare the notice to reviewed company codes and evidence before the estimator starts.',
               },
               {
                 icon: FileSearch,
                 number: '02',
                 title: 'Prepare the response without starting over',
-                text: 'Reuse reviewed company information, assign estimates and missing evidence, and assemble a PDF or Word working draft against the notice requirements.',
+                text: 'Reuse reviewed company information, assign gaps, and assemble a working draft against the notice.',
               },
               {
                 icon: ListChecks,
                 number: '03',
-                title: 'Keep the submission work accounted for',
-                text: 'Track deadlines, review the response version, record approvals, name the submitter and retain the submission record. Your authorized team delivers it through the buyer’s official channel.',
+                title: 'Keep the finish accountable',
+                text: 'Track owners, versions, approvals, the named submitter, and a user-recorded submission record. Your team still submits through the buyer’s channel.',
               },
             ].map((feature) => (
               <article key={feature.number}>
@@ -153,47 +152,17 @@ export default async function Home() {
               </article>
             ))}
           </div>
-          <details className={clean.expandable}>
-            <summary>Before your estimator spends a week on the numbers</summary>
-            <div className={clean.problemGrid}>
-              <div>
-                <h3>Stop estimating bids that were never a fit</h3>
-                <p>
-                  A missing license, set-aside qualification, bond limit, registration or mandatory
-                  event can make an attractive opportunity unworkable.
-                </p>
-              </div>
-              <div>
-                <h3>Stop rebuilding company information</h3>
-                <p>
-                  Keep reusable qualifications and their supporting sources in the Company Passport,
-                  ready for the next pursuit’s review.
-                </p>
-              </div>
-              <div>
-                <h3>Stop managing requirements across inboxes and spreadsheets</h3>
-                <p>
-                  Cite the notice, assign each open question and preserve the requirement’s review
-                  history.
-                </p>
-              </div>
-              <div>
-                <h3>Stop making bid decisions without a record</h3>
-                <p>
-                  Record why you pursued or passed. When reviewed information changes, reopen the
-                  decision with the reasons in view.
-                </p>
-              </div>
-            </div>
-          </details>
         </section>
         <section id="company-passport" className={clean.passport} aria-labelledby="passport-title">
           <div>
             <span className={styles.eyebrow}>COMPANY PASSPORT</span>
-            <h2 id="passport-title">Your next bid should start with what you already know.</h2>
+            <h2 id="passport-title">
+              Your next bid should start with what the company already is.
+            </h2>
             <p>
-              Build a reusable record of your company’s capabilities and completed work. Keep its
-              sources and renewal dates current, then review the relevant evidence for each new bid.
+              Licenses, registrations, insurance, bonding, territories, past performance, and
+              operating capacity — with sources and renewal dates — so each new notice is checked
+              against a living company record, not a scavenger hunt.
             </p>
           </div>
           <div>
@@ -224,35 +193,35 @@ export default async function Home() {
         <section id="workflow" className={clean.workspace} aria-labelledby="workflow-title">
           <div className={clean.sectionIntro}>
             <div>
-              <span className={styles.eyebrow}>FROM OPPORTUNITY TO SUBMISSION</span>
-              <h2 id="workflow-title">A practical path to your next contract pursuit.</h2>
+              <span className={styles.eyebrow}>THE WORKFLOW</span>
+              <h2 id="workflow-title">From opportunity to submission</h2>
             </div>
           </div>
           <ol className={clean.steps}>
             {[
               [
                 'Build your Company Passport',
-                'Record the services, licenses, insurance, bonding and past projects that support your ability to do the work.',
+                'Keep licenses, insurance, bonding and past projects ready for review.',
               ],
               [
                 'Bring an opportunity worth investigating',
-                'Open a procurement portal or research records already in BidXchange. Capture the notice, scope and official deadline.',
+                'Capture the notice, source, scope and official deadline from the buyer’s portal.',
               ],
               [
                 'Make the bid/no-bid decision',
-                'Compare cited requirements with company evidence. Review blockers, missing information and capacity before committing the team.',
+                'Review requirements, evidence and blockers, then record a human decision.',
               ],
               [
                 'Assign the work that makes the bid possible',
-                'Give estimates, site-visit questions, forms and evidence requests an owner and a deadline.',
+                'Give estimates, site visits, forms and evidence requests an owner and deadline.',
               ],
               [
                 'Build and review the response',
-                'Reuse company information, develop the technical answers, and export a working draft for the responsible reviewers.',
+                'Reuse reviewed records, add human-written technical answers and export a PDF or Word draft.',
               ],
               [
                 'Approve, submit and record the result',
-                'Review the final version, confirm the named submitter and official destination, then record delivery and the buyer’s receipt or acknowledgment.',
+                'Approve a version, submit through the buyer’s channel and record the receipt.',
               ],
             ].map(([heading, text], i) => (
               <li key={heading}>
@@ -264,56 +233,19 @@ export default async function Home() {
               </li>
             ))}
           </ol>
-          <p className={clean.boundary}>
-            BidXchange does not automatically submit bids. Final pricing, certifications,
-            signatures, approvals and portal submission remain with authorized people.
+          <p className={clean.scopeNote}>
+            Some intake and portal steps are still assisted or manual. BidXchange does not submit
+            bids for you. <a href="#current-scope">Current scope</a>
           </p>
-          <div className={clean.statusGroup} role="group" aria-label="Current product availability">
-            <details className={clean.expandable}>
-              <summary>Available now</summary>
-              <p>
-                Company Passport, conversational research over available records, portal links,
-                personal saved searches, manual opportunity intake, pursuit workspaces, cited
-                requirement records, evidence-use reviews, requirement findings, tasks and
-                deadlines, human bid/no-bid decisions, response drafting and review, PDF/Word
-                working exports, version-bound approvals and human submission records. Actions
-                depend on role; AI assistance requires an enabled workspace.
-              </p>
-            </details>
-            <details className={clean.expandable}>
-              <summary>Limited or manual</summary>
-              <p>
-                People enter opportunities, review amendments, verify evidence and check candidate
-                requirements against the full notice. Requirement extraction assists review of
-                pasted excerpts; it does not certify a complete register. Final files, signatures
-                and procurement-portal delivery are handled outside BidXchange.
-              </p>
-            </details>
-            <details className={clean.expandable}>
-              <summary>Not currently enabled</summary>
-              <p>
-                Broad live procurement feeds and private file uploads are not enabled. The SAM.gov
-                connector is implemented, but production intake remains manual; connector activation
-                and live synchronization are pending. BidXchange does not autonomously certify
-                eligibility, calculate prices, submit through procurement portals or guarantee
-                awards.
-              </p>
-            </details>
-          </div>
         </section>
         <section id="ai-assistance" className={clean.passport} aria-labelledby="ai-title">
           <div>
             <span className={styles.eyebrow}>ASK ABOUT THE WORK IN FRONT OF YOU</span>
-            <h2 id="ai-title">Ask the next question that moves the bid forward.</h2>
+            <h2 id="ai-title">Ask the next question that moves the bid.</h2>
             <p>
-              Research available opportunities with follow-up questions, review the interpreted
-              filters, and see company-code matches and missing information. In workspace-record
-              mode, answers use authorized BidXchange records and citations. General mode does not
-              attach private company records.
-            </p>
-            <p>
-              AI cannot approve pricing, verify qualifications, authorize submission or submit a
-              bid. It has no live web browsing; an unanswered question stays a question.
+              Answers use authorized BidXchange records in workspace mode. The assistant cannot
+              approve pricing, verify legal qualifications, authorize submission, or submit a bid.
+              An unanswered question stays a question.
             </p>
           </div>
           <div>
@@ -327,37 +259,26 @@ export default async function Home() {
               <li>Create a response outline for this solicitation.</li>
             </ul>
             <p>
-              Questions are limited to the records available to that mode. The outline command
-              requires a selected pursuit and permission to create a draft; it prepares sections for
-              your team to complete. The public demo uses fictional data and a separate general
-              assistant.
+              General mode does not access private company records or browse the web. Response
+              outlines require a selected pursuit and draft-creation permission.
             </p>
           </div>
         </section>
         <section id="questions" className={clean.questions} aria-labelledby="questions-title">
           <div>
-            <span className={styles.eyebrow}>BUILT FOR ESTABLISHED BUSINESSES</span>
+            <span className={styles.eyebrow}>BUILT FOR CALIFORNIA FIELD CONTRACTORS</span>
             <h2 id="questions-title">You can perform the work. Organize the bid effort.</h2>
             <p>
-              For general and specialty contractors, energy and utility contractors, facilities and
-              maintenance firms, public-works vendors, government suppliers and professional-service
-              providers without a full internal capture, compliance and proposal department.
-            </p>
-            <h3>More than software. A structured bid-review process.</h3>
-            <p>
-              Founding-customer discussions are shaping software-supported contracting operations:
-              onboarding, bid review and response coordination. Managed support is a pilot service
-              under development; scope and commercial terms are not finalized.
+              For electrical, energy-efficiency, utility and public-works teams without a full
+              internal capture, compliance and proposal department.
             </p>
           </div>
           <div className={clean.faq}>
             <details>
               <summary>Is BidXchange a bid board?</summary>
               <p>
-                BidXchange supports the work after you identify an opportunity: qualification
-                review, estimating tasks, response preparation and submission coordination. Research
-                currently searches available workspace records; portal shortcuts open the external
-                platforms. Live source coverage depends on connector activation.
+                No. It organizes pursuit of work you already found or imported. Research uses
+                available records; portal shortcuts open the official external sites.
               </p>
             </details>
             <details>
@@ -370,34 +291,30 @@ export default async function Home() {
             <details>
               <summary>Does BidXchange write the entire proposal?</summary>
               <p>
-                It can create a structured response outline, reuse approved company information,
-                flag incomplete answers and export a working PDF or Word draft. Opportunity-specific
-                technical content, pricing, representations and final review remain human
-                responsibilities.
+                No. It drafts an outline from reviewed records and exports a working PDF or Word
+                document. Your team supplies technical answers, pricing and final review.
               </p>
             </details>
             <details>
               <summary>Does BidXchange submit the bid?</summary>
               <p>
-                No. It prepares and tracks the response workflow. An authorized person follows the
-                buyer’s official submission instructions and records the result in BidXchange. A
-                submission record does not independently verify buyer receipt.
+                No. Your team submits through the buyer’s channel and records the result. BidXchange
+                does not independently verify buyer receipt.
               </p>
             </details>
             <details>
               <summary>What will I see in the demo?</summary>
               <p>
-                Sample company records and a fictional municipal energy retrofit opportunity. You
-                can explore requirements and pursuit tasks without entering company data. Demo
-                scores and eligibility examples do not assess your business or a live contract.
+                Fictional company records and a municipal energy retrofit opportunity. Explore
+                requirements and tasks without entering company data; the demo does not assess your
+                business or a live contract.
               </p>
             </details>
             <details id="security">
               <summary>Is our company information shared publicly?</summary>
               <p>
                 No. Authenticated workspaces use organization membership and role-based access.
-                Company records can be restricted, while pursuit requirements are shared with
-                workspace members. Verification and bid authority remain with people.
+                Company records can be restricted by role.
               </p>
             </details>
             <details>
@@ -410,8 +327,8 @@ export default async function Home() {
             <details id="pricing">
               <summary>What does it cost?</summary>
               <p>
-                Founding-customer plans are being finalized and may combine onboarding, software
-                access and managed support. No prices or service commitments are published yet.
+                Start with a pilot walkthrough with Manuel. Commercial terms are not finalized; no
+                prices or service commitments are published yet.
               </p>
             </details>
           </div>
@@ -443,15 +360,25 @@ export default async function Home() {
             <Link href="/terms">Terms of Use</Link>
           </nav>
         </div>
-        <details id="legal-notices" className={clean.legal}>
-          <summary>Privacy and terms are being finalized</summary>
+        <details id="current-scope" className={clean.legal}>
+          <summary>Current scope</summary>
           <p>
-            Privacy Policy and Terms of Use drafts are available for review and are not yet
-            effective. For questions about information you have shared, contact
-            mrodriguez@oaisinc.com. Please do not send confidential records through the public
-            contact channel.
+            Company Passport, research over available records, portal links, saved searches, manual
+            opportunity intake, pursuit workspaces, cited requirements, evidence-use reviews,
+            findings, tasks, deadlines, human bid/no-bid decisions, response drafts, PDF/Word
+            exports, version-bound approvals and user-recorded submissions. Access depends on role;
+            AI assistance requires an enabled workspace.
+          </p>
+          <p>
+            People check candidate requirements against the full notice and review amendments.
+            Production intake remains manual; broad live procurement feeds and private file uploads
+            are not enabled. The SAM.gov connector awaits production activation. Signatures and
+            delivery stay with your team and the buyer?s official channel.
           </p>
         </details>
+        <p id="legal-notices" className={clean.legal}>
+          Privacy Policy and Terms of Use are in draft and are not yet effective.
+        </p>
         <div className={clean.footerBottom}>
           <span>© {new Date().getFullYear()} BidXchange</span>
           <span>Independent software. No government affiliation or guaranteed awards.</span>
