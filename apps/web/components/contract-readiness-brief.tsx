@@ -65,7 +65,7 @@ export default function ContractReadinessBrief({
             Confirm crew availability, equipment, supplier quotes, costs and overlapping
             commitments. Completed tasks alone do not prove capacity or profitability.
           </p>
-          <Link href={`${base}#pursuit-tasks`}>Assign a delivery review</Link>
+          <Link href={`${base}#delivery-review`}>Open delivery review</Link>
         </div>
         <div>
           <h3>What needs to happen next?</h3>

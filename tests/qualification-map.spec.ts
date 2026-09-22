@@ -200,4 +200,24 @@ test('viewers can follow evidence but cannot assign work', async ({ page }) => {
     page.getByRole('heading', { name: 'Turn review gaps into next actions.' }),
   ).toBeVisible();
   await expect(page.getByText('Assign follow-up work', { exact: true })).toHaveCount(0);
+  await expect(page.locator('#delivery-review').getByText('Add task', { exact: true })).toHaveCount(
+    0,
+  );
+});
+
+test('delivery checks create explicit owner-assigned follow-up without implying capacity', async ({
+  page,
+}) => {
+  await mount(page);
+  const delivery = page.locator('#delivery-review');
+  await expect(
+    delivery.getByRole('heading', { name: 'Can your team deliver this work?' }),
+  ).toBeVisible();
+  await delivery.getByText('Add task', { exact: true }).first().click();
+  await expect(delivery.getByLabel('Task title', { exact: true })).toHaveValue(
+    'Delivery review: confirm crew availability and overlapping commitments',
+  );
+  await delivery.getByRole('button', { name: 'Add task', exact: true }).click();
+  await expect(delivery.getByRole('status')).toContainText('Task saved: Delivery review:');
+  await expect(delivery).toContainText('Task completion is not delivery approval');
 });

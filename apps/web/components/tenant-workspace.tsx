@@ -14,6 +14,7 @@ import { displayDate } from '../lib/ai/policy';
 import PursuitFoundation from './pursuit-foundation';
 import PursuitDecisionBrief from './pursuit-decision-brief';
 import ContractReadinessBrief from './contract-readiness-brief';
+import DeliveryReview from './delivery-review';
 import BidReview from './bid-review';
 import NoticeExcerptReview from './notice-excerpt-review';
 import ResponsePackages from './response-package';
@@ -330,6 +331,7 @@ export default function TenantWorkspace({
                 }
               >
                 {pursuit && <ContractReadinessBrief data={data} pursuitId={pursuit.id} />}
+                {pursuit && <DeliveryReview data={data} pursuitId={pursuit.id} />}
                 {pursuit && <PursuitDecisionBrief data={data} pursuitId={pursuit.id} />}
                 {pursuit && (
                   <EvidenceStressTest
