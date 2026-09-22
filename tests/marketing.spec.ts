@@ -7,7 +7,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toContainText(
     'One workspace from notice to reviewed response.',
   );
-  await expect(page.locator('#capabilities')).toContainText('before the estimator starts');
+  await expect(page.locator('#capabilities')).toContainText('before committing estimating time');
   await expect(page.locator('#workflow')).toContainText('BidXchange does not submit bids for you.');
   const scope = page.locator('#current-scope summary');
   await scope.focus();
@@ -25,7 +25,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
   );
   await expect(page.locator('#ai-assistance')).not.toContainText('Create an RFP');
   await expect(page.locator('#questions')).toContainText(
-    'without a full internal capture, compliance and proposal department',
+    'contractor owners, estimators, bid coordinators and project managers',
   );
   for (const summary of await page.locator('#questions summary').all()) {
     await summary.focus();
@@ -167,7 +167,7 @@ test('public SEO is canonical and workspace/demo pages remain noindex', async ({
   await page.goto('/');
   await expect(page).toHaveTitle('BidXchange | California Contractor Bid Control');
   const description =
-    'Organize California contractor evidence, solicitation requirements, blockers and bid decisions. Prepare a reviewed response and record your team’s external submission.';
+    'Bid review for California field contractors. Keep licenses, DIR registration, insurance, bid requirements and deadlines together so your team can decide whether to bid and prepare its response.';
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', description);
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
     'content',

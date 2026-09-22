@@ -10,7 +10,7 @@ import styles from '../components/marketing.module.css';
 import clean from '../components/landing.module.css';
 const title = 'BidXchange | California Contractor Bid Control';
 const description =
-  'Organize California contractor evidence, solicitation requirements, blockers and bid decisions. Prepare a reviewed response and record your team’s external submission.';
+  'Bid review for California field contractors. Keep licenses, DIR registration, insurance, bid requirements and deadlines together so your team can decide whether to bid and prepare its response.';
 const publicMetadata: Metadata = {
   title,
   description,
@@ -27,7 +27,7 @@ const publicMetadata: Metadata = {
         url: 'https://bidxapp.vercel.app/brand/bidxchange-icon.png?v=2',
         width: 1254,
         height: 1254,
-        alt: 'BidXchange government-contracting workspace',
+        alt: 'BidXchange California contractor bid workspace',
       },
     ],
   },
@@ -77,9 +77,9 @@ export default async function Home() {
                 <span>Then build the response from what you already have.</span>
               </h1>
               <p className={styles.heroDescription}>
-                BidXchange keeps company evidence next to notice requirements so your team can see
-                blockers, assign the missing work, and review a response before anyone spends a week
-                estimating the wrong job.
+                Check the license requirement, bond request and mandatory job walk before committing
+                estimating time. BidXchange keeps bid requirements beside your company records so
+                your team can decide whether to bid, assign missing work and prepare a response.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -90,8 +90,8 @@ export default async function Home() {
                 </Link>
               </div>
               <p className={clean.heroNote}>
-                Built for electrical, energy-efficiency, school-district, municipal, and utility
-                field contractors in California.
+                Built for California electrical, energy-efficiency and other field contractors
+                bidding on public works, school facilities, municipal and utility projects.
               </p>
             </div>
             <div className={`${styles.heroVisual} ${clean.visual}`}>
@@ -101,13 +101,13 @@ export default async function Home() {
         </section>
         <section className={clean.definition} aria-label="What BidXchange is">
           <p>
-            <strong>One workspace from notice to reviewed response.</strong> Company evidence,
-            notice requirements, estimating tasks, drafts, owners, and approvals live in the same
-            record.
+            <strong>One workspace from notice to reviewed response.</strong> Company records, bid
+            requirements, estimating tasks, drafts, assigned team members and approvals stay
+            connected to the same opportunity.
           </p>
           <p>
             <strong>Spend bid time on work you can actually deliver.</strong> Reuse what is already
-            documented, surface what is missing, and give every open item an owner.
+            documented, see what is missing, and assign someone to follow up.
           </p>
         </section>
         <section id="capabilities" className={clean.workspace} aria-labelledby="capabilities-title">
@@ -117,8 +117,8 @@ export default async function Home() {
               <h2 id="capabilities-title">Put your bid effort where it counts.</h2>
             </div>
             <p>
-              Your estimator, bid lead and approver work from the same requirements and evidence,
-              with a clear next action at each stage.
+              Owners, estimators and bid coordinators can see what needs checking, who is handling
+              it and when it is due.
             </p>
           </div>
           <div className={clean.features}>
@@ -127,19 +127,19 @@ export default async function Home() {
                 icon: FolderCheck,
                 number: '01',
                 title: 'Decide where to spend bid effort',
-                text: 'Compare the notice to reviewed company codes and evidence before the estimator starts.',
+                text: 'Review license, DIR registration, insurance and bonding requirements against your company records before committing estimating time.',
               },
               {
                 icon: FileSearch,
                 number: '02',
                 title: 'Prepare the response without starting over',
-                text: 'Reuse reviewed company information, assign gaps, and assemble a working draft against the notice.',
+                text: 'Reuse reviewed license details and past-project records, assign missing information, and draft a response to the bid requirements.',
               },
               {
                 icon: ListChecks,
                 number: '03',
-                title: 'Keep the finish accountable',
-                text: 'Track owners, versions, approvals, the named submitter, and a user-recorded submission record. Your team still submits through the buyer’s channel.',
+                title: 'Keep the bid deadline in view',
+                text: 'Track assigned tasks, draft versions, approvals and who will submit. Your team submits through the agency or utility’s required channel, then records the confirmation.',
               },
             ].map((feature) => (
               <article key={feature.number}>
@@ -156,37 +156,35 @@ export default async function Home() {
         <section id="company-passport" className={clean.passport} aria-labelledby="passport-title">
           <div>
             <span className={styles.eyebrow}>COMPANY PASSPORT</span>
-            <h2 id="passport-title">
-              Your next bid should start with what the company already is.
-            </h2>
+            <h2 id="passport-title">Keep your company records ready for the next bid.</h2>
             <p>
-              Licenses, registrations, insurance, bonding, territories, past performance, and
-              operating capacity — with sources and renewal dates — so each new notice is checked
-              against a living company record, not a scavenger hunt.
+              Your Company Passport brings license details, registrations, insurance, bonding
+              information, service areas and past projects into one reusable record. Keep sources
+              and renewal dates alongside them so your team can review each new bid without
+              searching through old files.
             </p>
           </div>
           <div>
             <ul className={clean.recordList}>
-              <li>Licenses, registrations and certifications</li>
-              <li>Insurance, bonding and service territories</li>
-              <li>Past performance and operating capacity</li>
+              <li>CSLB license details and DIR public-works registration</li>
+              <li>Insurance, bonding information and service areas</li>
+              <li>Past projects, personnel and equipment capacity</li>
             </ul>
             <details className={clean.expandable}>
               <summary>What else belongs in the Passport?</summary>
               <p>
-                Legal identity and authorized contacts; capabilities and classifications; equipment
-                information within capacity records; key personnel; safety and compliance records;
-                proposal-material references. Keep sources, verification details and expiration
-                dates with each record.
+                Legal business name, authorized contacts, certifications, trade classifications,
+                safety records and references to supporting documents. Record who checked each item,
+                its source and any expiration date.
               </p>
               <p>
-                Record access depends on role and classification. Private file uploads are not
-                enabled; supporting files stay in your authorized storage.
+                Access depends on team permissions and the record’s sensitivity. Link to supporting
+                documents in storage your company controls; private file uploads are not enabled.
               </p>
             </details>
             <p>
-              Verified company information does not automatically prove eligibility.
-              Opportunity-specific human review remains required.
+              Saved or reviewed records do not establish legal eligibility. Your team must check the
+              requirements of each bid; BidXchange does not confirm license coverage.
             </p>
           </div>
         </section>
@@ -209,15 +207,15 @@ export default async function Home() {
               ],
               [
                 'Make the bid/no-bid decision',
-                'Review requirements, evidence and blockers, then record a human decision.',
+                'Review and sign off the requirements, then record your bid/no-bid decision and reasons.',
               ],
               [
                 'Assign the work that makes the bid possible',
-                'Give estimates, site visits, forms and evidence requests an owner and deadline.',
+                'Assign estimating tasks, job walks, forms and document requests to a person with a due date.',
               ],
               [
                 'Build and review the response',
-                'Reuse reviewed records, add human-written technical answers and export a PDF or Word draft.',
+                'Reuse reviewed records, add your technical answers and export a PDF or Word draft.',
               ],
               [
                 'Approve, submit and record the result',
@@ -252,33 +250,35 @@ export default async function Home() {
             <h3>Questions to bring to the assistant</h3>
             <ul className={clean.recordList}>
               <li>Why might this opportunity fit our company?</li>
-              <li>What could disqualify us?</li>
+              <li>Which bid requirements still need our review?</li>
               <li>Which requirements still lack reviewed evidence?</li>
               <li>What tasks are overdue?</li>
-              <li>What changed and requires another review?</li>
+              <li>Summarize the requirements recorded for this bid.</li>
               <li>Create a response outline for this solicitation.</li>
             </ul>
             <p>
-              General mode does not access private company records or browse the web. Response
-              outlines require a selected pursuit and draft-creation permission.
+              General mode does not access private company records or browse the web. To create a
+              response outline, open the relevant bid workspace; your role must allow draft
+              creation.
             </p>
           </div>
         </section>
         <section id="questions" className={clean.questions} aria-labelledby="questions-title">
           <div>
             <span className={styles.eyebrow}>BUILT FOR CALIFORNIA FIELD CONTRACTORS</span>
-            <h2 id="questions-title">You can perform the work. Organize the bid effort.</h2>
+            <h2 id="questions-title">For the team balancing bids with work in the field.</h2>
             <p>
-              For electrical, energy-efficiency, utility and public-works teams without a full
-              internal capture, compliance and proposal department.
+              For contractor owners, estimators, bid coordinators and project managers handling
+              public-works and utility bids alongside day-to-day operations. Start with one
+              opportunity and the records your team already maintains.
             </p>
           </div>
           <div className={clean.faq}>
             <details>
               <summary>Is BidXchange a bid board?</summary>
               <p>
-                No. It organizes pursuit of work you already found or imported. Research uses
-                available records; portal shortcuts open the official external sites.
+                No. It helps you review and prepare bids for work you already found or added.
+                Research searches available records; portal shortcuts open official external sites.
               </p>
             </details>
             <details>
@@ -373,7 +373,7 @@ export default async function Home() {
             People check candidate requirements against the full notice and review amendments.
             Production intake remains manual; broad live procurement feeds and private file uploads
             are not enabled. The SAM.gov connector awaits production activation. Signatures and
-            delivery stay with your team and the buyer?s official channel.
+            delivery stay with your team and the agency or utility’s required channel.
           </p>
         </details>
         <p id="legal-notices" className={clean.legal}>

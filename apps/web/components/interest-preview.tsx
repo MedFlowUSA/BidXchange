@@ -10,9 +10,9 @@ export default function InterestPreview() {
         <span className={styles.eyebrow}>REQUEST A BID REVIEW</span>
         <h2 id="request-title">Bring one live opportunity. See the decision process.</h2>
         <p>
-          Bring a public-sector opportunity your company is considering. Manuel Rodriguez will show
-          you how BidXchange organizes its requirements, connects relevant company evidence,
-          identifies unanswered questions and creates a documented next-action plan.
+          Bring a public-works, school-facility, municipal or utility bid your company is
+          considering. Manuel Rodriguez will walk through how to organize its requirements, review
+          company records, identify open questions and assign the next tasks in BidXchange.
         </p>
       </div>
       {demoIntakeConfig() ? (
@@ -21,8 +21,8 @@ export default function InterestPreview() {
         <div className={styles.interestForm} role="region" aria-label="Demo contact">
           <h3>Arrange a walkthrough with Manuel</h3>
           <p>
-            Send your name, company, work email, trade or service, geographic market and the
-            agencies or public entities you pursue. An opportunity link and a message are optional.
+            Send your name, company, work email, trade and counties served. Include the agency,
+            school district or utility you want to work with, and a public bid link if you have one.
             Do not email confidential records.
           </p>
           <a className={styles.primary} href={demoContactHref}>

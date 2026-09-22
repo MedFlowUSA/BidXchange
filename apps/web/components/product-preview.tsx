@@ -29,7 +29,7 @@ export default function ProductPreview() {
         </div>
         <div className={styles.row}>
           <div>
-            <strong>Contractor license</strong>
+            <strong>CSLB license requirement</strong>
             <small>Company Passport → license record</small>
           </div>
           <span className={styles.reviewed}>
@@ -47,7 +47,7 @@ export default function ProductPreview() {
         </div>
         <div className={styles.row}>
           <div>
-            <strong>Mandatory site visit</strong>
+            <strong>Mandatory job walk</strong>
             <small>Confirm attendance requirements</small>
           </div>
           <span className={styles.open}>
