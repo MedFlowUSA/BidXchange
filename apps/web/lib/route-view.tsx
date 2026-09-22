@@ -57,11 +57,21 @@ export async function renderWorkspace(
                 </p>
               ))
             ) : (
-              <p>
-                No active organization membership. Ask the administrator to assign your
-                authenticated user ID: <code>{account.user?.id}</code>. Access is never assigned
-                automatically.
-              </p>
+              <div>
+                <p>
+                  You’re signed in, but your account does not have an active company workspace yet.
+                  Ask your organization administrator to confirm access for {account.user?.email}.
+                </p>
+                <p>
+                  <a href="mailto:mrodriguez@oaisinc.com?subject=BidXchange%20workspace%20access">
+                    Request workspace access help
+                  </a>
+                </p>
+                <details>
+                  <summary>Account reference for your administrator</summary>
+                  <code>{account.user?.id}</code>
+                </details>
+              </div>
             )}
             <Link href="/dashboard?workspace=demo">Explore the fictional demo →</Link>
           </section>

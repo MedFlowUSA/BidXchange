@@ -17,8 +17,8 @@ export default async function Login({
         <p>Sign in with your email. No password needed.</p>
         {!configured && (
           <div className="info-note">
-            Setup required: add SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, and SITE_URL to the server
-            environment. The demo remains available.
+            Sign-in is temporarily unavailable. Please contact your organization administrator. You
+            can still explore the demo below.
           </div>
         )}
         {params.error && (
@@ -32,9 +32,27 @@ export default async function Login({
           Explore Apex Energy Demo →
         </Link>
         <p className="auth-footnote">
-          Access is limited to provisioned accounts. Contact your organization administrator for
-          membership.
+          New to BidXchange? Your organization administrator needs to arrange access before you can
+          sign in. Use the email address they registered for you.
         </p>
+        <details className="code-signin">
+          <summary>Need help signing in?</summary>
+          <p>
+            Check spam or junk folders and use the newest email. Open the link in the same browser
+            where you requested it, or enter the one-time code if the email includes one.
+          </p>
+          <p>
+            If your link has expired, request a new email. If you can sign in but cannot see your
+            company, ask your administrator to confirm your workspace membership.
+          </p>
+          <a href="mailto:mrodriguez@oaisinc.com?subject=BidXchange%20access%20help">
+            Contact BidXchange for access help
+          </a>
+          <p>
+            Include your company name and a description of the issue. Never send sign-in links,
+            one-time codes or passwords.
+          </p>
+        </details>
         <nav aria-label="Legal documents">
           <Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Terms of Use</Link>
           <p className="auth-footnote">Drafts for review — not yet effective.</p>
