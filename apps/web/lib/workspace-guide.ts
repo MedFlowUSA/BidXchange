@@ -28,7 +28,7 @@ export function workspaceGuide(data: TenantData, pursuitId?: string): GuideStep[
         (h) =>
           h.requirement_id === r.id &&
           h.review_current &&
-          ['supported', 'waived'].includes(h.disposition),
+          ['supported', 'waived', 'not_applicable'].includes(h.disposition),
       ),
     );
   const saved = data.responsePackages?.[0],

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+﻿import { test, expect, type Page } from '@playwright/test';
 import { build } from 'esbuild';
 import path from 'node:path';
 import { sourceRegistry } from '../apps/web/lib/sources/registry';
@@ -161,14 +161,12 @@ test('registry exposes honest status, category separation and eBuy lock on mobil
   page,
 }) => {
   await mount(page);
-  await expect(page.getByRole('link', { name: 'SAM.gov Federal · Open portal' })).toHaveAttribute(
-    'href',
-    'https://sam.gov/opportunities',
-  );
-  await expect(page.getByRole('link', { name: 'SAM.gov Federal · Open portal' })).toHaveAttribute(
-    'rel',
-    'noopener noreferrer',
-  );
+  await expect(
+    page.getByRole('link', { name: 'SAM.gov Federal · External site ↗' }),
+  ).toHaveAttribute('href', 'https://sam.gov/opportunities');
+  await expect(
+    page.getByRole('link', { name: 'SAM.gov Federal · External site ↗' }),
+  ).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(
     page.getByText('Manual intake only; automatic connector not connected'),
   ).toBeVisible();

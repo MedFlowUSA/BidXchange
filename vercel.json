@@ -4,6 +4,8 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "env": {
+    "BIDXCHANGE_REGISTER_SIGNOFF_ENABLED": "true",
+    "BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED": "true",
     "BIDXCHANGE_STRUCTURED_PROFILES_ENABLED": "true",
     "BIDXCHANGE_RELEASES_ENABLED": "true",
     "BIDXCHANGE_AI_ENABLED": "true",

@@ -81,7 +81,57 @@
       "file": "20260921001600_structured_company_profiles.sql",
       "sha256": "7590671c5f3ac55ee7fb1a1c1a0d029de2b1297c1e49cf3de9db465bfddcdafa",
       "action": "include-schema"
+    },
+    {
+      "file": "20260921001700_source_registry.sql",
+      "sha256": "e05f97b4b8cb2fb28ec68ac8dd089d4879208a7a597d9e55ee0024fbb087f8ea",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921001800_company_source_capabilities.sql",
+      "sha256": "b2152579b1bbba234f27f283747813cff64ef84c527ee89231bd28d72296d78d",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921001900_opportunity_research.sql",
+      "sha256": "0b9457f2c38eef5baedb3e58494548b651ac0bba007d19fc8ecd80412349d86d",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921002000_california_passport_catalog.sql",
+      "sha256": "3740a3382323e70aaf2a2a099d4faeda20f5b60465524f7dfc201d842826bcee",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921002100_requirements_register_signoff.sql",
+      "sha256": "c73d696767f7466a31428cfa205fbdb285702619cd16cb0f714c94c69319ebb6",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921002200_contractor_tasks_amendments.sql",
+      "sha256": "fb6e7164456150528193c9409c6c436e49121c7bed790c00e537fcf3c39c9171",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921002300_evidence_freshness_radar.sql",
+      "sha256": "df61e3eb777f8e27d3a5393075ef6e9ce9423ac502d0a25124351dd2893ad7af",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921002400_requirement_not_applicable.sql",
+      "sha256": "bbd4c8b8dd26cab7a622f6bc65efdd1a96e61a90cd0dfe65bfefc0db3928aedc",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921002500_contractor_release_placeholders.sql",
+      "sha256": "b665d06dbb07e518b0f67da37d3a98157079db006494f2489d09fcc468da6e4f",
+      "action": "include-schema"
+    },
+    {
+      "file": "20260921002600_monotonic_record_versions.sql",
+      "sha256": "9b5665c04d0ea8e150954ca536ce2b330ee6dc52d7cdb56df8d27f30fe76a591",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 12
+  "packageRevision": 14
 }

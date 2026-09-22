@@ -5,6 +5,7 @@ export const resolutionLabels = {
   blocked: 'Blocked',
   awaiting_clarification: 'Awaiting clarification',
   waived: 'Documented buyer waiver',
+  not_applicable: 'Not applicable — human reason recorded',
 } as const;
 export type RequirementResolution = {
   id: string;
@@ -29,6 +30,7 @@ export const resolutionInput = z
       'blocked',
       'awaiting_clarification',
       'waived',
+      'not_applicable',
     ]),
     reason: z.string().trim().min(1).max(2000),
     evidence_review_id: z.union([z.uuid(), z.literal('')]),

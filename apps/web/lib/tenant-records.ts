@@ -6,7 +6,9 @@ export const opportunityFields =
   'id,title,solicitation_number,buyer,source_url,source_note,official_deadline,deadline_timezone,summary,estimated_value,status,updated_at,source_details';
 export const pursuitFields = 'id,title,opportunity_id,decision,status,updated_at';
 export const taskFields =
-  'id,pursuit_id,title,status,updated_at,assigned_user_id,due_at,due_timezone';
+  process.env.BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED === 'true'
+    ? 'id,pursuit_id,title,status,updated_at,assigned_user_id,due_at,due_timezone,requirement_id,priority,notes,completed_at,created_by'
+    : 'id,pursuit_id,title,status,updated_at,assigned_user_id,due_at,due_timezone';
 const selectionSchema = z
   .object({ kind: z.enum(['opportunity', 'pursuit']), id: z.uuid() })
   .strict();
@@ -25,6 +27,9 @@ type RecordContext = Pick<
   | 'resolutionsEnabled'
   | 'resolutions'
   | 'resolutionHistory'
+  | 'registerSignoffsEnabled'
+  | 'registerSignoffs'
+  | 'amendments'
 >;
 
 // The caller supplies its validated user-session client; never use an operator client here.
@@ -38,6 +43,16 @@ export async function loadRecordContext(
   const scoped = <Fields extends string>(table: string, fields: Fields) =>
     db.from(table).select(fields).eq('organization_id', organizationId);
   const decisionsEnabled = process.env.BIDXCHANGE_DECISIONS_ENABLED === 'true';
+  if (
+    process.env.BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED === 'true' &&
+    selection.kind === 'pursuit'
+  ) {
+    const refreshed = await db.rpc('refresh_pursuit_evidence_freshness', {
+      org: organizationId,
+      pursuit: selection.id,
+    });
+    if (refreshed.error) throw new Error('Evidence freshness review unavailable. Try again.');
+  }
   let decisionContext: string | undefined;
   if (decisionsEnabled && selection.kind === 'pursuit') {
     const context = await db.rpc('pursuit_decision_context', {
@@ -76,7 +91,8 @@ export async function loadRecordContext(
   const tasks = await scoped('pursuit_tasks', taskFields)
     .eq('pursuit_id', pursuit.id)
     .order('id')
-    .limit(500);
+    .limit(500)
+    .overrideTypes<TenantData['tasks'], { merge: false }>();
   if (tasks.error) throw new Error('Record data could not be loaded. Please retry.');
   const requirements = await scoped(
     'pursuit_requirements',
@@ -106,11 +122,14 @@ export async function loadRecordContext(
   if (decisionsEnabled) {
     const history = await scoped(
       'pursuit_decision_history',
-      'id,decision,reason,conditions,context_token,decided_by,decided_at',
+      process.env.BIDXCHANGE_REGISTER_SIGNOFF_ENABLED === 'true'
+        ? 'id,decision,reason,conditions,context_token,decided_by,decided_at,preliminary_state,reason_codes,estimated_pursuit_hours,register_signoff_id'
+        : 'id,decision,reason,conditions,context_token,decided_by,decided_at',
     )
       .eq('pursuit_id', pursuit.id)
       .order('decided_at', { ascending: false })
-      .limit(20);
+      .limit(20)
+      .overrideTypes<NonNullable<TenantData['decisions']>, { merge: false }>();
     if (history.error) throw new Error('Decision history could not be loaded. Please retry.');
     decisions = (history.data ?? []) as NonNullable<TenantData['decisions']>;
   }
@@ -139,7 +158,35 @@ export async function loadRecordContext(
     resolutions = (current.data ?? []) as NonNullable<TenantData['resolutions']>;
     resolutionHistory = (history.data ?? []) as NonNullable<TenantData['resolutionHistory']>;
   }
+  const registerSignoffsEnabled = process.env.BIDXCHANGE_REGISTER_SIGNOFF_ENABLED === 'true';
+  let registerSignoffs: TenantData['registerSignoffs'] = [];
+  if (registerSignoffsEnabled) {
+    const result = await scoped(
+      'requirements_register_signoffs',
+      'id,context_token,note,signed_off_by,signed_off_at,requirement_count,blocker_count,clarification_count',
+    )
+      .eq('pursuit_id', pursuit.id)
+      .order('signed_off_at', { ascending: false })
+      .limit(20);
+    if (result.error) throw new Error('Register sign-off unavailable. Try again.');
+    registerSignoffs = result.data ?? [];
+  }
+  let amendments: TenantData['amendments'] = [];
+  if (process.env.BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED === 'true') {
+    const result = await scoped(
+      'opportunity_amendments',
+      'id,label,issued_on,source_url,summary,reviewed,reviewed_by,reviewed_at,updated_at',
+    )
+      .eq('opportunity_id', pursuit.opportunity_id)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (result.error) throw new Error('Amendments unavailable. Try again.');
+    amendments = result.data ?? [];
+  }
   return {
+    amendments,
+    registerSignoffsEnabled,
+    registerSignoffs,
     resolutionsEnabled,
     resolutions,
     resolutionHistory,

@@ -171,9 +171,9 @@ test('public SEO is canonical and workspace/demo pages remain noindex', async ({
   request,
 }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle('BidXchange | From Contract Opportunity to Reviewed Bid');
+  await expect(page).toHaveTitle('BidXchange | California Contractor Bid Control');
   const description =
-    'Choose government and utility opportunities worth pursuing, reuse company qualifications, prepare evidence-backed responses and manage the work through human-approved submission.';
+    'Organize California contractor evidence, solicitation requirements, blockers and bid decisions. Prepare a reviewed response and record your team’s external submission.';
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', description);
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
     'content',

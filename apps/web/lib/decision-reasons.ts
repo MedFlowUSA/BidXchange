@@ -1,0 +1,16 @@
+export const decisionReasons = {
+  license: 'License',
+  bond: 'Bond',
+  insurance: 'Insurance',
+  capacity: 'Capacity',
+  territory: 'Territory',
+  set_aside: 'Set-aside',
+  margin_unknown: 'Margin unknown',
+  deadline: 'Deadline',
+  site_visit: 'Site visit',
+  past_performance: 'Past performance',
+  relationship: 'Relationship',
+  strategic: 'Strategic',
+  submission_burden: 'Submission burden',
+  other: 'Other',
+} as const;

@@ -69,5 +69,8 @@ export const taskInput = z
     status: z.enum(['todo', 'in_progress', 'complete']),
     due_at: timestamp,
     due_timezone: timezone,
+    requirement_id: blankUuid.optional(),
+    priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
+    notes: z.string().trim().max(4000).optional(),
   })
   .refine(versionPair, 'Refresh the task before editing.');

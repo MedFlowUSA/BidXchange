@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { build } from 'esbuild';
 import { signInRecoveryHref, signInUnavailable } from '../apps/web/lib/sign-in-recovery';
 
@@ -43,25 +43,25 @@ test('authentication outages return safe recovery text; successful verification 
       },
     ],
   });
-  const module = {
+  const compiled = {
     exports: {} as Record<
       string,
       (state: { message: string }, form: FormData) => Promise<{ message: string }>
     >,
   };
-  new Function('module', 'exports', result.outputFiles[0].text)(module, module.exports);
+  new Function('module', 'exports', result.outputFiles[0].text)(compiled, compiled.exports);
   const form = new FormData();
   form.set('email', ' user@example.test ');
   form.set('token', '111111');
   form.set('next', '/company');
-  expect(await module.exports.requestSignIn({ message: '' }, form)).toEqual({
+  expect(await compiled.exports.requestSignIn({ message: '' }, form)).toEqual({
     message: signInUnavailable,
   });
-  expect(await module.exports.verifyCode({ message: '' }, form)).toEqual({
+  expect(await compiled.exports.verifyCode({ message: '' }, form)).toEqual({
     message: signInUnavailable,
   });
   form.set('token', ' 123456 ');
-  await expect(module.exports.verifyCode({ message: '' }, form)).rejects.toThrow(
+  await expect(compiled.exports.verifyCode({ message: '' }, form)).rejects.toThrow(
     'REDIRECT:/company',
   );
 });

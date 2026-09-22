@@ -204,8 +204,16 @@ export async function savePursuitTask(
       if (member.error || !member.data)
         return { message: 'Choose an active organization member or leave the task unassigned.' };
     }
+    const { requirement_id, priority, notes, ...taskValues } = input;
     const values = {
-      ...input,
+      ...taskValues,
+      ...(process.env.BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED === 'true'
+        ? {
+            requirement_id: requirement_id || null,
+            priority: priority || 'normal',
+            notes: notes || '',
+          }
+        : {}),
       assigned_user_id: input.assigned_user_id || null,
       due_at: input.due_at || null,
     };

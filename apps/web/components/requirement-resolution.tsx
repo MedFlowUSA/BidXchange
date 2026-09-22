@@ -3,6 +3,7 @@ import { useActionState, useState } from 'react';
 import { resolveRequirement } from '../app/requirement-resolution-actions';
 import { resolutionLabels } from '../lib/requirement-resolution';
 import type { TenantData } from '../lib/tenant-types';
+import { TaskForm } from './capture-forms';
 export default function RequirementResolution({
   data,
   requirement,
@@ -65,6 +66,28 @@ export default function RequirementResolution({
         outcomes and notes are shared with workspace members; evidence details keep their own
         visibility.
       </p>
+      {data.contractorWorkflowEnabled &&
+        current?.review_current &&
+        current.disposition === 'blocked' &&
+        ['organization_admin', 'capture_manager'].includes(data.organization.role) && (
+          <details>
+            <summary>Could a teaming partner address this gap?</summary>
+            <p>
+              For a confirmed license, specialty, local-presence, participation, experience or
+              personnel gap, assign someone to investigate a partner. A partner does not
+              automatically resolve the requirement; review the buyer’s conditions first.
+            </p>
+            <TaskForm
+              data={data}
+              pursuitId={requirement.pursuit_id}
+              suggestedRequirementId={requirement.id}
+              suggestedTitle={`Identify a teaming partner for: ${requirement.requirement}`.slice(
+                0,
+                200,
+              )}
+            />
+          </details>
+        )}
       {canReview && (
         <details className="company-record-editor">
           <summary>Resolve requirement</summary>
@@ -90,7 +113,8 @@ export default function RequirementResolution({
                   {Object.entries(resolutionLabels)
                     .filter(
                       ([key]) =>
-                        key !== 'waived' || data.organization.role === 'executive_approver',
+                        (key !== 'waived' || data.organization.role === 'executive_approver') &&
+                        (key !== 'not_applicable' || data.contractorWorkflowEnabled),
                     )
                     .map(([value, label]) => (
                       <option key={value} value={value}>

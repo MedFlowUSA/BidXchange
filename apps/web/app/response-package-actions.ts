@@ -71,6 +71,8 @@ export async function saveResponsePackage(
       return {
         message: 'This composer supports up to 100 requirements. Review the package scope.',
       };
+    if (!v.record_id && !requirements.data?.length)
+      return { message: 'Add requirements from the notice before creating a response outline.' };
     if (
       draft.answers.some(
         (a) =>

@@ -40,6 +40,10 @@ export async function createAssistantDocument(
       id: v.pursuitId,
     });
     if (!data) return { message: 'This pursuit is unavailable.' };
+    if (!data.requirements?.some((r) => r.pursuit_id === v.pursuitId))
+      return {
+        message: 'Add candidate requirements from the notice before creating a response outline.',
+      };
     const draft = prepareResponseDraft(data, v.pursuitId, kind);
     const form = new FormData();
     for (const [key, value] of Object.entries({

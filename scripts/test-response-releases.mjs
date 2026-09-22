@@ -111,6 +111,13 @@ test('release workflow: role matrix, tenant isolation, exact versions, approval 
       const context = (
         await as(admin, 'select public.pursuit_decision_context($1,$2) token', [org, pursuit])
       ).rows[0].token;
+      if (!staging || process.env.BIDXCHANGE_CONTRACTOR_TEST_STAGING === '1')
+        await as(admin, 'select public.sign_off_requirements_register($1,$2,$3,$4)', [
+          org,
+          pursuit,
+          context,
+          'Synthetic register review',
+        ]);
       await as(
         admin,
         "select public.record_pursuit_decision($1,$2,$3,$4,'bid','Synthetic decision','')",

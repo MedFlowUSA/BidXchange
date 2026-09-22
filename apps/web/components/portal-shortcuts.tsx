@@ -1,7 +1,17 @@
 import { sourceRegistry } from '../lib/sources/registry';
 import styles from './portal-shortcuts.module.css';
 
-const featured = ['sam.gov', 'pepma', 'cal-eprocure', 'sb-epro', 'sce-ariba', 'ladwp'];
+const featured = [
+  'sam.gov',
+  'pepma',
+  'cal-eprocure',
+  'sb-epro',
+  'sce-ariba',
+  'ladwp',
+  'rampla',
+  'lausd-ariba',
+  'lausd-facilities',
+];
 export default function PortalShortcuts() {
   return (
     <section className={styles.portals} aria-labelledby="portal-shortcuts-title">
@@ -16,7 +26,7 @@ export default function PortalShortcuts() {
           return (
             <a key={id} href={source.url!} target="_blank" rel="noopener noreferrer">
               <strong>{source.platform === 'SAM.gov' ? 'SAM.gov' : source.name}</strong>
-              <span>{source.coverage} · Open portal ↗</span>
+              <span>{source.coverage} · External site ↗</span>
             </a>
           );
         })}

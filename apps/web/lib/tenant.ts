@@ -95,7 +95,12 @@ export async function loadTenant(
       .eq('organization_id', id)
       .order('created_at', { ascending: false })
       .limit(100),
-    db.from('pursuit_tasks').select(taskFields).eq('organization_id', id).limit(500),
+    db
+      .from('pursuit_tasks')
+      .select(taskFields)
+      .eq('organization_id', id)
+      .limit(500)
+      .overrideTypes<TenantData['tasks'], { merge: false }>(),
   ]);
   if (results.some((r) => r.error))
     throw new Error(
@@ -110,6 +115,7 @@ export async function loadTenant(
     userId: account.user.id,
     facts: results[1].data,
     onboarding: results[2].data,
+    contractorWorkflowEnabled: process.env.BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED === 'true',
     sources: results[3].data,
     opportunities: results[4].data,
     pursuits: results[5].data,

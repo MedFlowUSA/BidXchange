@@ -1,6 +1,7 @@
 import type { Fact, TenantData } from './tenant-types';
 import { discloseFact, displayDate } from './ai/policy';
 import { companyTemplates, structuredErrors } from './company-fields';
+import { freshnessRadar } from './california-passport';
 
 export function exportableFact(f: Fact, now: Date) {
   const day = now.toISOString().slice(0, 10);
@@ -11,6 +12,8 @@ export function exportableFact(f: Fact, now: Date) {
     f.verification_status === 'verified' &&
     f.verified_by &&
     f.verified_at &&
+    !freshnessRadar([f], now.toISOString())[0].stale &&
+    (f.fact_type !== 'past_performance' || f.structured_fields?.permission === 'yes') &&
     Number.isFinite(Date.parse(f.verified_at)) &&
     Date.parse(f.verified_at) <= now.getTime() &&
     (!f.expiration_date || f.expiration_date >= day) &&
@@ -49,10 +52,24 @@ export function responseAutofill(data: TenantData, pursuitId: string, now = new 
         a.label.localeCompare(b.label) ||
         a.id.localeCompare(b.id),
     );
+  const entities = facts.filter(
+    (f) =>
+      f.structured_kind === 'entity' &&
+      f.fact_type === 'identity' &&
+      structuredErrors('entity', f.structured_fields).length === 0 &&
+      f.structured_fields?.legal_name === data.organization.legal_name,
+  );
+  const entity = entities.length === 1 ? entities[0].structured_fields : undefined;
   const company = [
-    { label: 'Legal name', value: data.organization.legal_name || '[Not recorded]' },
-    { label: 'Operating name', value: data.organization.operating_name || '[Not recorded]' },
-    { label: 'Website', value: data.organization.website || '[Not recorded]' },
+    {
+      label: 'Legal name',
+      value: entity?.legal_name || '[HUMAN INPUT REQUIRED: attested legal name]',
+    },
+    {
+      label: 'Operating name',
+      value: entity?.operating_name || '[HUMAN INPUT REQUIRED: attested DBA]',
+    },
+    { label: 'Website', value: '[HUMAN INPUT REQUIRED: company website]' },
   ];
   const bid = [
     { label: 'Pursuit', value: pursuit.title },
@@ -128,7 +145,9 @@ export function responseAutofill(data: TenantData, pursuitId: string, now = new 
         gaps.push(
           `${name}: no current verified workspace-visible record. Complete or verify it in Company.`,
         );
-  for (const row of [...company, ...bid].filter((r) => r.value === '[Not recorded]'))
+  for (const row of [...company, ...bid].filter(
+    (r) => r.value === '[Not recorded]' || r.value.startsWith('[HUMAN INPUT REQUIRED'),
+  ))
     gaps.push(`${row.label}: not recorded.`);
   if (
     data.facts.some(

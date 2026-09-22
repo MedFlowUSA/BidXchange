@@ -43,6 +43,10 @@ export function prepareResponseDraft(data: TenantData, pursuitId: string, kind: 
   const pursuit = data.pursuits.find((p) => p.id === pursuitId);
   const opportunity = data.opportunities.find((o) => o.id === pursuit?.opportunity_id);
   if (!pursuit || !opportunity) throw new Error('Open a pursuit before creating a response.');
+  if (!(data.requirements ?? []).some((r) => r.pursuit_id === pursuitId))
+    throw new Error(
+      'Add candidate requirements from the notice before creating a response outline.',
+    );
   if ((data.requirements ?? []).filter((r) => r.pursuit_id === pursuitId).length > 100)
     throw new Error('This composer supports up to 100 requirements. Review the package scope.');
   const draft = newResponseDraft(data, pursuitId);
@@ -58,6 +62,20 @@ export function prepareResponseDraft(data: TenantData, pursuitId: string, kind: 
           ? '[Complete line items, quantities, unit prices, delivery, exclusions and quote validity. Pricing requires estimator review.]'
           : '[Describe relevant capabilities, availability and requested information. Confirm each statement against approved evidence.]',
       '[Check the official instructions for required sections, attachments and submission format.]',
+      ...[
+        'CSLB and DIR information',
+        'Bonding and insurance',
+        'Relevant experience and key personnel',
+        'Technical approach',
+        'Schedule',
+        'Safety',
+        'Subcontractors',
+        'Forms checklist',
+        'Addendum acknowledgments',
+        'Signature checklist',
+        'Submission checklist',
+        'Pricing',
+      ].map((section) => `${section}: [HUMAN INPUT REQUIRED]`),
     ]
       .join('\n')
       .slice(0, 6000),

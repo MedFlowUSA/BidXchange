@@ -34,6 +34,9 @@ function database(tables: Record<string, Row[]>, failure?: string) {
             };
           };
           const chain = {
+            overrideTypes() {
+              return chain;
+            },
             in(key: string, values: unknown[]) {
               query.filters.push([key, values]);
               return chain;

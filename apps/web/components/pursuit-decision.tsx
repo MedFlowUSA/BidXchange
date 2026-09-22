@@ -2,10 +2,14 @@
 import { useActionState, useState } from 'react';
 import { recordDecision } from '../app/decision-actions';
 import type { TenantData, LivePursuit } from '../lib/tenant-types';
+import { decisionReasons } from '../lib/decision-reasons';
 const labels: Record<string, string> = {
   bid: 'Pursue bid',
   no_bid: 'Do not bid',
   pending: 'Reopen review',
+  draft: 'Draft decision',
+  leaning_bid: 'Leaning bid',
+  leaning_pass: 'Leaning pass',
 };
 export default function PursuitDecision({
   data,
@@ -27,8 +31,19 @@ export default function PursuitDecision({
       <h2>Bid/no-bid decision</h2>
       {latest ? (
         <>
-          <h3>{labels[latest.decision]}</h3>
+          <h3>{labels[latest.preliminary_state || latest.decision]}</h3>
           <p>{latest.reason}</p>
+          {!!latest.reason_codes?.length && (
+            <p>
+              Reasons:{' '}
+              {latest.reason_codes
+                .map((code) => decisionReasons[code as keyof typeof decisionReasons] || code)
+                .join(', ')}
+            </p>
+          )}
+          {latest.estimated_pursuit_hours != null && (
+            <p>Estimated pursuit hours, entered by a person: {latest.estimated_pursuit_hours}</p>
+          )}
           <p>Conditions: {latest.conditions || 'None recorded.'}</p>
           <p>
             Recorded by {latest.decided_by === data.userId ? 'you' : latest.decided_by} at{' '}
@@ -74,13 +89,50 @@ export default function PursuitDecision({
                   onChange={(e) => setDecision(e.target.value)}
                 >
                   <option value="">Choose a decision</option>
-                  {Object.entries(labels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
+                  {Object.entries(labels)
+                    .filter(
+                      ([value]) =>
+                        data.registerSignoffsEnabled ||
+                        ['bid', 'no_bid', 'pending'].includes(value),
+                    )
+                    .map(([value, label]) => (
+                      <option
+                        key={value}
+                        value={value}
+                        disabled={
+                          data.registerSignoffsEnabled &&
+                          ['bid', 'no_bid'].includes(value) &&
+                          data.registerSignoffs?.[0]?.context_token !== data.decisionContext
+                        }
+                      >
+                        {label}
+                      </option>
+                    ))}
                 </select>
               </label>
+              {data.registerSignoffsEnabled && (
+                <>
+                  <p>
+                    Final bid and no-bid decisions require a current human Requirements Register
+                    sign-off. Preliminary decisions remain available.
+                  </p>
+                  <label>
+                    Primary reason code
+                    <select name="reason_code">
+                      <option value="">Not specified</option>
+                      {Object.entries(decisionReasons).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Estimated pursuit hours
+                    <input name="pursuit_hours" type="number" min="0" max="100000" step="0.25" />
+                  </label>
+                </>
+              )}
               <label>
                 Reason
                 <textarea
@@ -140,7 +192,7 @@ export default function PursuitDecision({
           <ol>
             {data.decisions.map((d) => (
               <li key={d.id}>
-                <strong>{labels[d.decision]}</strong>
+                <strong>{labels[d.preliminary_state || d.decision]}</strong>
                 <p>{d.reason}</p>
                 <p>{d.conditions || 'No conditions recorded.'}</p>
                 <p>

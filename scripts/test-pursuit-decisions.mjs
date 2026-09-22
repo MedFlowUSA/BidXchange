@@ -84,6 +84,16 @@ test('human decisions enforce authority, attribution, history and stale context 
       ),
       /permission denied/,
     );
+    await db.query(
+      "insert into public.pursuit_requirements(organization_id,pursuit_id,requirement,citation) values($1,$2,'Synthetic scope','Section 1')",
+      [org, pursuit],
+    );
+    await as(exec, 'select public.sign_off_requirements_register($1,$2,$3,$4)', [
+      org,
+      pursuit,
+      await context(exec),
+      'Synthetic review',
+    ]);
     const old = await args();
     await as(exec, sql, old);
     const saved = (await db.query('select * from public.pursuits where id=$1', [pursuit])).rows[0];
@@ -112,6 +122,12 @@ test('human decisions enforce authority, attribution, history and stale context 
       [org, pursuit],
     );
     await assert.rejects(as(admin, sql, stale), /context changed/);
+    await as(admin, 'select public.sign_off_requirements_register($1,$2,$3,$4)', [
+      org,
+      pursuit,
+      await context(admin),
+      'Synthetic amendment review',
+    ]);
     await as(admin, sql, await args('no_bid'));
     await as(admin, sql, await args('pending'));
     assert.equal(

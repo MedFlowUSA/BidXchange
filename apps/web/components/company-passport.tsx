@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { passportSteps } from '../lib/company-passport';
+import { californiaPassportSteps } from '../lib/california-passport';
 import { reviewStatus } from '../lib/company-readiness';
 import { passportRecords } from '../lib/passport-records';
 import type { TenantData } from '../lib/tenant-types';
@@ -10,20 +11,35 @@ import styles from './company-passport.module.css';
 
 export default function CompanyPassport({ data }: { data: TenantData }) {
   const [index, setIndex] = useState(0);
+  const [advanced, setAdvanced] = useState(false);
+  const steps = advanced ? passportSteps : californiaPassportSteps;
   useEffect(() => {
     const resume = () => {
-      const found = passportSteps.findIndex((step) => location.hash === `#passport-${step.id}`);
+      const found = steps.findIndex((step) => location.hash === `#passport-${step.id}`);
       if (found >= 0) setIndex(found);
     };
     resume();
     window.addEventListener('hashchange', resume);
     return () => window.removeEventListener('hashchange', resume);
-  }, []);
+  }, [steps]);
   const admin = data.organization.role === 'organization_admin';
   return (
     <section className={`panel ${styles.passport}`} aria-labelledby="passport-title">
       <div className="eyebrow">COMPANY PASSPORT</div>
-      <h2 id="passport-title">Build the company information behind your bids.</h2>
+      <h2 id="passport-title">California Contractor Passport</h2>
+      <p>
+        Level 1: company, registrations, license, territory, bonding, insurance and three projects.
+        No uploads required. Save unknowns for later.
+      </p>
+      <button
+        className="button secondary"
+        onClick={() => {
+          setAdvanced(!advanced);
+          setIndex(0);
+        }}
+      >
+        {advanced ? 'Return to Level 1' : 'Add when needed: advanced evidence'}
+      </button>
       <p>
         Work through one area at a time. Save what you can support and leave unknown answers blank.
         Each save stays with this company for later review.
@@ -33,7 +49,7 @@ export default function CompanyPassport({ data }: { data: TenantData }) {
         access is shown. Saving does not verify a claim or approve proposal use.
       </p>
       <nav className={styles.steps} aria-label="Company Passport steps">
-        {passportSteps.map((step, i) => (
+        {steps.map((step, i) => (
           <a
             href={`#passport-${step.id}`}
             key={step.id}
@@ -51,10 +67,10 @@ export default function CompanyPassport({ data }: { data: TenantData }) {
           </a>
         ))}
       </nav>
-      {passportSteps.map((step, i) => (
+      {steps.map((step, i) => (
         <div id={`passport-${step.id}`} key={step.id} hidden={i !== index} className={styles.step}>
           <p className="eyebrow">
-            QUESTION {i + 1} OF {passportSteps.length}
+            QUESTION {i + 1} OF {steps.length}
           </p>
           <h3>{step.question}</h3>
           <p>
@@ -108,16 +124,16 @@ export default function CompanyPassport({ data }: { data: TenantData }) {
             {i > 0 && (
               <a
                 className="button secondary"
-                href={`#passport-${passportSteps[i - 1].id}`}
+                href={`#passport-${steps[i - 1].id}`}
                 onClick={() => setIndex(i - 1)}
               >
                 Previous question
               </a>
             )}
-            {i < passportSteps.length - 1 ? (
+            {i < steps.length - 1 ? (
               <a
                 className="button primary"
-                href={`#passport-${passportSteps[i + 1].id}`}
+                href={`#passport-${steps[i + 1].id}`}
                 onClick={() => setIndex(i + 1)}
               >
                 Next question

@@ -50,6 +50,29 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  contractorWorkflowEnabled?: boolean;
+  amendments?: {
+    id: string;
+    updated_at: string;
+    label: string;
+    issued_on: string | null;
+    source_url: string;
+    summary: string;
+    reviewed: boolean;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
+  }[];
+  registerSignoffsEnabled?: boolean;
+  registerSignoffs?: {
+    id: string;
+    context_token: string;
+    note: string;
+    signed_off_by: string;
+    signed_off_at: string;
+    requirement_count: number;
+    blocker_count: number;
+    clarification_count: number;
+  }[];
   structuredProfilesEnabled?: boolean;
   releaseWorkflow?: import('./response-release').ReleaseWorkspace;
   responsePackages?: import('./response-package').SavedResponsePackage[];
@@ -79,6 +102,10 @@ export type TenantData = {
   decisionsEnabled?: boolean;
   decisionContext?: string;
   decisions?: {
+    preliminary_state?: string | null;
+    reason_codes?: string[];
+    estimated_pursuit_hours?: number | null;
+    register_signoff_id?: string | null;
     id: string;
     decision: string;
     reason: string;
@@ -128,6 +155,11 @@ export type TenantData = {
     actor_user_id: string | null;
   }[];
   tasks: {
+    requirement_id?: string | null;
+    priority?: string;
+    notes?: string;
+    completed_at?: string | null;
+    created_by?: string | null;
     id: string;
     pursuit_id: string;
     title: string;

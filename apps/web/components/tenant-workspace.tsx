@@ -15,6 +15,9 @@ import PursuitFoundation from './pursuit-foundation';
 import PursuitDecisionBrief from './pursuit-decision-brief';
 import ContractReadinessBrief from './contract-readiness-brief';
 import DeliveryReview from './delivery-review';
+import RegisterSignoff from './register-signoff';
+import ContractorTaskTemplate from './contractor-task-template';
+import OpportunityAmendments from './opportunity-amendments';
 import BidReview from './bid-review';
 import NoticeExcerptReview from './notice-excerpt-review';
 import ResponsePackages from './response-package';
@@ -333,6 +336,8 @@ export default function TenantWorkspace({
                 {pursuit && <ContractReadinessBrief data={data} pursuitId={pursuit.id} />}
                 {pursuit && <DeliveryReview data={data} pursuitId={pursuit.id} />}
                 {pursuit && <PursuitDecisionBrief data={data} pursuitId={pursuit.id} />}
+                {pursuit && <RegisterSignoff data={data} pursuitId={pursuit.id} />}
+                {pursuit && <OpportunityAmendments data={data} pursuitId={pursuit.id} />}
                 {pursuit && (
                   <EvidenceStressTest
                     key={`stress:${data.organization.id}:${pursuit.id}`}
@@ -428,6 +433,7 @@ export default function TenantWorkspace({
                 <ResponseReleases data={data} pursuitId={recordId} />
                 <section className="panel" id="pursuit-tasks">
                   <h2>Tasks</h2>
+                  <ContractorTaskTemplate data={data} pursuitId={recordId} />
                   {data.tasks
                     .filter((t) => t.pursuit_id === recordId)
                     .map((t) => (

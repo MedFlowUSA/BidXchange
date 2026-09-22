@@ -1,0 +1,17 @@
+export const contractorTasks = [
+  'Confirm license classification against specification',
+  'Confirm DIR status',
+  'Request bid bond or bonding-capacity letter',
+  'Calendar mandatory job walk',
+  'Calendar pre-bid meeting',
+  'Pull wage determination',
+  'Confirm certified-payroll process',
+  'Request subcontractor quotes',
+  'Confirm insurance endorsements',
+  'Review addenda',
+  'Identify who will submit',
+  'Confirm submission portal',
+  'Confirm submission deadline and time zone',
+  'Obtain required signatures',
+  'Record submission receipt',
+] as const;

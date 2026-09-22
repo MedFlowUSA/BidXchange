@@ -92,14 +92,14 @@ export function responseDocument(
   add('heading', 'Company information');
   add(
     'note',
-    'Company identity comes from the workspace profile. Verified records include their sources below. Qualification evidence is limited to current approvals for this pursuit; it does not establish compliance with other requirements.',
+    'Company identity is prefilled only from current human-attested records. Missing content requires human input. Qualification evidence is limited to current approvals for this pursuit; it does not establish legal eligibility or compliance with other requirements.',
   );
   for (const field of autofill.company) add('body', `${field.label}: ${field.value}`);
   for (const fact of autofill.facts) {
     add('body', `${fact.label}: ${fact.value}`);
     add(
       'note',
-      `Company source: ${fact.source_reference}\nRecord ${fact.id}, version ${fact.updated_at}; verified ${fact.verified_at}${fact.expiration_date ? `; expires ${fact.expiration_date}` : ''}`,
+      `Company source: ${fact.source_reference}\nRecord ${fact.id}, version ${fact.updated_at}; human attestation ${fact.verified_at}${fact.expiration_date ? `; expires ${fact.expiration_date}` : ''}`,
     );
   }
   add('heading', 'Bid information');

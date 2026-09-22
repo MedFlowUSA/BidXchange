@@ -10,6 +10,12 @@ export async function resolveRequirement(
   if (process.env.BIDXCHANGE_RESOLUTIONS_ENABLED !== 'true')
     return { message: 'Requirement resolution is not enabled.' };
   const parsed = resolutionInput.safeParse(Object.fromEntries(form));
+  if (
+    parsed.success &&
+    parsed.data.disposition === 'not_applicable' &&
+    process.env.BIDXCHANGE_CONTRACTOR_WORKFLOW_ENABLED !== 'true'
+  )
+    return { message: 'Not-applicable findings are not enabled.' };
   if (!parsed.success)
     return { message: parsed.error.issues[0]?.message ?? 'Check the review fields.' };
   try {

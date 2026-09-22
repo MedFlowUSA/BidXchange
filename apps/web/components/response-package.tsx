@@ -40,7 +40,7 @@ function AutofillPreview({ data, pursuitId }: { data: TenantData; pursuitId: str
           </div>
         ))}
       </dl>
-      <h3>Verified company records and relevant qualifications</h3>
+      <h3>Human-attested company records and relevant evidence</h3>
       {fields.facts.length ? (
         <dl>
           {fields.facts.map((f) => (
@@ -361,16 +361,24 @@ export default function ResponsePackages({
         </article>
       ))}
       <p role="status">{busy ? 'Preparing your saved draft…' : error}</p>
-      {canEdit && (data.requirements?.length ?? 0) <= 100 && (
-        <button
-          className="button primary"
-          onClick={() => {
-            setEditing('new');
-            setFocusTarget(undefined);
-          }}
-        >
-          Create response draft
-        </button>
+      {canEdit &&
+        (data.requirements?.filter((r) => r.pursuit_id === pursuitId).length ?? 0) > 0 &&
+        (data.requirements?.length ?? 0) <= 100 && (
+          <button
+            className="button primary"
+            onClick={() => {
+              setEditing('new');
+              setFocusTarget(undefined);
+            }}
+          >
+            Create response draft
+          </button>
+        )}
+      {!data.requirements?.some((r) => r.pursuit_id === pursuitId) && (
+        <p>
+          Add candidate requirements from the notice first. The response outline uses that register
+          to organize the answers and missing content.
+        </p>
       )}
       {(data.requirements?.length ?? 0) > 100 && (
         <p>

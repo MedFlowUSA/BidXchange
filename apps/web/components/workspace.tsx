@@ -29,8 +29,20 @@ import {
   Target,
   X,
 } from 'lucide-react';
-import { qualify } from '../../../packages/scoring';
 import { seedOpportunities, sampleDocuments, type Opportunity, type Stage } from '../lib/demo';
+
+function reviewState(gates: Opportunity['gates'], factors: Opportunity['factors']) {
+  void factors; // Preserve legacy stored demo factors without evaluating or displaying scores.
+  const needsReview = gates.some((g) => g.status !== 'pass') || gates.length === 0;
+  return {
+    needsReview,
+    band: gates.some((g) => g.status === 'fail')
+      ? 'Potential blocker'
+      : needsReview
+        ? 'Human review required'
+        : 'Evidence recorded',
+  };
+}
 
 const money = (n: number | null) =>
   n === null
@@ -156,7 +168,7 @@ export default function Workspace({
   }, [toast]);
   const selected = items.find((o) => o.id === recordId);
   const strong = items.filter(
-    (o) => qualify(o.gates, o.factors).band === 'Strong fit' && o.stage !== 'Passed',
+    (o) => reviewState(o.gates, o.factors).band === 'Evidence recorded' && o.stage !== 'Passed',
   );
   const pursuits = items.filter((o) => o.stage === 'Pursuing');
   const openTasks = pursuits.flatMap((o) =>
@@ -166,8 +178,8 @@ export default function Workspace({
     (o) =>
       `${o.title} ${o.buyer} ${o.location}`.toLowerCase().includes(query.toLowerCase()) &&
       (filter === 'All opportunities' ||
-        (filter === 'Strong fit'
-          ? qualify(o.gates, o.factors).band === filter
+        (filter === 'Evidence recorded'
+          ? reviewState(o.gates, o.factors).band === filter
           : o.stage === filter)) &&
       (category === 'All categories' || o.category === category),
   );
@@ -180,8 +192,8 @@ export default function Workspace({
     setToast(message);
   };
   const stage = (o: Opportunity, next: Stage) => {
-    if (next === 'Pursuing' && qualify(o.gates, o.factors).score === null) {
-      setToast('Resolve eligibility before advancing to a pursuit.');
+    if (next === 'Pursuing' && reviewState(o.gates, o.factors).needsReview) {
+      setToast('Review unresolved requirements before advancing to a pursuit.');
       return;
     }
     setItems((prev) => prev.map((i) => (i.id === o.id ? { ...i, stage: next } : i)));
@@ -195,7 +207,7 @@ export default function Workspace({
       '',
       ...items.map(
         (o) =>
-          `${o.id} | ${o.title}\n${o.stage} · ${qualify(o.gates, o.factors).band} · ${money(o.value)}\nDue ${due(o)} · ${o.timezone}\nSource: ${o.source} (fictional)\n`,
+          `${o.id} | ${o.title}\n${o.stage} · ${reviewState(o.gates, o.factors).band} · ${money(o.value)}\nDue ${due(o)} · ${o.timezone}\nSource: ${o.source} (fictional)\n`,
       ),
     ].join('\n');
     const url = URL.createObjectURL(new Blob([report], { type: 'text/plain' }));
@@ -233,13 +245,13 @@ export default function Workspace({
       stage: 'Inbox',
       gates: [
         {
-          name: 'Eligibility verification',
+          name: 'Requirement review',
           status: 'unknown',
           evidence: 'Verify source requirements and company evidence before qualification.',
         },
       ],
       factors: [],
-      tasks: [{ title: 'Verify source and eligibility', done: false }],
+      tasks: [{ title: 'Review source requirements', done: false }],
     };
     setItems((prev) => [opportunity, ...prev]);
     setModal(null);
@@ -247,19 +259,20 @@ export default function Workspace({
     setFilter('All opportunities');
     setCategory('All categories');
     setQuery('');
-    record('Demo opportunity added. Eligibility needs review.');
+    record('Demo opportunity added. Requirements need human review.');
   };
   const card = (o: Opportunity) => {
-    const fit = qualify(o.gates, o.factors);
+    const fit = reviewState(o.gates, o.factors);
     return (
       <Link className="opportunity-card" key={o.id} href={workspaceHref(`/opportunities/${o.id}`)}>
         <div className="card-top">
           <span className="category">{o.category}</span>
           <span
-            className={`fit ${fit.band === 'Strong fit' ? 'green' : fit.band === 'Not eligible' ? 'red' : 'amber'}`}
+            className={`fit ${fit.band === 'Evidence recorded' ? 'green' : fit.band === 'Potential blocker' ? 'red' : 'amber'}`}
           >
-            {fit.score !== null && <b>{fit.score}</b>}
-            {fit.band}
+            {o.gates.some((g) => g.status === 'fail')
+              ? 'Potential blocker'
+              : 'Human review required'}
           </span>
         </div>
         <h3>{o.title}</h3>
@@ -334,7 +347,7 @@ export default function Workspace({
                     Today: 'The right opportunities. The next priorities. All in one place.',
                     Opportunities: 'Find the work that fits. Know why it matters.',
                     Pursuits: 'Keep every response moving, from decision to readiness.',
-                    Company: 'Strong pursuits start with verified company facts.',
+                    Company: 'Start each pursuit with company evidence and human review.',
                     Documents: 'The evidence and templates behind a confident response.',
                     Reports: 'A clear view of your pipeline and the work behind it.',
                   } as Record<string, string>
@@ -369,7 +382,7 @@ export default function Workspace({
                   className: 'blue',
                 },
                 {
-                  label: 'Strong-fit opportunities',
+                  label: 'Opportunities with recorded evidence',
                   value: strong.length,
                   icon: ShieldCheck,
                   sub: 'Passed sample eligibility checks',
@@ -407,13 +420,15 @@ export default function Workspace({
                     <h2>
                       Worth a closer look <span className="count-pill">{strong.length}</span>
                     </h2>
-                    <p>Your highest-fit opportunities, with the reasoning to back them.</p>
+                    <p>
+                      Your opportunities with recorded evidence, with the reasoning to back them.
+                    </p>
                   </div>
                   <button
                     className="text-button"
                     onClick={() => {
                       go('Opportunities');
-                      setFilter('Strong fit');
+                      setFilter('Evidence recorded');
                     }}
                   >
                     View inbox <ArrowRight size={16} />
@@ -423,7 +438,7 @@ export default function Workspace({
                   {strong.slice(0, 2).map(card)}
                   {!strong.length && (
                     <div className="empty-state">
-                      No strong-fit opportunities yet. Review the inbox to get started.
+                      No opportunities with recorded evidence yet. Review the inbox to get started.
                     </div>
                   )}
                 </div>
@@ -488,7 +503,7 @@ export default function Workspace({
                     Review company profile
                     <ArrowRight size={15} />
                   </button>
-                  <small>Illustrative readiness · not verified client data</small>
+                  <small>Fictional company evidence · human review required</small>
                 </div>
                 <div className="brief-card">
                   <span className="brief-icon">
@@ -549,18 +564,23 @@ export default function Workspace({
               </label>
             </div>
             <div className="filter-tabs">
-              {['All opportunities', 'Strong fit', 'Inbox', 'In review', 'Pursuing', 'Passed'].map(
-                (f) => (
-                  <button
-                    key={f}
-                    className={filter === f ? 'selected' : ''}
-                    onClick={() => setFilter(f)}
-                  >
-                    {f}
-                    {f === 'All opportunities' && <span>{items.length}</span>}
-                  </button>
-                ),
-              )}
+              {[
+                'All opportunities',
+                'Evidence recorded',
+                'Inbox',
+                'In review',
+                'Pursuing',
+                'Passed',
+              ].map((f) => (
+                <button
+                  key={f}
+                  className={filter === f ? 'selected' : ''}
+                  onClick={() => setFilter(f)}
+                >
+                  {f}
+                  {f === 'All opportunities' && <span>{items.length}</span>}
+                </button>
+              ))}
             </div>
             <div className="results-label">
               {filtered.length} opportunities{' '}
@@ -896,13 +916,13 @@ export default function Workspace({
                 Source: {selected.source} · Sample data, no live source verification
               </div>
               <div className="detail-section-title">
-                <h3>Eligibility comes first</h3>
+                <h3>Requirements need human review</h3>
                 <span
-                  className={`fit ${qualify(selected.gates, selected.factors).band === 'Strong fit' ? 'green' : 'amber'}`}
+                  className={`fit ${reviewState(selected.gates, selected.factors).band === 'Evidence recorded' ? 'green' : 'amber'}`}
                 >
-                  {qualify(selected.gates, selected.factors).band}
-                  {qualify(selected.gates, selected.factors).score !== null &&
-                    ` · ${qualify(selected.gates, selected.factors).score}/100`}
+                  {selected.gates.some((g) => g.status === 'fail')
+                    ? 'Potential blocker'
+                    : 'Human review required'}
                 </span>
               </div>
               {selected.gates.map((g) => (
@@ -918,22 +938,15 @@ export default function Workspace({
                     <b>{g.name}</b>
                     <p>{g.evidence}</p>
                   </div>
-                  <span>{g.status === 'unknown' ? 'Unverified' : g.status}</span>
+                  <span>
+                    {g.status === 'unknown'
+                      ? 'Needs review'
+                      : g.status === 'fail'
+                        ? 'Potential blocker'
+                        : 'Evidence recorded'}
+                  </span>
                 </div>
               ))}
-              {qualify(selected.gates, selected.factors).score !== null && (
-                <div className="factors">
-                  {selected.factors.map((f) => (
-                    <div key={f.name}>
-                      <span>
-                        {f.name}
-                        <small>{f.weight}% weight</small>
-                      </span>
-                      <b>{f.score}/100</b>
-                    </div>
-                  ))}
-                </div>
-              )}
               <h3 className="task-title">Response checklist</h3>
               {selected.tasks.map((task, index) => (
                 <label className="checklist-row" key={task.title}>
@@ -971,14 +984,14 @@ export default function Workspace({
                   >
                     <option>Inbox</option>
                     <option>In review</option>
-                    <option disabled={qualify(selected.gates, selected.factors).score === null}>
+                    <option disabled={reviewState(selected.gates, selected.factors).needsReview}>
                       Pursuing
                     </option>
                     <option>Passed</option>
                   </select>
                 </label>
                 <p>
-                  Unresolved or failed eligibility blocks advancing to pursuit. Live approval and
+                  Unresolved demo requirements pause advancement to pursuit. Live approval and
                   submission are not available in this preview.
                 </p>
               </div>
@@ -1082,7 +1095,7 @@ export default function Workspace({
             </p>
             <ol>
               <li>Find and filter opportunities in the inbox.</li>
-              <li>Open a record to inspect eligibility and fit.</li>
+              <li>Open a record to inspect requirements and evidence.</li>
               <li>Move qualified opportunities into a demo pursuit.</li>
               <li>Complete tasks and export your opportunity brief.</li>
             </ol>

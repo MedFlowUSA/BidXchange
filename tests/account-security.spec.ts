@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { build } from 'esbuild';
 
 test('global sign-out requires confirmation and verified identity, fails closed and cannot target another user', async () => {
@@ -45,36 +45,36 @@ test('global sign-out requires confirmation and verified identity, fails closed 
       },
     },
   };
-  const module = {
+  const compiled = {
     exports: {} as {
       signOutAllDevices: (s: { message: string }, f: FormData) => Promise<{ message: string }>;
     },
   };
   new Function('module', 'exports', 'fixture', output.outputFiles[0].text)(
-    module,
-    module.exports,
+    compiled,
+    compiled.exports,
     fixture,
   );
   const form = new FormData();
-  expect((await module.exports.signOutAllDevices({ message: '' }, form)).message).toContain(
+  expect((await compiled.exports.signOutAllDevices({ message: '' }, form)).message).toContain(
     'Confirm',
   );
   expect(calls).toEqual([]);
   form.set('confirm', 'yes');
   authenticated = false;
-  expect((await module.exports.signOutAllDevices({ message: '' }, form)).message).toContain(
+  expect((await compiled.exports.signOutAllDevices({ message: '' }, form)).message).toContain(
     'Sign in again',
   );
   expect(calls).toEqual([]);
   authenticated = true;
   failure = true;
-  expect((await module.exports.signOutAllDevices({ message: '' }, form)).message).toBe(
+  expect((await compiled.exports.signOutAllDevices({ message: '' }, form)).message).toBe(
     'Sign-out could not be confirmed. Please try again.',
   );
   failure = false;
   form.set('user_id', 'someone-else');
   form.set('scope', 'local');
-  await expect(module.exports.signOutAllDevices({ message: '' }, form)).rejects.toThrow(
+  await expect(compiled.exports.signOutAllDevices({ message: '' }, form)).rejects.toThrow(
     'REDIRECT:/login?notice=sessions-ended',
   );
   expect(calls).toEqual([{ scope: 'global' }, { scope: 'global' }]);

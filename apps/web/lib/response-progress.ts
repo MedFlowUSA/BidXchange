@@ -4,7 +4,7 @@ import type { TenantData } from './tenant-types';
 // Detect our drafting prompts and common unfinished markers, not ordinary [1]
 // citations. This is a writing check, never a compliance or approval decision.
 export function hasResponsePlaceholder(text: string) {
-  return /\[(?:complete|confirm|describe|check|not recorded|answer not supplied|response overview not supplied|insert|add|todo|tbd)\b|\b(?:TODO|TBD)\b/i.test(
+  return /\[(?:human input required|complete|confirm|describe|check|not recorded|answer not supplied|response overview not supplied|insert|add|todo|tbd)\b|\b(?:TODO|TBD)\b/i.test(
     text,
   );
 }

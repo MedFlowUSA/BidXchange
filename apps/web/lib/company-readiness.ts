@@ -95,6 +95,9 @@ export function reviewStatus(fact: Fact, asOf: string) {
   if (days !== null && days < 0) return 'expired';
   if (fact.effective_date && fact.effective_date > today) return 'not_yet_effective';
   if (['expired', 'rejected'].includes(fact.verification_status)) return fact.verification_status;
+  const checked = fact.structured_fields?.last_checked || fact.verified_at?.slice(0, 10);
+  const checkedDays = checked ? daysUntilExpiration(checked, asOf) : null;
+  if (checkedDays !== null && (checkedDays < -90 || checkedDays > 0)) return 'needs_review';
   if (
     !fact.value?.trim() ||
     !fact.source_reference?.trim() ||

@@ -26,7 +26,8 @@ export function pursuitBrief(
       ? data.resolutions?.find((r) => r.requirement_id === requirement.id)
       : undefined;
     const reviewed = resolution?.review_current === true;
-    const resolved = reviewed && ['supported', 'waived'].includes(resolution!.disposition);
+    const resolved =
+      reviewed && ['supported', 'waived', 'not_applicable'].includes(resolution!.disposition);
     const blocked = reviewed
       ? resolution!.disposition === 'blocked'
       : requirement.status === 'blocked';

@@ -8,9 +8,9 @@ import InterestPreview from '../components/interest-preview';
 import { createSupabaseServer } from '../lib/supabase/server';
 import styles from '../components/marketing.module.css';
 import clean from '../components/landing.module.css';
-const title = 'BidXchange | From Contract Opportunity to Reviewed Bid';
+const title = 'BidXchange | California Contractor Bid Control';
 const description =
-  'Choose government and utility opportunities worth pursuing, reuse company qualifications, prepare evidence-backed responses and manage the work through human-approved submission.';
+  'Organize California contractor evidence, solicitation requirements, blockers and bid decisions. Prepare a reviewed response and record your team’s external submission.';
 const publicMetadata: Metadata = {
   title,
   description,
@@ -70,16 +70,15 @@ export default async function Home() {
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
               <div className={styles.heroEyebrow}>
-                <span /> GOVERNMENT & UTILITY CONTRACTS
+                <span /> CALIFORNIA PUBLIC WORKS & UTILITY CONTRACTS
               </div>
               <h1 id="hero-title">
-                Pursue work you can deliver.{' '}
-                <span>Build the bid that backs it up.</span>
+                Pursue work you can deliver. <span>Build the bid that backs it up.</span>
               </h1>
               <p className={styles.heroDescription}>
-                Turn a contract opportunity into a coordinated response. Check it against your
-                company’s qualifications, decide whether to bid, assign the missing work and prepare
-                a response your team can review and submit.
+                Keep the CSLB record, DIR registration, bond question and mandatory job walk with
+                the bid they affect. Compare notice requirements with company evidence, assign the
+                missing work and prepare a response your team can review and submit externally.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -90,8 +89,8 @@ export default async function Home() {
                 </Link>
               </div>
               <p className={clean.heroNote}>
-                Public works · Specialty trades · Facility services · Energy and utilities ·
-                Professional services · Government suppliers
+                Electrical · Energy efficiency · School districts · Municipal improvements ·
+                Utilities · California field contractors
               </p>
             </div>
             <div className={`${styles.heroVisual} ${clean.visual}`}>

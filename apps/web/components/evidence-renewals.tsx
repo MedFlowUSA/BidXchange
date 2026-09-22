@@ -1,74 +1,81 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { renewalQueue, reviewStatus } from '../lib/company-readiness';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData } from '../lib/tenant-types';
+import { freshnessRadar } from '../lib/california-passport';
 
 export default function EvidenceRenewals({ data }: { data: TenantData }) {
   const [expanded, setExpanded] = useState(false);
-  const queue = renewalQueue(data.facts, data.reviewAsOf);
+  const radar = freshnessRadar(data.facts, data.reviewAsOf);
+  const [filter, setFilter] = useState('all');
+  const attention = radar.filter(
+    (r) => r.window || r.stale || r.missingChecked || r.missingExpiration,
+  );
+  const shown = attention.filter(
+    (r) =>
+      filter === 'all' ||
+      r.window === filter ||
+      (filter === 'stale' && r.stale) ||
+      (filter === 'missing' && (r.missingChecked || r.missingExpiration)),
+  );
   return (
     <section className="panel" aria-labelledby="evidence-renewals-title">
       <div className="eyebrow">COMPANY EVIDENCE</div>
-      <h2 id="evidence-renewals-title">Renewals needing attention</h2>
-      <p>
-        Expired evidence and dates within the next 60 days. Ask the owner for a current source
-        before relying on it in a bid.
-      </p>
-      {!queue.length ? (
-        <p>
-          No expiration dates in this window are visible to your role. Undated or restricted
-          evidence may still need review.
-        </p>
-      ) : (
-        <>
-          <ul className="renewal-list">
-            {(expanded ? queue : queue.slice(0, 5)).map(({ fact, days }) => (
-              <li key={fact.id}>
-                <div>
-                  <Link href={workspaceHref('/company', data.organization.id) + `#fact-${fact.id}`}>
-                    {fact.label}
-                  </Link>
-                  <p>
-                    {days < 0
-                      ? `Expired ${Math.abs(days)} days ago`
-                      : days === 0
-                        ? 'Expires today'
-                        : `Expires in ${days} days`}{' '}
-                    · {fact.expiration_date}
-                  </p>
-                  <p>
-                    Owner:{' '}
-                    {fact.owner_user_id === data.userId
-                      ? 'You'
-                      : (fact.owner_user_id ?? 'Unassigned')}{' '}
-                    · {reviewStatus(fact, data.reviewAsOf).replaceAll('_', ' ')}
-                  </p>
-                </div>
-                <Link
-                  className="button secondary"
-                  href={workspaceHref('/company', data.organization.id) + `#fact-${fact.id}`}
-                >
-                  Review evidence
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {queue.length > 5 && (
-            <button
-              className="button secondary"
-              type="button"
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? 'Show fewer' : `Show all ${queue.length} visible renewals`}
-            </button>
-          )}
-        </>
+      <h2 id="evidence-renewals-title">Expiration and freshness Radar</h2>
+      <label>
+        Radar window{' '}
+        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="all">All attention items</option>
+          <option value="expired">Already expired</option>
+          <option value="30">Expires in 0–30 days</option>
+          <option value="60">Expires in 31–60 days</option>
+          <option value="90">Expires in 61–90 days</option>
+          <option value="stale">Last checked over 90 days ago</option>
+          <option value="missing">Missing dates</option>
+        </select>
+      </label>
+      <ul>
+        {shown.slice(0, expanded ? 500 : 5).map((r) => (
+          <li key={r.fact.id}>
+            <Link href={workspaceHref('/company', data.organization.id) + `#fact-${r.fact.id}`}>
+              {r.fact.label}
+            </Link>
+            <p>
+              {r.window === 'expired'
+                ? 'Expired'
+                : r.days !== null
+                  ? `Expiration in ${r.days} days`
+                  : 'Expiration not recorded'}{' '}
+              · Last checked: {r.checked || 'Not recorded'}
+              {r.stale ? ' · Needs review: last checked over 90 days ago' : ''}
+            </p>
+            <p>
+              Attested by:{' '}
+              {r.fact.verified_by === data.userId ? 'You' : r.fact.verified_by || 'Not attested'} ·
+              Owner:{' '}
+              {r.fact.owner_user_id === data.userId ? 'You' : r.fact.owner_user_id || 'Unassigned'}
+            </p>
+          </li>
+        ))}
+      </ul>
+      {!shown.length && (
+        <p>No records match this window. Missing or restricted evidence may still need review.</p>
       )}
+      {shown.length > 5 && (
+        <button className="button secondary" onClick={() => setExpanded(!expanded)}>
+          {expanded ? 'Show fewer Radar items' : 'Show all Radar items'}
+        </button>
+      )}
+      <p>
+        Last checked uses the recorded source-check date when supplied, otherwise the existing
+        human-attestation date. Record presence is not a qualification finding.
+      </p>
       <p className="fact-source">
         As of {data.reviewAsOf.slice(0, 10)} (UTC date). Based on up to 500 company entries visible
-        to your role. These reminders do not change saved verification or certify eligibility.
+        to your role. Human review is required. When the contractor workflow is enabled, opening an
+        affected pursuit reopens requirements linked to stale or expired evidence and creates an
+        owner follow-up task. Earlier decisions remain in history.
       </p>
     </section>
   );

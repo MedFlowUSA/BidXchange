@@ -254,11 +254,13 @@ export function TaskForm({
   pursuitId,
   task,
   suggestedTitle,
+  suggestedRequirementId,
 }: {
   data: TenantData;
   pursuitId: string;
   task?: TenantData['tasks'][number];
   suggestedTitle?: string;
+  suggestedRequirementId?: string;
 }) {
   return (
     <CaptureForm
@@ -276,6 +278,9 @@ export function TaskForm({
         assigned_user_id: task?.assigned_user_id ?? '',
         due_at: task?.due_at ?? '',
         due_timezone: task?.due_timezone ?? data.organization.default_timezone,
+        requirement_id: task?.requirement_id ?? suggestedRequirementId ?? '',
+        priority: task?.priority ?? 'normal',
+        notes: task?.notes ?? '',
       }}
       note={`Assign a member and track the next action. ${deadlineNote}`}
       fields={[
@@ -306,6 +311,34 @@ export function TaskForm({
         },
         { name: 'due_at', label: 'Task deadline with offset', max: 40 },
         { name: 'due_timezone', label: 'Task time zone', required: true, max: 100 },
+        ...(data.contractorWorkflowEnabled
+          ? [
+              {
+                name: 'requirement_id',
+                label: 'Linked requirement',
+                options: [
+                  { value: '', label: 'No linked requirement' },
+                  ...(data.requirements ?? [])
+                    .filter((r) => r.pursuit_id === pursuitId)
+                    .map((r) => ({ value: r.id, label: r.requirement })),
+                ],
+              },
+              {
+                name: 'priority',
+                label: 'Task priority',
+                options: ['low', 'normal', 'high', 'urgent'].map((value) => ({
+                  value,
+                  label: value,
+                })),
+              },
+              {
+                name: 'notes',
+                label: 'Task notes and source reference',
+                max: 4000,
+                multiline: true,
+              },
+            ]
+          : []),
       ]}
     />
   );

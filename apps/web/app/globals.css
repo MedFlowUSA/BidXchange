@@ -2602,3 +2602,12 @@ a.nav-item {
 .next-actions summary {
   cursor: pointer;
 }
+.human-review-notice {
+  margin: 12px 24px;
+  padding: 10px 14px;
+  border-left: 3px solid #c49327;
+  background: #fff9ea;
+  color: #403921;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}

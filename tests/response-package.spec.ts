@@ -218,7 +218,9 @@ test('all response types autofill current company contacts, registrations and bi
     for (const [, , value] of fields) expect(text).toContain(value);
     expect(text).toContain('Maintain three public facilities');
     expect(text).toContain('America/Los_Angeles');
-    expect(text).toContain('https://example.invalid');
+    expect(text).not.toContain('https://example.invalid');
+    expect(text).toContain('[HUMAN INPUT REQUIRED: company website]');
+    expect(text).toContain('[HUMAN INPUT REQUIRED: attested legal name]');
     expect(text).not.toContain('MUST-NOT-EXPORT');
     expect(text).not.toContain('RESTRICTED MUST NOT EXPORT');
   }

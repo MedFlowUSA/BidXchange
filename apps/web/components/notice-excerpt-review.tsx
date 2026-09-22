@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { noticeCandidates } from '../lib/notice-excerpt';
 import type { TenantData } from '../lib/tenant-types';
 import { RequirementForm } from './capture-forms';
+import { californiaSuggestions, californiaRulesVersion } from '../lib/california-rules';
 
 export default function NoticeExcerptReview({
   data,
@@ -17,10 +18,15 @@ export default function NoticeExcerptReview({
   const [result, setResult] = useState<ReturnType<typeof noticeCandidates> | null>(null);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
+  const [dismissed, setDismissed] = useState<string[]>([]);
   return (
     <section className="panel" id="notice-intake" aria-labelledby="notice-intake-heading">
       <div className="eyebrow">1 · Read the notice</div>
       <h2 id="notice-intake-heading">Turn source wording into reviewable requirements</h2>
+      <p>
+        Candidate requirements may be incomplete or inaccurate until a person reviews and signs off
+        on the Requirements Register.
+      </p>
       <p>
         Paste public notice text from one page or section. This local text helper highlights lines
         containing obligation words such as “must” or “shall”; it does not interpret the whole
@@ -81,6 +87,40 @@ export default function NoticeExcerptReview({
       {error && <p role="alert">{error}</p>}
       {result && (
         <>
+          <details>
+            <summary>California contractor checklist suggestions</summary>
+            <p>
+              Checklist heuristics—not a legal or licensing determination. Version:{' '}
+              {californiaRulesVersion}. Dismissals remain in this tab until the excerpt is reset.
+            </p>
+            {californiaSuggestions(excerpt)
+              .filter((s) => !dismissed.includes(s.id))
+              .map((s) => (
+                <div className="panel" key={s.id}>
+                  <h3>{s.category} · candidate</h3>
+                  <blockquote>{s.quote}</blockquote>
+                  <p>
+                    Pasted line {s.line} · Confidence: {s.confidence} · Mandatory language detected:{' '}
+                    {s.mandatoryCandidate ? 'yes, review context' : 'not detected'}
+                  </p>
+                  <p>{s.explanation}</p>
+                  <RequirementForm
+                    data={data}
+                    pursuitId={pursuitId}
+                    sourceDraft={{
+                      requirement: s.explanation,
+                      citation: `${source} — ${location}, pasted line ${s.line}\nRule ${s.rule} / ${s.version}. Candidate only.\nSource quotation: ${s.quote}`,
+                    }}
+                  />
+                  <button
+                    className="button secondary"
+                    onClick={() => setDismissed((d) => [...d, s.id])}
+                  >
+                    Dismiss suggestion
+                  </button>
+                </div>
+              ))}
+          </details>
           <p role="status">
             {result.candidates.length} possible requirements. Review context, exceptions and
             cross-references in the original notice. This is not a complete requirements list.
@@ -127,6 +167,7 @@ export default function NoticeExcerptReview({
             className="button secondary"
             onClick={() => {
               setResult(null);
+              setDismissed([]);
               setRevision((r) => r + 1);
             }}
           >

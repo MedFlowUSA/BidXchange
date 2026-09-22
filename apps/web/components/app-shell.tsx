@@ -236,6 +236,10 @@ export default function AppShell({
             )}
           </div>
         </header>
+        <p className="human-review-notice">
+          Human review required. BidXchange organizes contracting information but does not determine
+          legal eligibility, set pricing, or submit bids.
+        </p>
         {children}
       </div>
       {switcher && (

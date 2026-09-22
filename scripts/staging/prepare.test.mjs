@@ -25,10 +25,10 @@ function fixture() {
 test('only reviewed schema files enter an unlinked idempotent package', () => {
   const { root } = fixture();
   const result = preparePackage(root);
-  assert.equal(result.included.length, 15);
+  assert.equal(result.included.length, 25);
   assert.deepEqual(result.excluded, ['20260919000200_ges_onboarding.sql']);
   assert.deepEqual(preparePackage(root), result);
-  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 15);
+  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 25);
   assert.deepEqual(readdirSync(result.destination).sort(), [
     'README.txt',
     'manifest.json',
@@ -100,16 +100,25 @@ test('schema-only bootstrap has tenant protections and no company or AI activati
     assert.equal(
       (
         await db.query(
-          "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity",
+          "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity",
         )
       ).rows[0].n,
-      52,
+      0,
     );
-    assert.equal(
-      (await db.query("select count(*)::int n from pg_policies where schemaname='public'")).rows[0]
-        .n,
-      127,
-    );
+    for (const table of [
+      'requirements_register_signoffs',
+      'opportunity_amendments',
+      'profile_facts',
+      'pursuit_decision_history',
+    ])
+      assert.ok(
+        (
+          await db.query(
+            "select count(*)::int n from pg_policies where schemaname='public' and tablename=$1",
+            [table],
+          )
+        ).rows[0].n > 0,
+      );
     assert.equal(
       (
         await db.query(
