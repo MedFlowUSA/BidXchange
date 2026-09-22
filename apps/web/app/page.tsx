@@ -73,13 +73,13 @@ export default async function Home() {
                 <span /> CALIFORNIA PUBLIC WORKS & UTILITY CONTRACTS
               </div>
               <h1 id="hero-title">
-                Know if the bid is worth the week.{' '}
-                <span>Then build the response from what you already have.</span>
+                Know what the bid requires.{' '}
+                <span>See what your company still needs.</span>
               </h1>
               <p className={styles.heroDescription}>
-                Check the license requirement, bond request and mandatory job walk before committing
-                estimating time. BidXchange keeps bid requirements beside your company records so
-                your team can decide whether to bid, assign missing work and prepare a response.
+                Compare bid requirements with your licenses, insurance, bonding information, and
+                past projects. Assign missing items, track deadlines, and prepare a response for
+                your team to review.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
