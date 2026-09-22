@@ -73,7 +73,7 @@ export default async function Home() {
                 <span /> GOVERNMENT & UTILITY CONTRACTS
               </div>
               <h1 id="hero-title">
-                Pursue work you can deliver.
+                Pursue work you can deliver.{' '}
                 <span>Build the bid that backs it up.</span>
               </h1>
               <p className={styles.heroDescription}>
