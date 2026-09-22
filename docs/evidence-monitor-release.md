@@ -18,6 +18,8 @@ Supabase's private database scheduler processes up to 25 organizations every 15 
 
 Migration 028 applied successfully to staging and production. The release tool confirmed existing records preserved and RLS enabled. Production schema audit reported no public tables without RLS. First manual production batch checked the active organization with no failures. An actual automatic staging cron tick also succeeded, after which its temporary one-minute schedule was restored to every 15 minutes.
 
+Release commit: `98be43e`, pushed to `main`. Vercel deployment `dpl_Dwz2pAf18XG8poE62zYJHb3DnjMe` was confirmed `READY` through the authenticated API and aliased to `bidxapp.vercel.app`. An initial CLI scope error was resolved by explicitly selecting the project team; a later CLI connection failure did not prevent deployment. Live home, login, signup, dashboard, company and guide-PDF requests returned HTTP 200. Reminder read/write behavior was verified with authenticated synthetic staging users; no customer account was used for production UI testing.
+
 ## Verification
 
 Passed:
