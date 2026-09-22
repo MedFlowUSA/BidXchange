@@ -5,9 +5,9 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
 }) => {
   await page.goto('/');
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toContainText(
-    'A bid board shows you opportunities.',
+    'One workspace for the work between finding a bid and submitting it.',
   );
-  await expect(page.locator('#capabilities')).toContainText('potential-disqualifier review');
+  await expect(page.locator('#capabilities')).toContainText('recorded blockers');
   await expect(page.locator('#capabilities')).toContainText('PDF or Word working draft');
   await expect(page.locator('#company-passport')).toContainText('Insurance, bonding');
   await expect(page.locator('#workflow ol > li')).toHaveCount(6);
@@ -59,7 +59,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Know whether a government bid fits—before your team spends days preparing it.',
+    'Pursue work you can deliver.Build the bid that backs it up.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
@@ -69,7 +69,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.getByRole('link', { name: 'Open Workspace', exact: true })).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText('Green Energy Solutions');
   await expect(
-    page.getByRole('heading', { name: 'What BidXchange organizes for each bid' }),
+    page.getByRole('heading', { name: 'Choose the work. Build the response. Manage the finish.' }),
   ).toBeVisible();
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
@@ -171,9 +171,9 @@ test('public SEO is canonical and workspace/demo pages remain noindex', async ({
   request,
 }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle('BidXchange | Government Bid Qualification and Pursuit Workspace');
+  await expect(page).toHaveTitle('BidXchange | From Contract Opportunity to Reviewed Bid');
   const description =
-    'BidXchange helps contractors connect solicitation requirements with company qualifications, identify missing evidence, assign follow-up work and document bid/no-bid decisions.';
+    'Choose government and utility opportunities worth pursuing, reuse company qualifications, prepare evidence-backed responses and manage the work through human-approved submission.';
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', description);
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
     'content',
