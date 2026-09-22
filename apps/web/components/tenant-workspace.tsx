@@ -540,7 +540,19 @@ export default function TenantWorkspace({
           </>
         )}
         {!recordId && page === 'Assistant' && (
-          <Assistant organizationId={org.id} name={org.operating_name} expanded />
+          <>
+            <section className="panel">
+              <h2>Opportunity research</h2>
+              <p>
+                Ask about opportunities, refine search filters, and compare visible company evidence
+                with available records.
+              </p>
+              <Link className="button primary" href={`/assistant/research?organization=${org.id}`}>
+                Open Opportunity Research Assistant
+              </Link>
+            </section>
+            <Assistant organizationId={org.id} name={org.operating_name} expanded />
+          </>
         )}
         {!recordId && page === 'Assistant' && admin && <AssistantUsage organizationId={org.id} />}
         {recordId && (
