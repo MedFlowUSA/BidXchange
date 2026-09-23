@@ -18,7 +18,7 @@ Current assessments are conservative: changes to the target notice/requirements,
 
 ## Activation and rollback
 
-This change is prepared for review, not applied to production. No hosted database was changed and no data feed was enabled. The browser integration tests use synthetic server-action transport; actual SQL persistence/authorization is tested separately in isolated PostgreSQL. Hosted acceptance remains to be run after applying the migration to staging.
+Migration 031 and authenticated hosted staging acceptance passed on September 22. The staging test uses real Supabase authentication, PostgREST and database persistence with the local application and Microsoft Edge. It creates fictional companies and users, then suspends the companies and bans the accounts. No email is sent. Production rollout status is recorded separately in the release report.
 
 1. Apply migration 031 to staging and verify the reviewed migration inventory (package revision 19).
 2. Keep the existing decisions/register-signoff/resolution workflow enabled and set `BIDXCHANGE_DECISION_MEMORY_ENABLED=true` on the staging app.
@@ -46,4 +46,6 @@ Validation completed on September 22:
 - `node --test scripts/test-decision-memory.mjs scripts/test-pursuit-decisions.mjs scripts/staging/prepare.test.mjs`: 8 passed.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:secrets`, and `git diff --check`: passed.
 
-The Decision Log itself is implemented, not a sample-data endpoint. Production activation and hosted acceptance are pending. The public fictional demo has not been expanded in this PR. Amendment diffing, requirement translation and anonymized aggregate insights are separate upcoming proposals/changes; no cross-company analytics or consent collection was added here.
+Additional hosted validation: `node scripts/staging/decision-memory-browser.mjs` passed sign-off, multi-reason no-bid, frozen snapshots, matching, per-reason human assessment, concurrent-write protection, viewer and cross-company denial, notice staleness, search, pagination and desktop/mobile layout. The reviewed migration was applied using `node scripts/decision-memory-release.mjs staging apply-approved`; existing record fields and RLS were preserved.
+
+The Decision Log itself is implemented, not a sample-data endpoint. The public fictional demo has not been expanded in this PR. Amendment diffing, requirement translation and anonymized aggregate insights are separate upcoming proposals/changes; no cross-company analytics or consent collection was added here.
