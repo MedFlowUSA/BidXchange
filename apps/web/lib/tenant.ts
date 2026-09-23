@@ -69,7 +69,9 @@ export async function loadTenant(
       .overrideTypes<TenantData['facts'], { merge: false }>(),
     db
       .from('onboarding_items')
-      .select('id,label,status')
+      .select(
+        'id,label,status,notes,updated_at,assigned_user_id,due_on,passport_section,passport_item,requested_by,last_updated_by,completed_by,completed_at',
+      )
       .eq('organization_id', id)
       .order('created_at')
       .limit(500),
@@ -128,6 +130,11 @@ export async function loadTenant(
     audit: results[8].data,
     tasks: results[9].data,
   } as TenantData;
+  if (choice.role === 'organization_admin' && /^\/(company|dashboard)(\?|$)/.test(next)) {
+    const owners = await db.rpc('information_request_owners', { org: id });
+    if (owners.error) throw new Error('Company request owners could not be loaded.');
+    data.informationRequestOwners = owners.data ?? [];
+  }
   if (
     process.env.BIDXCHANGE_EVIDENCE_MONITOR_ENABLED === 'true' &&
     /^\/(dashboard|company)(\?|$)/.test(next)

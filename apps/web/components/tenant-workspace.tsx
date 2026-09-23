@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useActionState, useState, useEffect } from 'react';
 import AppShell from './app-shell';
 import ProfileCompletion from './profile-completion';
+import InformationRequests from './information-requests';
 import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
 import ResponseReleases from './response-release';
@@ -598,6 +599,7 @@ export default function TenantWorkspace({
               </Link>
             </section>
             <TodayTaskQueue data={data} />
+            <InformationRequests key={org.id + '-requests-today'} data={data} compact />
             <EvidenceReminders data={data} />
             <EvidenceRenewals key={org.id} data={data} />
             <div className="stats-grid">
@@ -828,34 +830,7 @@ export default function TenantWorkspace({
                 </div>
               </section>
             )}
-            <details className="panel" id="company-onboarding">
-              <summary>
-                Information to collect ·{' '}
-                {data.onboarding.filter((i) => i.status === 'needs_information').length} open items
-              </summary>
-              <p>
-                Confirm these with an authorized company representative. These checklist entries do
-                not independently verify the company.
-              </p>
-              <div className="onboarding-grid">
-                {[...data.onboarding]
-                  .sort(
-                    (a, b) =>
-                      Number(!/license|cslb|dir|insurance|bond|approver|sam/i.test(a.label)) -
-                      Number(!/license|cslb|dir|insurance|bond|approver|sam/i.test(b.label)),
-                  )
-                  .map((i) => (
-                    <div key={i.id}>
-                      <span>{i.label}</span>
-                      <span className="fit amber">
-                        {i.status === 'needs_information'
-                          ? 'Needs information'
-                          : i.status.replaceAll('_', ' ')}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </details>
+            <InformationRequests data={data} />
           </>
         )}
         {!recordId && page === 'Opportunities' && (

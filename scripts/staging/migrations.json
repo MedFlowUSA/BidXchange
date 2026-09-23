@@ -146,7 +146,12 @@
       "file": "20260922002900_requirement_lifecycle.sql",
       "sha256": "fce88e48a92fb07f53ddb579b13eb929c420d5f49dbd89665d7a74cd712d539c",
       "action": "include-schema"
+    },
+    {
+      "file": "20260922003000_company_information_requests.sql",
+      "sha256": "4a310c012162e5538ac262d402eea166cd83bce9d54269c6a3b4dddf027ea7ab",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 17
+  "packageRevision": 18
 }

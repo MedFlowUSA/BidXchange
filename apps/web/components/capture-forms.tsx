@@ -17,6 +17,7 @@ type Field = {
   required?: boolean;
   max?: number;
   multiline?: boolean;
+  inputType?: 'date';
   options?: { value: string; label: string }[];
 };
 export function CaptureForm({
@@ -42,7 +43,9 @@ export function CaptureForm({
   const [draftIdentity] = useState(hidden);
   return (
     <details className="company-record-editor" aria-label={label}>
-      <summary className={label === 'Add opportunity' ? 'button primary' : 'text-button'}>{label}</summary>
+      <summary className={label === 'Add opportunity' ? 'button primary' : 'text-button'}>
+        {label}
+      </summary>
       {
         <form action={submit} className="opportunity-form admin-form" aria-label={label}>
           {Object.entries(draftIdentity).map(([name, value]) => (
@@ -77,7 +80,7 @@ export function CaptureForm({
                   ) : field.multiline ? (
                     <textarea {...props} maxLength={field.max} rows={4} />
                   ) : (
-                    <input {...props} maxLength={field.max} />
+                    <input {...props} type={field.inputType ?? 'text'} maxLength={field.max} />
                   )}
                 </label>
               );

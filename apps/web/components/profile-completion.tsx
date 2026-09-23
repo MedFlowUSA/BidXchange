@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { profileCompletion } from '../lib/profile-completion';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData } from '../lib/tenant-types';
+import { ProfileInformationRequest } from './information-requests';
 
 export default function ProfileCompletion({ data }: { data: TenantData }) {
   const progress = profileCompletion(data.facts, data.reviewAsOf);
@@ -15,7 +16,10 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
   return (
     <section className="panel" aria-labelledby="profile-completion-title">
       <div className="eyebrow">YOUR COMPANY SETUP</div>
-      <h2 id="profile-completion-title">{admin ? 'Level-1 profile completion' : 'Visible Level-1 profile fields'}: {progress.percent}%</h2>
+      <h2 id="profile-completion-title">
+        {admin ? 'Level-1 profile completion' : 'Visible Level-1 profile fields'}:{' '}
+        {progress.percent}%
+      </h2>
       <progress
         aria-label="Level-1 profile fields recorded"
         value={progress.completed}
@@ -28,7 +32,10 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
         </strong>{' '}
         Your saved records update this checklist automatically.
       </p>
-      <p>Tracks saved profile fields. Evidence review and bid readiness are assessed separately. Unknown fields remain incomplete.</p>
+      <p>
+        Tracks saved profile fields. Evidence review and bid readiness are assessed separately.
+        Unknown fields remain incomplete.
+      </p>
       {data.organization.role !== 'organization_admin' && (
         <p>
           Your view may exclude restricted records. Ask your administrator to review company-wide
@@ -78,7 +85,12 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
                     .filter((field) => !missingOnly || !field.recorded)
                     .map((field) => (
                       <li key={field.key}>
-                      {field.recorded ? 'Recorded' : admin ? 'To add' : 'Not recorded in your visible records'}: {field.label}
+                        {field.recorded
+                          ? 'Recorded'
+                          : admin
+                            ? 'To add'
+                            : 'Not recorded in your visible records'}
+                        : {field.label}
                       </li>
                     ))}
                 </ul>
@@ -94,8 +106,22 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
                   completion does not change this status.
                 </p>
                 <Link href={destination(section.id, item.factId)}>
-                  {item.factId ? 'Open saved record' : admin ? 'Add company information' : 'Review Passport question'}
+                  {item.factId
+                    ? 'Open saved record'
+                    : admin
+                      ? 'Add company information'
+                      : 'Review Passport question'}
                 </Link>
+                {item.completed < item.total && (
+                  <ProfileInformationRequest
+                    data={data}
+                    section={section.id}
+                    item={item.label}
+                    missing={item.checks
+                      .filter((field) => !field.recorded)
+                      .map((field) => field.label)}
+                  />
+                )}
               </article>
             ))}
           {missingOnly && section.completed === section.total && (

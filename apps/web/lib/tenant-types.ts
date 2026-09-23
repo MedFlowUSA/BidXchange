@@ -160,7 +160,22 @@ export type TenantData = {
   userEmail: string;
   userId: string;
   facts: Fact[];
-  onboarding: { id: string; label: string; status: string }[];
+  onboarding: {
+    id: string;
+    label: string;
+    status: string;
+    notes?: string | null;
+    updated_at?: string;
+    assigned_user_id?: string | null;
+    due_on?: string | null;
+    passport_section?: string | null;
+    passport_item?: string | null;
+    requested_by?: string | null;
+    last_updated_by?: string | null;
+    completed_by?: string | null;
+    completed_at?: string | null;
+  }[];
+  informationRequestOwners?: { user_id: string; email: string; role: string }[];
   sources: { id: string; name: string; access_status: string; notes: string | null }[];
   opportunities: LiveOpportunity[];
   pursuits: LivePursuit[];

@@ -123,15 +123,74 @@ try {
   await owner.page.goto(base + '/onboarding?organization=' + org);
   await expect(owner.page.getByText(/1 related records saved/)).toBeVisible();
   await owner.page.goto(base + '/company?organization=' + org);
-  await expect(owner.page.getByRole('progressbar', { name: 'Level-1 profile fields recorded' })).toHaveAttribute('max', '60');
-  await expect(owner.page.getByRole('progressbar', { name: 'Level-1 profile fields recorded' })).toHaveAttribute('value', '2');
+  await expect(
+    owner.page.getByRole('progressbar', { name: 'Level-1 profile fields recorded' }),
+  ).toHaveAttribute('max', '60');
+  await expect(
+    owner.page.getByRole('progressbar', { name: 'Level-1 profile fields recorded' }),
+  ).toHaveAttribute('value', '2');
   const completion = owner.page.getByRole('region', { name: 'Level-1 profile completion: 3%' });
-  await completion.locator('summary').filter({ hasText: /^Who is bidding/ }).click();
+  await completion
+    .locator('summary')
+    .filter({ hasText: /^Who is bidding/ })
+    .click();
   await expect(completion.getByText('To add: Entity type', { exact: true })).toBeVisible();
   await owner.page.setViewportSize({ width: 390, height: 844 });
   assert(await owner.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await owner.page.screenshot({ path: '.tmp/profile-completion-mobile.png', fullPage: true });
   await owner.page.setViewportSize({ width: 1440, height: 1000 });
+  step = 'assigned information request and administrator closure';
+  const assign = completion
+    .getByRole('group', { name: 'Assign information request', exact: true })
+    .first();
+  await assign.locator('summary').click();
+  await assign.getByLabel('Request owner', { exact: true }).selectOption(owner.id);
+  await assign.getByLabel('Requested by date', { exact: true }).fill('2099-01-01');
+  await assign.getByRole('button', { name: 'Assign information request', exact: true }).click();
+  await expect(completion.getByRole('link', { name: /Open information request/ })).toBeVisible();
+  const request = (
+    await db.query(
+      'select id from public.onboarding_items where organization_id=$1 and assigned_user_id=$2',
+      [org, owner.id],
+    )
+  ).rows[0];
+  assert(request);
+  await owner.page.goto(
+    base + '/company?organization=' + org + '#information-request-' + request.id,
+  );
+  const requestRow = owner.page.locator('#information-request-' + request.id);
+  await expect(requestRow).toHaveJSProperty('open', true);
+  const manage = requestRow.getByRole('group', { name: 'Manage information request', exact: true });
+  await manage.locator('summary').click();
+  await manage.getByLabel('Request status', { exact: true }).selectOption('complete');
+  await manage
+    .getByLabel('Progress or closure note', { exact: true })
+    .fill('Synthetic review completed; evidence remains separate.');
+  await manage.getByRole('button', { name: 'Manage information request', exact: true }).click();
+  await expect(requestRow.locator(':scope > summary')).toContainText('Closed by administrator');
+  await owner.page.reload();
+  await owner.page.getByLabel('Show requests', { exact: true }).selectOption('closed');
+  await expect(requestRow).toContainText('Closed by administrator');
+  await expect(
+    owner.page.getByRole('progressbar', { name: 'Level-1 profile fields recorded' }),
+  ).toHaveAttribute('value', '2');
+  await requestRow.locator(':scope > summary').click();
+  await manage.locator('summary').click();
+  await manage.getByLabel('Request status', { exact: true }).selectOption('needs_information');
+  await manage
+    .getByLabel('Progress or closure note', { exact: true })
+    .fill('Synthetic request reopened for further information.');
+  await manage.getByRole('button', { name: 'Manage information request', exact: true }).click();
+  await expect(requestRow).toHaveCount(0);
+  await owner.page.getByLabel('Show requests', { exact: true }).selectOption('open');
+  await expect(requestRow.locator(':scope > summary')).toContainText('Information needed');
+  await requestRow.locator(':scope > summary').click();
+  await requestRow.getByRole('group', { name: 'Manage information request', exact: true }).locator('summary').click();
+  await owner.page.setViewportSize({ width: 390, height: 844 });
+  assert(await owner.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await owner.page.screenshot({ path: '.tmp/information-request-mobile.png', fullPage: true });
+  await owner.page.setViewportSize({ width: 1440, height: 1000 });
+  await owner.page.goto(base + '/company?organization=' + org);
   await expect(owner.page.locator('#fact-' + fact.id)).not.toBeVisible();
   await owner.page.goto(base + '/company?organization=' + org + '#fact-' + fact.id);
   await expect(owner.page.locator('#fact-' + fact.id)).toBeVisible();
