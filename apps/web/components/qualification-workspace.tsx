@@ -5,6 +5,7 @@ import type { TenantData } from '../lib/tenant-types';
 import { qualificationMap } from '../lib/qualification-map';
 import { resolutionLabels } from '../lib/requirement-resolution';
 import { TaskForm } from './capture-forms';
+import BidControl from './bid-control';
 import styles from './qualification-workspace.module.css';
 
 export default function QualificationWorkspace({
@@ -20,6 +21,7 @@ export default function QualificationWorkspace({
   const base = `/pursuits/${pursuitId}?organization=${data.organization.id}`;
   const company = `/company?organization=${data.organization.id}`;
   const capture = ['organization_admin', 'capture_manager'].includes(data.organization.role);
+  const pursuitTasks = data.tasks.filter((task) => task.pursuit_id === pursuitId);
   const rows = map.rows.filter(
     (r) =>
       (!attentionOnly || r.actions.length > 0) &&
@@ -28,8 +30,8 @@ export default function QualificationWorkspace({
   return (
     <div className={styles.workspace}>
       <header className="panel">
-        <div className="eyebrow">Qualification workspace</div>
-        <h1>What stands between this pursuit and a reviewed response?</h1>
+        <div className="eyebrow">Bid control</div>
+        <h1>Requirements, evidence and next actions for this bid</h1>
         <p>{map.opportunity?.title}</p>
         <p>
           Start with the blockers, follow the evidence, then assign the next action. This is a view
@@ -89,6 +91,7 @@ export default function QualificationWorkspace({
           <Link href={`${company}#company-readiness`}>Company evidence</Link>
         </nav>
       </header>
+      <BidControl data={data} pursuitId={pursuitId} />
       <section className="panel" aria-labelledby="evidence-path-title">
         <div className="eyebrow">Evidence graph</div>
         <h2 id="evidence-path-title">Trace a record through this pursuit.</h2>
@@ -226,6 +229,33 @@ export default function QualificationWorkspace({
                   ))}
                 </ul>
               </details>
+              <details>
+                <summary>
+                  Linked follow-up tasks (
+                  {pursuitTasks.filter((task) => task.requirement_id === row.requirement.id).length}
+                  )
+                </summary>
+                {pursuitTasks.some((task) => task.requirement_id === row.requirement.id) ? (
+                  <ul>
+                    {pursuitTasks
+                      .filter((task) => task.requirement_id === row.requirement.id)
+                      .map((task) => (
+                        <li key={task.id}>
+                          <Link href={`${base}#task-${task.id}`}>{task.title}</Link> ·{' '}
+                          {task.status.replaceAll('_', ' ')} ·{' '}
+                          {task.assigned_user_id === data.userId
+                            ? 'You'
+                            : task.assigned_user_id || 'Unassigned'}
+                        </li>
+                      ))}
+                  </ul>
+                ) : (
+                  <p>
+                    No linked task is visible. Check existing pursuit tasks before assigning more
+                    work.
+                  </p>
+                )}
+              </details>
               {capture && row.actions.length > 0 && (
                 <details>
                   <summary>Assign follow-up work</summary>
@@ -237,6 +267,7 @@ export default function QualificationWorkspace({
                   <TaskForm
                     data={data}
                     pursuitId={pursuitId}
+                    suggestedRequirementId={row.requirement.id}
                     suggestedTitle={`Review requirement: ${row.requirement.requirement}`.slice(
                       0,
                       200,

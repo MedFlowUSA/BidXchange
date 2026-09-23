@@ -7,10 +7,12 @@ import { pursuit } from './workflow-data';
 import '../../apps/web/app/globals.css';
 const role =
   new URL(location.href).searchParams.get('role') === 'viewer' ? 'viewer' : 'organization_admin';
+const data = qualificationData(role);
+data.contractorWorkflowEnabled = true;
 createRoot(document.getElementById('root')!).render(
   <>
     <ContractReadinessBrief data={qualificationData(role)} pursuitId={pursuit} />
     <DeliveryReview data={qualificationData(role)} pursuitId={pursuit} />
-    <QualificationWorkspace data={qualificationData(role)} pursuitId={pursuit} />
+    <QualificationWorkspace data={data} pursuitId={pursuit} />
   </>,
 );

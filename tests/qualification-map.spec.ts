@@ -188,6 +188,14 @@ test('interactive evidence trail, responsive layout and explicit task handoff', 
   await expect(page.getByRole('textbox', { name: 'Task title', exact: true })).toHaveValue(
     'Review requirement: Insurance coverage',
   );
+  await expect(
+    page.locator('article').first().getByLabel('Linked requirement', { exact: true }),
+  ).toHaveValue(
+    qualificationData().requirements!.find((r) => r.requirement === 'Insurance coverage')!.id,
+  );
+  await expect(
+    page.getByRole('heading', { name: 'Bid control: decision, work and dates' }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Add task', exact: true }).click();
   await expect(page.locator('article').first().getByRole('status')).toContainText(
     'Task saved: Review requirement: Insurance coverage',

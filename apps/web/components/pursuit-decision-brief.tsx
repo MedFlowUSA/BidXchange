@@ -20,7 +20,7 @@ export default function PursuitDecisionBrief({
           className="button secondary"
           href={`/pursuits/${pursuitId}/qualification?organization=${data.organization.id}`}
         >
-          Open qualification workspace
+          Open bid control
         </Link>
       </p>
       <p>
