@@ -1,0 +1,85 @@
+.panel {
+  margin: 20px 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.panel > p {
+  margin: 10px 0;
+}
+.card {
+  border: 1px solid #dce3ed;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 18px 0;
+  background: #fafbfd;
+}
+.card p,
+.card details {
+  margin: 12px 0;
+}
+.card li {
+  margin: 10px 0;
+}
+.card a {
+  color: #234bc7;
+  text-decoration: underline;
+}
+.review {
+  padding: 12px;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  background: white;
+}
+.form label,
+.search label {
+  display: block;
+  margin: 12px 0;
+}
+.form input:not([type='checkbox']),
+.form select,
+.form textarea,
+.search input {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px;
+  border: 1px solid #9aa7bb;
+  border-radius: 6px;
+  font: inherit;
+}
+.form fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.form textarea {
+  min-height: 80px;
+}
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.search label {
+  flex: 1 1 220px;
+}
+.panel button,
+.panel a {
+  white-space: normal;
+  max-width: 100%;
+}
+.panel summary {
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  .card {
+    padding: 14px;
+  }
+  .form input,
+  .form select,
+  .form textarea,
+  .search input {
+    font-size: 16px;
+  }
+}

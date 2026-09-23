@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react';
 import { recordDecision } from '../app/decision-actions';
 import type { TenantData, LivePursuit } from '../lib/tenant-types';
 import { decisionReasons } from '../lib/decision-reasons';
+import { reasonLabel, requirementFinding } from '../lib/decision-memory';
 const labels: Record<string, string> = {
   bid: 'Pursue bid',
   no_bid: 'Do not bid',
@@ -25,6 +26,7 @@ export default function PursuitDecision({
   const [reason, setReason] = useState('');
   const [conditions, setConditions] = useState('');
   const [ack, setAck] = useState(false);
+  const [reasonCodes, setReasonCodes] = useState<string[]>([]);
   const latest = data.decisions?.[0];
   const canDecide = ['organization_admin', 'executive_approver'].includes(data.organization.role);
   return (
@@ -117,17 +119,73 @@ export default function PursuitDecision({
                     Final bid and no-bid decisions require a current human Requirements Register
                     sign-off. Preliminary decisions remain available.
                   </p>
-                  <label>
-                    Primary reason code
-                    <select name="reason_code">
-                      <option value="">Not specified</option>
-                      {Object.entries(decisionReasons).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
+                  {data.decisionMemoryEnabled ? (
+                    <fieldset>
+                      <legend>Decision reasons (select all that apply)</legend>
+                      <p>
+                        A no-bid needs at least one reason. Explain “Other” in the Reason field
+                        below.
+                      </p>
+                      {Object.keys(decisionReasons).map((code) => (
+                        <label key={code}>
+                          <input
+                            type="checkbox"
+                            name="reason_codes"
+                            value={code}
+                            checked={reasonCodes.includes(code)}
+                            onChange={(event) =>
+                              setReasonCodes((old) =>
+                                event.target.checked
+                                  ? [...old, code]
+                                  : old.filter((c) => c !== code),
+                              )
+                            }
+                          />{' '}
+                          {reasonLabel(code)}
+                        </label>
                       ))}
-                    </select>
-                  </label>
+                      <p>
+                        The signed-off requirements and original notice details will be preserved in
+                        your Company Decision Log.
+                      </p>
+                      <details>
+                        <summary>Preview requirements captured with this decision</summary>
+                        <ul>
+                          {data.requirements
+                            ?.filter((r) => r.pursuit_id === pursuit.id)
+                            .map((r) => {
+                              const finding = data.resolutions?.find(
+                                (x) => x.requirement_id === r.id && x.review_current,
+                              );
+                              return (
+                                <li key={r.id}>
+                                  {r.requirement} —{' '}
+                                  {requirementFinding({
+                                    id: r.id,
+                                    text: r.requirement,
+                                    status: r.status,
+                                    human_finding: finding?.disposition,
+                                  })}
+                                </li>
+                              );
+                            })}
+                        </ul>
+                        <p>The server checks the signed-off version again when you save.</p>
+                      </details>
+                    </fieldset>
+                  ) : (
+                    <label>
+                      Primary reason code
+                      <select name="reason_code">
+                        <option value="">Not specified</option>
+                        {Object.entries(decisionReasons).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                   <label>
                     Estimated pursuit hours
                     <input name="pursuit_hours" type="number" min="0" max="100000" step="0.25" />

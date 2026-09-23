@@ -5,6 +5,7 @@ import AppShell from './app-shell';
 import ProfileCompletion from './profile-completion';
 import InformationRequests from './information-requests';
 import CompanyPortal, { CompanyPanel } from './company-portal';
+import DecisionMemoryPanel from './decision-memory';
 import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
 import ResponseReleases from './response-release';
@@ -370,6 +371,7 @@ export default function TenantWorkspace({
             {notice}
           </div>
         )}
+        {recordId && opportunity && data.decisionMemory && <DecisionMemoryPanel data={data} />}
         {recordId && opportunity ? (
           recordType === 'pursuit' ? (
             <>
@@ -684,6 +686,11 @@ export default function TenantWorkspace({
         {!recordId && page === 'Company' && (
           <>
             <CompanyPortal key={org.id} data={data} reviewCount={pending.length}>
+              {data.decisionMemoryEnabled && (
+                <CompanyPanel name="decisions">
+                  <DecisionMemoryPanel data={data} />
+                </CompanyPanel>
+              )}
               <CompanyPanel name="overview">
                 <ProfileCompletion key={org.id + '-completion'} data={data} />
               </CompanyPanel>
