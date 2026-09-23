@@ -2,6 +2,16 @@
   margin-top: 24px;
   min-width: 0;
 }
+.panel button {
+  white-space: normal;
+  max-width: 100%;
+}
+.panel :global(.info-note) {
+  display: block;
+}
+.panel :global(.info-note) > p {
+  margin: 8px 0;
+}
 .heading {
   display: flex;
   justify-content: space-between;
@@ -39,6 +49,45 @@
 .content {
   min-width: 0;
   overflow-wrap: anywhere;
+  display: flex;
+  flex-direction: column;
+}
+.content > article {
+  padding: 22px;
+  border: 1px solid #dce4f0;
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 18px;
+}
+.content > form {
+  background: #f4f7fd;
+  padding: 18px;
+  border-radius: 14px;
+}
+.exchange {
+  padding: 18px;
+  margin: 12px 0;
+  border-radius: 12px;
+  background: #f5f7fb;
+  border: 1px solid #e0e6f0;
+}
+.exchange p,
+.content > article p {
+  line-height: 1.7;
+  font-size: 14px;
+  color: #243651;
+}
+.content select {
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid #ccd6e7;
+  border-radius: 8px;
+  margin: 8px 0 14px;
+  display: block;
+  max-width: 100%;
+}
+.content form > label {
+  display: block;
 }
 .content textarea {
   display: block;
@@ -70,6 +119,9 @@
   gap: 10px;
   margin-bottom: 16px;
 }
+.suggestions[hidden] {
+  display: none;
+}
 .panel :focus-visible {
   outline: 3px solid #315cff;
   outline-offset: 3px;
@@ -78,6 +130,13 @@
   display: block;
 }
 @media (max-width: 760px) {
+  .panel {
+    padding: 16px;
+  }
+  .content textarea,
+  .content select {
+    font-size: 16px;
+  }
   .heading {
     display: block;
   }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && node --import tsx scripts/check-conversational-ai.ts",
   "installCommand": "npm ci",
   "env": {
     "BIDXCHANGE_EVIDENCE_MONITOR_ENABLED": "true",

@@ -1,11 +1,22 @@
 import OpenAI from 'openai';
 import { createHmac } from 'node:crypto';
 import { aiConfig } from '../../../lib/ai/config';
-import { AiError, errorMessages, LIMITS, requestSchema } from '../../../lib/ai/contracts';
+import {
+  AiError,
+  errorMessages,
+  LIMITS,
+  requestSchema,
+  type Evidence,
+} from '../../../lib/ai/contracts';
 import { authorizeAi, requireSameOrigin } from '../../../lib/ai/server';
 import { EvidenceTools } from '../../../lib/ai/tools';
 import { runAssistant } from '../../../lib/ai/engine';
 import { readJsonBody } from '../../../lib/ai/read-body';
+import {
+  readConversation,
+  checkConversation,
+  sealConversation,
+} from '../../../lib/ai/conversation';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 const headers = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' };
@@ -20,6 +31,15 @@ export async function POST(request: Request) {
     const config = aiConfig();
     if (!config) throw new AiError('unavailable', 503);
     const evidence = new EvidenceTools(account.db, body.organizationId, account.role);
+    const scope = {
+      user: account.user.id,
+      organization: body.organizationId,
+      role: account.role,
+      mode: body.mode,
+      context: JSON.stringify(body.context),
+    };
+    const memory = readConversation(body.continuation, config.key, scope);
+    await checkConversation(memory, (type, id) => evidence.source(type, id));
     // Validate context before reserving paid work. Never trust client record IDs.
     if (body.mode === 'workspace' && body.context)
       await evidence.run(body.context.kind === 'opportunity' ? 'get_opportunity' : 'get_pursuit', {
@@ -35,7 +55,9 @@ export async function POST(request: Request) {
           '|' +
           JSON.stringify(body.context) +
           '|' +
-          body.mode,
+          body.mode +
+          '|' +
+          (body.continuation ?? ''),
       )
       .digest('hex');
     const { data: reservation, error } = await account.db.rpc('reserve_ai_request', {
@@ -84,21 +106,43 @@ export async function POST(request: Request) {
               if (error || !setting?.enabled || !aiConfig()) throw new AiError('unavailable', 503);
             },
             body.mode,
+            memory.turns,
           );
           // Recheck citations against current RLS/classification before releasing any evidence.
           const current = new EvidenceTools(account.db, body.organizationId, account.role);
-          result.answer.evidence = await Promise.all(
-            result.answer.evidence.map((item) =>
-              current.source(item.citation.type, item.citation.id),
-            ),
+          const records: Evidence[] = [];
+          for (const item of evidence.evidence.values()) {
+            if (item.citation.type === 'workspace') continue;
+            const fresh = await current.source(item.citation.type, item.citation.id);
+            if (
+              fresh.citation.updatedAt !== item.citation.updatedAt ||
+              fresh.citation.status !== item.citation.status
+            )
+              throw new AiError('conversation_changed', 409);
+            records.push(fresh);
+          }
+          result.answer.evidence = result.answer.evidence.map(
+            (item) => records.find((r) => r.citation.key === item.citation.key) ?? item,
           );
           result.answer.citations = result.answer.evidence.map((item) => item.citation);
-          if (body.mode === 'workspace')
-            result.answer.answer = result.answer.evidence.map((item) => ({
-              text: `${item.citation.title} — ${item.citation.status.replaceAll('_', ' ')}`,
-              sources: [item.citation.key],
-            }));
+          result.answer.continuation = sealConversation(
+            memory,
+            config.key,
+            body.prompt,
+            result.answer,
+            records,
+          );
           if (controller.signal.aborted) throw new AiError('cancelled', 499);
+          const finalAccess = await authorizeAi(body.organizationId);
+          if (finalAccess.user.id !== account.user.id || finalAccess.role !== account.role)
+            throw new AiError('forbidden', 403);
+          const setting = await finalAccess.db
+            .from('ai_organization_settings')
+            .select('enabled')
+            .eq('organization_id', body.organizationId)
+            .maybeSingle();
+          if (setting.error || !setting.data?.enabled || !aiConfig())
+            throw new AiError('unavailable', 503);
           if (body.mode === 'workspace') result.answer.recordsCheckedAt = new Date().toISOString();
           emit({ type: 'answer', answer: result.answer });
           // Operational totals only. No prompt, tool payload, generated text, key or token logged.

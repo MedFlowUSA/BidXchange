@@ -14,6 +14,7 @@ type Conversation = {
   requestId?: string;
   mode: 'general' | 'workspace';
   document?: { message: string; href?: string };
+  parentContinuation?: string;
 };
 export default function Assistant({
   organizationId,
@@ -44,6 +45,7 @@ export default function Assistant({
     [error, setError] = useState(''),
     [feedback, setFeedback] = useState('');
   const controller = useRef<AbortController | null>(null);
+  const thread = useRef<{ mode: string; token: string } | null>(null);
   const access = useRef<string | null>(null);
   const actionLock = useRef(false);
   const documentRequest = useRef<{ question: string; id: string } | null>(null);
@@ -81,6 +83,7 @@ export default function Assistant({
       setActive(null);
       setPrompt('');
       documentRequest.current = null;
+      thread.current = null;
     };
     const check = () =>
       fetch(`/api/assistant/status?organization=${encodeURIComponent(organizationId ?? '')}`, {
@@ -120,11 +123,19 @@ export default function Assistant({
       setActive(null);
       setPrompt('');
       documentRequest.current = null;
+      thread.current = null;
     };
     window.addEventListener('pagehide', clear);
     return () => window.removeEventListener('pagehide', clear);
   }, []);
-  async function ask(question = prompt, retry = false, answerMode = mode) {
+  useEffect(() => {
+    controller.current?.abort();
+    thread.current = null;
+    setConversations([]);
+    setActive(null);
+    setPrompt('');
+  }, [organizationId, context?.kind, context?.id]);
+  async function ask(question = prompt, retry = false, answerMode = mode, fresh = false) {
     if (pending || actionLock.current || !question.trim() || !available) return;
     actionLock.current = true;
     setError('');
@@ -132,10 +143,17 @@ export default function Assistant({
     setPending(true);
     setStatus('Starting…');
     const id = crypto.randomUUID();
+    const continuation = fresh
+      ? undefined
+      : retry
+        ? selected?.parentContinuation
+        : thread.current?.mode === answerMode
+          ? thread.current.token
+          : undefined;
     setActive(id);
     setConversations((old) => [
       ...old.slice(-9),
-      { id, question, requestId: id, mode: answerMode },
+      { id, question, requestId: id, mode: answerMode, parentContinuation: continuation },
     ]);
     const abort = new AbortController();
     controller.current = abort;
@@ -211,11 +229,17 @@ export default function Assistant({
           prompt: question,
           context: answerMode === 'general' ? null : context,
           mode: answerMode,
+          ...(continuation ? { continuation } : {}),
         }),
         signal: abort.signal,
       });
       if (!response.ok) {
         const failure = await response.json();
+        if (failure.code === 'conversation_changed') {
+          thread.current = null;
+          setConversations([]);
+          setActive(null);
+        }
         throw new Error(failure.message ?? 'Assistant unavailable.');
       }
       const reader = response.body?.getReader();
@@ -232,9 +256,21 @@ export default function Assistant({
         for (const line of lines) {
           if (!line) continue;
           const event = JSON.parse(line);
+          if (abort.signal.aborted) break;
           if (event.type === 'status') setStatus(event.text);
-          if (event.type === 'error') throw new Error(event.message);
+          if (event.type === 'error') {
+            if (event.code === 'conversation_changed') {
+              thread.current = null;
+              setConversations([]);
+              setActive(null);
+            }
+            throw new Error(event.message);
+          }
           if (event.type === 'answer') {
+            thread.current = event.answer.continuation
+              ? { mode: answerMode, token: event.answer.continuation }
+              : null;
+            setPrompt('');
             received = true;
             setConversations((old) =>
               old.map((c) => (c.id === id ? { ...c, answer: event.answer } : c)),
@@ -282,7 +318,7 @@ export default function Assistant({
       <div className={styles.heading}>
         <div>
           <div className="eyebrow">ASK BIDXCHANGE</div>
-          <h2>Ask, explore, and get work moving.</h2>
+          <h2>Think it through. Build your next step.</h2>
           <p>
             {name} ·{' '}
             {demo
@@ -297,13 +333,13 @@ export default function Assistant({
       {open && (
         <>
           <p className="info-note">
-            {FEED_NOTICE} AI-generated—verify important information. No approvals, pricing changes
-            or submissions.
+            {demo ? FEED_NOTICE : 'Explore options, draft messages and plan your bid work.'} AI
+            suggestions need your review. Nothing is approved or submitted for you.
           </p>
           {!demo && (
             <p>
-              General questions use no company records. Workspace records use authorized, classified
-              evidence only. No live web browsing is available. Do not enter passwords or API keys.
+              Use Workspace records for company context, or General questions for broader advice.
+              This chat has no live web browsing. Do not enter passwords or API keys.
             </p>
           )}
           {!demo && (
@@ -321,12 +357,15 @@ export default function Assistant({
               <Link href={workspaceHref('/company', organizationId)}>Manage company records</Link>
             </div>
           )}
-          {!demo && (
-            <p>
-              Document commands use the open pursuit in either mode. Ask “Create a response outline
-              for this bid” to save a response outline with bid details and requirement sections.
-              Complete and review the answers before exporting.
-            </p>
+          {!demo && context?.kind === 'pursuit' && (
+            <details>
+              <summary>Create a saved response outline</summary>
+              <p>
+                Document commands use the open pursuit in either mode. Ask “Create a response
+                outline for this bid” to save a response outline with bid details and requirement
+                sections. Complete and review the answers before exporting.
+              </p>
+            </details>
           )}
           {checking ? (
             <p role="status">Checking assistant availability…</p>
@@ -344,6 +383,8 @@ export default function Assistant({
                 disabled={pending}
                 onClick={() => {
                   setActive(null);
+                  setConversations([]);
+                  thread.current = null;
                   setPrompt('');
                   documentRequest.current = null;
                   setError('');
@@ -353,8 +394,8 @@ export default function Assistant({
                 New conversation
               </button>
               <p>
-                Private to this tab. Cleared on reload or workspace change. Questions are answered
-                independently; include the context needed in each question.
+                Private to this tab. Recent messages provide follow-up context for up to 30 minutes.
+                Reloading, changing company or starting a new conversation clears that context.
               </p>
               {conversations.map((c, i) => (
                 <button
@@ -364,6 +405,10 @@ export default function Assistant({
                   aria-pressed={c.id === active}
                   onClick={() => {
                     setActive(c.id);
+                    setMode(c.mode);
+                    thread.current = c.answer?.continuation
+                      ? { mode: c.mode, token: c.answer.continuation }
+                      : null;
                     setFeedback('');
                   }}
                 >
@@ -375,6 +420,7 @@ export default function Assistant({
                 disabled={pending}
                 onClick={() => {
                   setConversations([]);
+                  thread.current = null;
                   setActive(null);
                   setPrompt('');
                   documentRequest.current = null;
@@ -386,7 +432,43 @@ export default function Assistant({
               </button>
             </aside>
             <div className={styles.content}>
-              <div className={styles.suggestions}>
+              {conversations.some((c) => c.id !== active && c.answer) && (
+                <section className={styles.transcript} aria-label="Conversation history">
+                  {conversations
+                    .filter((c) => c.id !== active && c.answer)
+                    .map((c) => (
+                      <div key={c.id} className={styles.exchange}>
+                        <p>
+                          <strong>You</strong>
+                        </p>
+                        <p>{c.question}</p>
+                        <p>
+                          <strong>BidXchange · earlier answer</strong>
+                        </p>
+                        {c.answer!.answer.map((item, i) => (
+                          <p key={i} style={{ whiteSpace: 'pre-wrap' }}>
+                            {item.text}
+                          </p>
+                        ))}
+                        <button
+                          type="button"
+                          className="text-button"
+                          disabled={pending}
+                          onClick={() => {
+                            setActive(c.id);
+                            setMode(c.mode);
+                            thread.current = c.answer?.continuation
+                              ? { mode: c.mode, token: c.answer.continuation }
+                              : null;
+                          }}
+                        >
+                          Review sources or continue from this answer
+                        </button>
+                      </div>
+                    ))}
+                </section>
+              )}
+              <div className={styles.suggestions} hidden={conversations.length > 0}>
                 {!demo && context?.kind === 'pursuit' && (
                   <button
                     className="button secondary"
@@ -407,6 +489,132 @@ export default function Assistant({
                   </button>
                 ))}
               </div>
+              {selected?.document && (
+                <article aria-label="Assistant document">
+                  <h3>Response draft</h3>
+                  <p>{selected.document.message}</p>
+                  {selected.document.href && (
+                    <a className="button primary" href={selected.document.href}>
+                      Open response workspace
+                    </a>
+                  )}
+                  <p>
+                    Drafts need human review before use. Nothing has been approved or submitted.
+                  </p>
+                </article>
+              )}
+              {selected?.answer && (
+                <article aria-label="Assistant answer">
+                  <h3>{demo ? 'Fictional answer' : 'Assistant response'}</h3>
+                  <p>{selected.answer.notice}</p>
+                  {!demo && selected.mode === 'workspace' && (
+                    <div>
+                      <p>
+                        {selected.answer.recordsCheckedAt
+                          ? `Records checked: ${new Date(selected.answer.recordsCheckedAt).toLocaleString()}`
+                          : 'Saved-record snapshot'}
+                        . Later edits do not change this answer.
+                      </p>
+                      <button
+                        className="button secondary"
+                        disabled={pending || !available}
+                        onClick={() => void ask(selected.question, false, 'workspace', true)}
+                      >
+                        Refresh from company records
+                      </button>
+                    </div>
+                  )}
+                  <p>{selected.question}</p>
+                  {selected.answer.answer.map((item, index) => (
+                    <div key={index}>
+                      <p style={{ whiteSpace: 'pre-wrap' }}>{item.text}</p>
+                      {!demo && selected.mode === 'workspace' && (
+                        <small>
+                          {item.sources.length
+                            ? 'Based on cited workspace records; AI interpretation requires review.'
+                            : 'General guidance, assumptions or draft text—not a company record.'}
+                        </small>
+                      )}
+                    </div>
+                  ))}
+                  {!demo && !selected.answer.continuation && (
+                    <p>
+                      Follow-up context is unavailable for this answer. Include the relevant details
+                      in your next question.
+                    </p>
+                  )}
+                  {selected.answer.evidence.map((item) => (
+                    <details key={item.citation.key}>
+                      <summary>
+                        {item.citation.title} · {item.citation.status.replaceAll('_', ' ')}
+                      </summary>
+                      <dl>
+                        {Object.entries(item.fields)
+                          .filter(([key]) => key !== 'workspaceRoute')
+                          .map(([key, value]) => (
+                            <div key={key}>
+                              <dt>{evidenceLabel(key)}</dt>
+                              <dd>{evidenceValue(value)}</dd>
+                            </div>
+                          ))}
+                      </dl>
+                    </details>
+                  ))}
+                  {selected.answer.risks.length > 0 && <h3>Risks or missing information</h3>}
+                  <ul>
+                    {selected.answer.risks.map((r) => (
+                      <li key={r}>{r}</li>
+                    ))}
+                  </ul>
+                  {selected.answer.nextAction && <h3>Recommended next action</h3>}
+                  <p>{selected.answer.nextAction}</p>
+                  {selected.answer.citations.length > 0 && <h3>Sources</h3>}
+                  <ul>
+                    {selected.answer.citations.map((c) => (
+                      <li key={c.key}>
+                        {c.href ? <Link href={c.href}>{c.title}</Link> : c.title}
+                        <small>
+                          {' '}
+                          · {c.type} · {c.status} · Updated: {c.updatedAt ?? 'unknown'}
+                        </small>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className={styles.actions}>
+                    <button
+                      className="button secondary"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(
+                            [
+                              ...selected.answer!.answer.map((a) => a.text),
+                              ...selected.answer!.risks,
+                              selected.answer!.nextAction,
+                              ...selected.answer!.citations.map(
+                                (c) => `${c.title}: ${c.href ?? c.key}`,
+                              ),
+                            ]
+                              .filter(Boolean)
+                              .join('\n\n'),
+                          );
+                          setFeedback('Answer and citations copied.');
+                        } catch {
+                          setFeedback('Clipboard unavailable.');
+                        }
+                      }}
+                    >
+                      Copy answer
+                    </button>
+                    <button className="button secondary" onClick={() => void rate('helpful')}>
+                      Helpful
+                    </button>
+                    <button className="button secondary" onClick={() => void rate('unhelpful')}>
+                      Not helpful
+                    </button>
+                  </div>
+                  <p role="status">{feedback}</p>
+                </article>
+              )}
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
@@ -420,7 +628,10 @@ export default function Assistant({
                       aria-label="Answer mode"
                       value={mode}
                       disabled={pending}
-                      onChange={(e) => setMode(e.target.value as 'general' | 'workspace')}
+                      onChange={(e) => {
+                        thread.current = null;
+                        setMode(e.target.value as 'general' | 'workspace');
+                      }}
                     >
                       <option value="general">General questions</option>
                       <option value="workspace">Workspace records</option>
@@ -473,110 +684,6 @@ export default function Assistant({
                     Retry
                   </button>
                 </div>
-              )}
-              {selected?.document && (
-                <article aria-label="Assistant document">
-                  <h3>Response draft</h3>
-                  <p>{selected.document.message}</p>
-                  {selected.document.href && (
-                    <a className="button primary" href={selected.document.href}>
-                      Open response workspace
-                    </a>
-                  )}
-                  <p>
-                    Drafts need human review before use. Nothing has been approved or submitted.
-                  </p>
-                </article>
-              )}
-              {selected?.answer && (
-                <article aria-label="Assistant answer">
-                  <h3>{demo ? 'Fictional answer' : 'Assistant response'}</h3>
-                  <p>{selected.answer.notice}</p>
-                  {!demo && selected.mode === 'workspace' && (
-                    <div>
-                      <p>
-                        {selected.answer.recordsCheckedAt
-                          ? `Records checked: ${new Date(selected.answer.recordsCheckedAt).toLocaleString()}`
-                          : 'Saved-record snapshot'}
-                        . Later edits do not change this answer.
-                      </p>
-                      <button
-                        className="button secondary"
-                        disabled={pending || !available}
-                        onClick={() => void ask(selected.question, false, 'workspace')}
-                      >
-                        Refresh from company records
-                      </button>
-                    </div>
-                  )}
-                  <p>{selected.question}</p>
-                  {selected.answer.answer.map((item, index) => (
-                    <p key={index} style={{ whiteSpace: 'pre-wrap' }}>
-                      {item.text}
-                    </p>
-                  ))}
-                  {selected.answer.evidence.map((item) => (
-                    <details key={item.citation.key} open>
-                      <summary>
-                        {item.citation.title} · {item.citation.status.replaceAll('_', ' ')}
-                      </summary>
-                      <dl>
-                        {Object.entries(item.fields)
-                          .filter(([key]) => key !== 'workspaceRoute')
-                          .map(([key, value]) => (
-                            <div key={key}>
-                              <dt>{evidenceLabel(key)}</dt>
-                              <dd>{evidenceValue(value)}</dd>
-                            </div>
-                          ))}
-                      </dl>
-                    </details>
-                  ))}
-                  {selected.answer.risks.length > 0 && <h3>Risks or missing information</h3>}
-                  <ul>
-                    {selected.answer.risks.map((r) => (
-                      <li key={r}>{r}</li>
-                    ))}
-                  </ul>
-                  {selected.answer.nextAction && <h3>Recommended next action</h3>}
-                  <p>{selected.answer.nextAction}</p>
-                  {selected.answer.citations.length > 0 && <h3>Sources</h3>}
-                  <ul>
-                    {selected.answer.citations.map((c) => (
-                      <li key={c.key}>
-                        {c.href ? <Link href={c.href}>{c.title}</Link> : c.title}
-                        <small>
-                          {' '}
-                          · {c.type} · {c.status} · Updated: {c.updatedAt ?? 'unknown'}
-                        </small>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className={styles.actions}>
-                    <button
-                      className="button secondary"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(
-                            JSON.stringify(selected.answer, null, 2),
-                          );
-                          setFeedback('Answer and citations copied.');
-                        } catch {
-                          setFeedback('Clipboard unavailable.');
-                        }
-                      }}
-                    >
-                      Copy answer
-                    </button>
-                    <button className="button secondary" onClick={() => void rate('helpful')}>
-                      Helpful
-                    </button>
-                    <button className="button secondary" onClick={() => void rate('unhelpful')}>
-                      Not helpful
-                    </button>
-                  </div>
-                  <p role="status">{feedback}</p>
-                </article>
               )}
             </div>
           </div>

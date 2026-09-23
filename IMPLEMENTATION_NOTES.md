@@ -1,5 +1,9 @@
 # California contractor implementation
 
+## Conversational assistant — September 22
+
+Preserve Responses API, organization RLS, role/classification filters, usage reservations, cancellation and read-only tools. Retain model prose with validated record references and labeled unsourced suggestions instead of replacing answers with record titles. Carry bounded recent turns in encrypted, authenticated, expiring continuation tokens bound to user, role, company, mode and pursuit context; re-read all referenced evidence before reuse and reject stale/revoked context. No persistent chat database or browser storage. Reset continuity on new chat, scope/mode change, reload or access change. Revalidate all retrieved records before releasing narrative; citations alone do not prove narrative accuracy. Test real prose retention, forged/stale/cross-tenant history, mode separation, follow-ups, injection boundaries, revocation and failures. Keep human approvals and separate explicit document workflow. Configured model and daily request limits unchanged; answer token cap increased from 1,800 to 3,000; verify provider behavior with synthetic prompts before release.
+
 ## Pursuit next-action brief — September 22
 
 Extend the existing workspace-guide next-action selector and panel rather than add another task or decision system. For an open pursuit, show recorded deadline/time zone, human-confirmed blockers, open/overdue tasks, decision freshness and the responsible assignee or role. Prioritize source deadlines, unreviewed amendments, stale decisions, confirmed blockers and overdue work over generic guidance. Respect a current no-bid decision; never infer submission or eligibility. Use only the selected authorized pursuit's loaded records; no schema, AI call or mutation. Test scope, stale/no-bid behavior, role handoff, priorities, missing dates and desktop/mobile links; run regression, hosted workflow and build before release.

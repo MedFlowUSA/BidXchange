@@ -1,0 +1,113 @@
+import { test, expect } from '@playwright/test';
+import { build } from 'esbuild';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+
+test('assistant route replays authenticated history, rejects foreign scope before paid work and checks final access', async () => {
+  const fixture = {
+    user: 'user-a',
+    role: 'viewer',
+    enabled: true,
+    reservations: 0,
+    revokeAfterModel: false,
+    histories: [] as unknown[],
+    db: {
+      async rpc() {
+        fixture.reservations++;
+        return { data: 'reserved', error: null };
+      },
+      from() {
+        return {
+          select() {
+            return {
+              eq() {
+                return {
+                  async maybeSingle() {
+                    return { data: { enabled: fixture.enabled }, error: null };
+                  },
+                };
+              },
+            };
+          },
+        };
+      },
+    },
+  };
+  const output = await build({
+    entryPoints: ['apps/web/app/api/assistant/route.ts'],
+    bundle: true,
+    write: false,
+    platform: 'node',
+    format: 'cjs',
+    packages: 'external',
+    plugins: [
+      {
+        name: 'route-fixture',
+        setup(b) {
+          b.onResolve(
+            { filter: /(?:lib\/ai\/(?:config|server|engine|tools)|^openai)$/ },
+            (args) => ({ path: args.path.split('/').pop()!, namespace: 'fixture' }),
+          );
+          b.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({
+            contents: (
+              {
+                config: `export const aiConfig=()=>({key:'synthetic-secret',model:'test',orgLimit:10,userLimit:10});`,
+                server: `export const requireSameOrigin=()=>{}; export async function authorizeAi(){return {user:{id:fixture.user},role:fixture.role,db:fixture.db};}`,
+                tools: `export class EvidenceTools { evidence=new Map(); async run(){} }`,
+                engine: `export async function runAssistant(a,b,c,d,e,f,g,authorize,mode,history){
+          await authorize(); fixture.histories.push(history);
+          if(fixture.revokeAfterModel) fixture.user='revoked-user';
+          return {answer:{answer:[{text:'Useful suggested plan.',sources:[]}],risks:[],nextAction:'',citations:[],evidence:[],notice:'AI analysis'},inputTokens:1,outputTokens:1};
+        }`,
+                openai: `export default class OpenAI { static RateLimitError=class extends Error{}; static APIConnectionTimeoutError=class extends Error{}; }`,
+              } as Record<string, string>
+            )[path],
+          }));
+        },
+      },
+    ],
+  });
+  const compiled = { exports: {} as { POST: (r: Request) => Promise<Response> } };
+  new Function('module', 'exports', 'require', 'fixture', output.outputFiles[0].text)(
+    compiled,
+    compiled.exports,
+    createRequire(path.resolve('package.json')),
+    fixture,
+  );
+  const post = (continuation?: string) =>
+    compiled.exports.POST(
+      new Request('https://bidxapp.vercel.app/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationId: '11111111-1111-4111-8111-111111111111',
+          requestId: crypto.randomUUID(),
+          prompt: 'Help me plan',
+          context: null,
+          mode: 'workspace',
+          continuation,
+        }),
+      }),
+    );
+  const first = await post();
+  const event = JSON.parse((await first.text()).trim());
+  expect(event.type).toBe('answer');
+  expect(event.answer.answer[0].text).toBe('Useful suggested plan.');
+  const token = event.answer.continuation;
+  expect(typeof token).toBe('string');
+  await (await post(token)).text();
+  expect(fixture.histories[1]).toEqual([
+    { question: 'Help me plan', answer: 'Useful suggested plan.' },
+  ]);
+  const before = fixture.reservations;
+  fixture.user = 'foreign-user';
+  const foreign = await post(token);
+  expect(foreign.status).toBe(409);
+  expect(fixture.reservations).toBe(before);
+  fixture.user = 'user-a';
+  fixture.revokeAfterModel = true;
+  const revoked = await post(token);
+  const rejected = JSON.parse((await revoked.text()).trim());
+  expect(rejected).toMatchObject({ type: 'error', code: 'forbidden' });
+  expect(rejected.answer).toBeUndefined();
+});

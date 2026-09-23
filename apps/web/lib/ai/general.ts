@@ -1,6 +1,7 @@
 import type OpenAI from 'openai';
 import type { Response } from 'openai/resources/responses/responses';
 import { AiError, LIMITS, type Answer } from './contracts';
+import type { ChatTurn } from './conversation';
 
 export async function generalAnswer(
   client: Pick<OpenAI, 'responses'>,
@@ -8,6 +9,7 @@ export async function generalAnswer(
   prompt: string,
   signal: AbortSignal,
   authorize: () => Promise<void>,
+  history: ChatTurn[] = [],
 ): Promise<{ answer: Answer; inputTokens: number; outputTokens: number }> {
   if (signal.aborted) throw new AiError('cancelled', 499);
   await authorize();
@@ -18,7 +20,13 @@ export async function generalAnswer(
       stream: true,
       max_output_tokens: LIMITS.outputTokens,
       instructions: `You are BidXchange's general assistant. Answer the user's question helpfully and directly: explanations, writing, brainstorming, planning, coding, and general knowledge are welcome. You have no access to company records, files, live websites, or external actions in this mode. Do not invent company details, citations, current news, prices, laws or procurement results. When current information is needed, explain that it requires verification. If asked about saved company records, direct the user to Workspace records mode. You may help draft or reason, but never claim to approve bids, verify qualifications, send messages, or submit anything. Distinguish user-provided assumptions from verified facts. Give appropriate uncertainty for high-stakes questions. Use plain text and concise paragraphs; never claim that your response is a verified record.`,
-      input: [{ role: 'user', content: prompt }],
+      input: [
+        ...history.flatMap((t) => [
+          { role: 'user' as const, content: t.question },
+          { role: 'assistant' as const, content: t.answer },
+        ]),
+        { role: 'user', content: prompt },
+      ],
     },
     { signal },
   );

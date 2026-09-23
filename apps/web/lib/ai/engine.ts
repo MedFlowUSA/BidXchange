@@ -4,7 +4,6 @@ import { z } from 'zod';
 import {
   AiError,
   answerSchema,
-  FEED_NOTICE,
   LIMITS,
   NO_EVIDENCE,
   type Answer,
@@ -13,6 +12,7 @@ import {
 import { SYSTEM_POLICY } from './policy';
 import { EvidenceTools, functionTools } from './tools';
 import { generalAnswer } from './general';
+import type { ChatTurn } from './conversation';
 export type ModelClient = Pick<OpenAI, 'responses'>;
 export async function runAssistant(
   client: ModelClient,
@@ -24,12 +24,19 @@ export async function runAssistant(
   status: (text: string) => void,
   authorize: () => Promise<void>,
   mode: 'general' | 'workspace' = 'workspace',
+  history: ChatTurn[] = [],
 ): Promise<{ answer: Answer; inputTokens: number; outputTokens: number }> {
   if (mode === 'general') {
     status('Thinking about your question…');
-    return generalAnswer(client, model, prompt, signal, authorize);
+    return generalAnswer(client, model, prompt, signal, authorize, history);
   }
-  const input: ResponseInput = [{ role: 'user', content: prompt }];
+  const input: ResponseInput = [
+    ...history.flatMap((t) => [
+      { role: 'user' as const, content: t.question },
+      { role: 'assistant' as const, content: t.answer },
+    ]),
+    { role: 'user', content: prompt },
+  ];
   let calls = 0,
     inputTokens = 0,
     outputTokens = 0;
@@ -128,27 +135,29 @@ export async function runAssistant(
     const keys = [...new Set(parsed.data.answer.flatMap((item) => item.sources))];
     if (keys.some((key) => !tools.evidence.has(key))) throw new AiError('invalid_answer', 502);
     await authorize();
-    // Extractive first release: the model selects evidence, but cannot invent factual prose,
-    // qualification results, URLs, or instructions in any output section.
+    // Citation membership is checked; narrative remains AI analysis, never a verified finding.
+    const prose = JSON.stringify(parsed.data);
+    if (
+      /\b(?:you|we|this company) (?:will win|are legally eligible|is legally eligible)|\bI (?:have )?(?:submitted|signed|approved|certified)\b/i.test(
+        prose,
+      )
+    )
+      throw new AiError('invalid_answer', 502);
     const evidence = keys
       .map((key) => tools.evidence.get(key)!)
       .filter((item) => item.citation.type !== 'workspace');
     return {
       answer: {
-        answer: evidence.map((item) => ({
-          text: `${item.citation.title} — ${item.citation.status.replaceAll('_', ' ')}`,
-          sources: [item.citation.key],
-        })),
+        answer: parsed.data.answer,
         risks: [
-          ...(evidence.length ? [] : [NO_EVIDENCE]),
-          'Only the returned records were reviewed. Unknown sensitivity and source notes are excluded. Missing records do not prove that a requirement is satisfied.',
-          'Real eligibility and fit scores have not been evaluated. Recorded verification does not guarantee present qualification.',
+          ...(!evidence.length && !parsed.data.answer.length ? [NO_EVIDENCE] : []),
+          ...parsed.data.risks,
         ],
-        nextAction:
-          'Review the cited records and current official solicitation with an authorized human before pricing, bid/no-bid, verification or submission decisions.',
+        nextAction: parsed.data.nextAction,
         citations: evidence.map((item) => item.citation),
         evidence,
-        notice: FEED_NOTICE,
+        notice:
+          'AI analysis and suggestions—not an approved finding. Company claims should be checked against the cited records.',
       },
       inputTokens,
       outputTokens,

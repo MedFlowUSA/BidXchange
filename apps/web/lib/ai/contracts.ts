@@ -18,6 +18,7 @@ export const requestSchema = z
     prompt: z.string().trim().min(1).max(3000),
     context: contextSchema.nullable(),
     mode: z.enum(['general', 'workspace']).default('workspace'),
+    continuation: z.string().max(70000).optional(),
   })
   .strict();
 export type AssistantContext = z.infer<typeof contextSchema>;
@@ -37,7 +38,7 @@ export const answerSchema = z
     answer: z
       .array(
         z
-          .object({ text: z.string().min(1).max(1000), sources: z.array(z.string()).min(1).max(8) })
+          .object({ text: z.string().min(1).max(2000), sources: z.array(z.string()).max(8) })
           .strict(),
       )
       .max(8),
@@ -50,6 +51,7 @@ export type Answer = z.infer<typeof answerSchema> & {
   evidence: Evidence[];
   notice: string;
   recordsCheckedAt?: string;
+  continuation?: string;
 };
 export const NO_EVIDENCE =
   'I could not verify that from the records currently available to BidXchange.';
@@ -59,9 +61,9 @@ export const LIMITS = {
   prompt: 3000,
   toolCalls: 6,
   records: 40,
-  outputTokens: 1800,
+  outputTokens: 3000,
   timeoutMs: 45000,
-  bodyBytes: 14000,
+  bodyBytes: 80000,
 };
 export class AiError extends Error {
   constructor(
@@ -72,6 +74,8 @@ export class AiError extends Error {
   }
 }
 export const errorMessages: Record<string, string> = {
+  conversation_changed:
+    'Conversation context changed or expired. Start a new conversation to read current records.',
   unauthenticated: 'Sign in to use the assistant.',
   forbidden: 'This workspace or record is unavailable to your account.',
   unavailable:
@@ -84,5 +88,5 @@ export const errorMessages: Record<string, string> = {
   timeout: 'The assistant timed out. Try a shorter question.',
   cancelled: 'Generation cancelled.',
   service_unavailable: 'The model service is unavailable. Try again later.',
-  invalid_answer: 'The answer could not be verified. No generated answer was released.',
+  invalid_answer: 'The answer did not pass response checks. Please rephrase your question.',
 };

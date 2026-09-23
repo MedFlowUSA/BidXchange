@@ -3,6 +3,52 @@ import { build } from 'esbuild';
 import path from 'node:path';
 let js = '',
   css = '';
+
+test('follow-ups send opaque continuation and new chat or mode changes reset it', async ({
+  page,
+}) => {
+  const requests: Record<string, unknown>[] = [];
+  await page.route('**/api/assistant', (r) => {
+    requests.push(r.request().postDataJSON());
+    return r.fulfill({
+      contentType: 'application/x-ndjson',
+      body:
+        JSON.stringify({
+          type: 'answer',
+          answer: {
+            answer: [{ text: 'Helpful answer ' + requests.length, sources: [] }],
+            evidence: [],
+            citations: [],
+            risks: [],
+            nextAction: '',
+            notice: 'Synthetic response',
+            continuation: 'opaque-' + requests.length,
+          },
+        }) + '\n',
+    });
+  });
+  await mount(page);
+  const ask = async (text: string) => {
+    const expected = requests.length + 1;
+    await page.locator('#assistant-question').fill(text);
+    if (requests.length === 0)
+      await page.screenshot({ path: test.info().outputPath('before-send.png'), fullPage: true });
+    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await expect(page.getByRole('article')).toContainText('Helpful answer ' + expected);
+  };
+  await ask('Suggest a plan');
+  await ask('Expand the second step');
+  expect(requests[1].continuation).toBe('opaque-1');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: test.info().outputPath('conversation.png'), fullPage: true });
+  await page.getByRole('button', { name: 'New conversation', exact: true }).click();
+  await ask('A different topic');
+  expect(requests[2].continuation).toBeUndefined();
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await ask('Explain a term');
+  expect(requests[3].continuation).toBeUndefined();
+  expect(requests[3].context).toBeNull();
+});
 test.beforeAll(async () => {
   const bundle = await build({
     entryPoints: ['tests/fixtures/assistant-harness.tsx'],
@@ -28,10 +74,13 @@ test.beforeAll(async () => {
   css = bundle.outputFiles.find((f) => f.path.endsWith('.css'))!.text;
 });
 async function mount(page: Page, available = true) {
+  await page.route('https://fonts.googleapis.com/**', (r) =>
+    r.fulfill({ contentType: 'text/css', body: '' }),
+  );
   await page.route('**/assistant-test', (r) =>
     r.fulfill({
       contentType: 'text/html',
-      body: '<html><head><link rel="stylesheet" href="/assistant-harness.css"></head><body><div id="root"></div><script src="/assistant-harness.js"></script></body></html>',
+      body: '<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assistant-harness.css"></head><body><div id="root"></div><script src="/assistant-harness.js"></script></body></html>',
     }),
   );
   await page.route('**/assistant-harness.js', (r) =>

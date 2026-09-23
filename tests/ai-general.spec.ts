@@ -69,3 +69,22 @@ test('general responses stop after role revocation or cancellation and reject em
     generalAnswer(client(''), 'test', 'Question', new AbortController().signal, async () => {}),
   ).rejects.toMatchObject({ code: 'invalid_answer' });
 });
+
+test('validated recent messages reach the model for follow-up reasoning', async () => {
+  const history = [{ question: 'Draft a meeting agenda', answer: '1. Scope\n2. Responsibilities' }];
+  const result = await generalAnswer(
+    client('Revised agenda', (args) =>
+      expect(args.input).toEqual([
+        { role: 'user', content: history[0].question },
+        { role: 'assistant', content: history[0].answer },
+        { role: 'user', content: 'Make the second item more detailed' },
+      ]),
+    ),
+    'test',
+    'Make the second item more detailed',
+    new AbortController().signal,
+    async () => {},
+    history,
+  );
+  expect(result.answer.answer[0].text).toBe('Revised agenda');
+});

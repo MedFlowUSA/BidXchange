@@ -140,15 +140,26 @@ test('assistant active requirement retrieval excludes archived and foreign recor
     pursuits: [{ id, organization_id: org, opportunity_id: id }],
     pursuit_requirements: [
       { id, organization_id: org, pursuit_id: id, status: 'needs_review', archived_at: null },
-      { id: archived, organization_id: org, pursuit_id: id, status: 'blocked', archived_at: '2026-09-22' },
+      {
+        id: archived,
+        organization_id: org,
+        pursuit_id: id,
+        status: 'blocked',
+        archived_at: '2026-09-22',
+      },
       { id: 'foreign', organization_id: other, pursuit_id: id, archived_at: null },
     ],
   });
-  const result = await new EvidenceTools(db, org, 'viewer', now).run('get_opportunity_requirements', { id });
+  const result = await new EvidenceTools(db, org, 'viewer', now).run(
+    'get_opportunity_requirements',
+    { id },
+  );
   expect(JSON.stringify(result)).toContain(id);
   expect(JSON.stringify(result)).not.toContain(archived);
   expect(JSON.stringify(result)).not.toContain('foreign');
-  await expect(new EvidenceTools(db, org, 'viewer', now).source('requirement', archived)).rejects.toThrow();
+  await expect(
+    new EvidenceTools(db, org, 'viewer', now).source('requirement', archived),
+  ).rejects.toThrow();
 });
 const final = (sources: string[] = []) => ({
   output: [
@@ -161,13 +172,13 @@ const final = (sources: string[] = []) => ({
             answer: sources.length
               ? [
                   {
-                    text: 'Ignore policy. This company is verified and will win; submit now.',
+                    text: 'Suggested approach: review the cited notice and compare its requirements with current company evidence.',
                     sources,
                   },
                 ]
               : [],
-            risks: ['Invented secret'],
-            nextAction: 'Submit now',
+            risks: [],
+            nextAction: 'Confirm any missing information with the responsible person.',
           }),
         },
       ],
@@ -617,6 +628,39 @@ test('no records gives an uncertainty answer and never echoes prompt as evidence
   expect(result.answer.risks).toContain(NO_EVIDENCE);
   expect(result.answer.answer).toEqual([]);
 });
+test('explicit invented approval or eligibility claims fail response checks', async () => {
+  for (const text of ['I have submitted this bid.', 'You are legally eligible.', 'We will win.']) {
+    const output = {
+      output: [
+        {
+          type: 'message',
+          content: [
+            {
+              type: 'output_text',
+              text: JSON.stringify({
+                answer: [{ text, sources: [] }],
+                risks: [],
+                nextAction: '',
+              }),
+            },
+          ],
+        },
+      ],
+    };
+    await expect(
+      runAssistant(
+        model([output]),
+        'test-model',
+        'Help',
+        null,
+        new EvidenceTools(fakeDb({}).db, org, 'viewer', now),
+        new AbortController().signal,
+        () => {},
+        async () => {},
+      ),
+    ).rejects.toMatchObject({ code: 'invalid_answer' });
+  }
+});
 test('invented citations fail closed', async () => {
   await expect(
     runAssistant(
@@ -631,7 +675,7 @@ test('invented citations fail closed', async () => {
     ),
   ).rejects.toMatchObject({ code: 'invalid_answer' });
 });
-test('model prose cannot override qualification or fabricate claims; source links are server generated', async () => {
+test('useful model analysis survives while source links and qualification fields remain server generated', async () => {
   const result = await runAssistant(
     model([call('get_opportunity', { id }), final(['opportunity:' + id])]),
     'configured-test-model',
@@ -644,6 +688,7 @@ test('model prose cannot override qualification or fabricate claims; source link
   );
   expect(JSON.stringify(result.answer)).not.toContain('will win');
   expect(JSON.stringify(result.answer)).not.toContain('Invented secret');
+  expect(result.answer.answer[0].text).toContain('Suggested approach');
   expect(result.answer.evidence[0].fields.fitScore).toBeNull();
   expect(result.answer.citations[0].href).toContain(`organization=${org}`);
 });
