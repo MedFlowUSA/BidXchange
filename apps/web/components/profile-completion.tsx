@@ -68,67 +68,69 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
         />{' '}
         Show only items with missing fields
       </label>
-      {progress.sections.map((section) => (
-        <details key={section.id}>
-          <summary>
-            {section.title} · {section.completed}/{section.total} fields recorded
-          </summary>
-          {section.items
-            .filter((item) => !missingOnly || item.completed < item.total)
-            .map((item) => (
-              <article key={item.label} style={{ padding: '12px 0' }}>
-                <h3>
-                  {item.label} · {item.completed}/{item.total}
-                </h3>
-                <ul>
-                  {item.checks
-                    .filter((field) => !missingOnly || !field.recorded)
-                    .map((field) => (
-                      <li key={field.key}>
-                        {field.recorded
-                          ? 'Recorded'
-                          : admin
-                            ? 'To add'
-                            : 'Not recorded in your visible records'}
-                        : {field.label}
-                      </li>
-                    ))}
-                </ul>
-                {item.legacy && (
+      <div className="profile-completion-sections">
+        {progress.sections.map((section) => (
+          <details key={section.id}>
+            <summary>
+              {section.title} · {section.completed}/{section.total} fields recorded
+            </summary>
+            {section.items
+              .filter((item) => !missingOnly || item.completed < item.total)
+              .map((item) => (
+                <article key={item.label} style={{ padding: '12px 0' }}>
+                  <h3>
+                    {item.label} · {item.completed}/{item.total}
+                  </h3>
+                  <ul>
+                    {item.checks
+                      .filter((field) => !missingOnly || !field.recorded)
+                      .map((field) => (
+                        <li key={field.key}>
+                          {field.recorded
+                            ? 'Recorded'
+                            : admin
+                              ? 'To add'
+                              : 'Not recorded in your visible records'}
+                          : {field.label}
+                        </li>
+                      ))}
+                  </ul>
+                  {item.legacy && (
+                    <p>
+                      Earlier unstructured record found. Open Edit saved evidence to organize its
+                      details; the original record is retained.
+                    </p>
+                  )}
                   <p>
-                    Earlier unstructured record found. Open Edit saved evidence to organize its
-                    details; the original record is retained.
+                    Evidence review:{' '}
+                    {item.review?.replaceAll('_', ' ') ?? 'No matching record visible'}. Field
+                    completion does not change this status.
                   </p>
-                )}
-                <p>
-                  Evidence review:{' '}
-                  {item.review?.replaceAll('_', ' ') ?? 'No matching record visible'}. Field
-                  completion does not change this status.
-                </p>
-                <Link href={destination(section.id, item.factId)}>
-                  {item.factId
-                    ? 'Open saved record'
-                    : admin
-                      ? 'Add company information'
-                      : 'Review Passport question'}
-                </Link>
-                {item.completed < item.total && (
-                  <ProfileInformationRequest
-                    data={data}
-                    section={section.id}
-                    item={item.label}
-                    missing={item.checks
-                      .filter((field) => !field.recorded)
-                      .map((field) => field.label)}
-                  />
-                )}
-              </article>
-            ))}
-          {missingOnly && section.completed === section.total && (
-            <p>No missing fields in this section. Evidence may still need review.</p>
-          )}
-        </details>
-      ))}
+                  <Link href={destination(section.id, item.factId)}>
+                    {item.factId
+                      ? 'Open saved record'
+                      : admin
+                        ? 'Add company information'
+                        : 'Review Passport question'}
+                  </Link>
+                  {item.completed < item.total && (
+                    <ProfileInformationRequest
+                      data={data}
+                      section={section.id}
+                      item={item.label}
+                      missing={item.checks
+                        .filter((field) => !field.recorded)
+                        .map((field) => field.label)}
+                    />
+                  )}
+                </article>
+              ))}
+            {missingOnly && section.completed === section.total && (
+              <p>No missing fields in this section. Evidence may still need review.</p>
+            )}
+          </details>
+        ))}
+      </div>
       <p className="fact-source">
         Checklist: California contractor Level 1. One saved record is assessed per item; conflicting
         records are not combined. Advanced fields can be added when a notice requires them.

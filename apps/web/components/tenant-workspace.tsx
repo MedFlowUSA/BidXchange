@@ -4,6 +4,7 @@ import { useActionState, useState, useEffect } from 'react';
 import AppShell from './app-shell';
 import ProfileCompletion from './profile-completion';
 import InformationRequests from './information-requests';
+import CompanyPortal, { CompanyPanel } from './company-portal';
 import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
 import ResponseReleases from './response-release';
@@ -295,7 +296,7 @@ export default function TenantWorkspace({
         </Dialog>
       )}
       <main>
-        {data.selfServiceEnabled && !recordId && (page === 'Company' || page === 'Today') && (
+        {data.selfServiceEnabled && !recordId && page === 'Today' && (
           <div className="info-note">
             <Link href={workspaceHref('/onboarding', org.id)}>
               Continue company setup and your first opportunity →
@@ -303,7 +304,7 @@ export default function TenantWorkspace({
           </div>
         )}
         {page === 'Today' && <GettingStarted data={data} onOpen={() => setGuideOpen(true)} />}
-        {['Today', 'Company', 'Opportunities', 'Pursuits'].includes(page) && (
+        {['Today', 'Opportunities', 'Pursuits'].includes(page) && (
           <NextActions
             data={data}
             page={page}
@@ -353,7 +354,9 @@ export default function TenantWorkspace({
             <p>
               {recordId
                 ? 'A dedicated, organization-scoped record.'
-                : 'Authenticated organization data. Working facts require human verification.'}
+                : page === 'Company'
+                  ? 'Manage your profile, review your records and keep information current.'
+                  : 'Authenticated organization data. Working facts require human verification.'}
             </p>
           </div>
           {!recordId && (page === 'Reports' || page === 'Today') && (
@@ -680,157 +683,159 @@ export default function TenantWorkspace({
         )}
         {!recordId && page === 'Company' && (
           <>
-            <div className="company-hero">
-              <span className="large-avatar">
-                {org.operating_name
-                  .split(/\s+/)
-                  .slice(0, 2)
-                  .map((part) => part[0])
-                  .join('')
-                  .toUpperCase()}
-              </span>
-              <div>
-                <div className="eyebrow">COMPANY PASSPORT</div>
-                <h2>{org.operating_name}</h2>
-                <p>{org.legal_name}</p>
-              </div>
-              <span className="fit amber">{pending.length} visible facts need review</span>
-            </div>
-            <div className="info-note">
-              Pending facts are working research, not approved proposal evidence. CSLB and SAM
-              status are not assumed active. Unknown values remain unfilled.
-            </div>
-            <ProfileCompletion key={org.id + '-completion'} data={data} />
-            <EvidenceReminders data={data} />
-            <EvidenceRenewals key={org.id + '-renewals'} data={data} />
-            <CompanyPassport key={org.id} data={data} />
-            <section className="panel" id="company-readiness">
-              <h2>Review your saved company evidence</h2>
-              <p>
-                Start with the company basics, then review the areas relevant to your work. Your
-                representative supplies the records; an authorized reviewer checks the evidence.
-              </p>
-              <p>
-                This is a review of records visible to your role, not a completeness score or
-                eligibility decision. Restricted records may be hidden, and this view contains at
-                most 500 facts. An empty area does not prove information is missing.
-              </p>
-              <p>
-                Supporting uploads and proposal-use approvals are not yet available. Keep source
-                references with each saved record; do not enter passwords or full tax identifiers.
-              </p>
-              <Link className="text-button" href={href('/documents')}>
-                View authorized document records →
-              </Link>
-            </section>
-            <section className="panel" aria-label="Find company evidence">
-              <label>
-                Search saved evidence
-                <input
-                  aria-label="Search saved evidence"
-                  value={companyQuery}
-                  onChange={(e) => setCompanyQuery(e.target.value)}
-                />
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={reviewOnly}
-                  onChange={(e) => setReviewOnly(e.target.checked)}
-                />{' '}
-                Only records needing review
-              </label>
-              {pending[0] && (
-                <p>
-                  <a className="button secondary" href={`#fact-${pending[0].id}`}>
-                    Review next record
-                  </a>
-                </p>
-              )}
-              <p>
-                Open a section, then a record to review its source or edit it. Counts describe saved
-                records, not complete qualifications.
-              </p>
-              {!data.facts.some(visibleFact) && (
-                <p role="status">
-                  No saved records match these filters. Clear the search or change the review
-                  filter.
-                </p>
-              )}
-            </section>
-            {readiness.groups.map((area) => (
-              <details
-                className="panel"
-                key={area.id}
-                open={
-                  Boolean(companyQuery) ||
-                  reviewOnly ||
-                  area.facts.some((f) => f.id === focusedFact)
-                }
-              >
-                <summary>
-                  {area.title} · {area.facts.filter(visibleFact).length} shown ·{' '}
-                  {area.facts.filter((f) => reviewStatus(f, data.reviewAsOf) === 'reviewed').length}{' '}
-                  of {area.facts.length} reviewed
-                </summary>
-                <p>{area.why}</p>
-                {admin && (
-                  <CompanyRecordForm
-                    organizationId={org.id}
-                    types={area.types}
-                    structuredEnabled={data.structuredProfilesEnabled}
-                    members={data.members}
-                    userId={data.userId}
-                  />
-                )}
-                <p>
-                  {area.facts.length} visible records ·{' '}
-                  {area.facts.filter((f) => reviewStatus(f, data.reviewAsOf) !== 'reviewed').length}{' '}
-                  need review
-                </p>
-                {area.facts.length ? (
-                  <div className="company-grid">
-                    {area.facts.filter(visibleFact).map((f) => (
-                      <FactCard
+            <CompanyPortal key={org.id} data={data} reviewCount={pending.length}>
+              <CompanyPanel name="overview">
+                <ProfileCompletion key={org.id + '-completion'} data={data} />
+              </CompanyPanel>
+              <CompanyPanel name="dates">
+                <EvidenceReminders data={data} />
+                <EvidenceRenewals key={org.id + '-renewals'} data={data} />
+              </CompanyPanel>
+              <CompanyPanel name="edit">
+                <CompanyPassport key={org.id} data={data} />
+              </CompanyPanel>
+              <CompanyPanel name="records">
+                <section className="panel" id="company-readiness">
+                  <h2>Saved company records</h2>
+                  <p>Find a record to check its source, update details or review its evidence.</p>
+                  <details>
+                    <summary>About access and evidence review</summary>
+                    <p>
+                      This is a review of records visible to your role, not a completeness score or
+                      eligibility decision. Restricted records may be hidden, and this view contains
+                      at most 500 facts. An empty area does not prove information is missing.
+                    </p>
+                    <p>
+                      Supporting uploads and proposal-use approvals are not yet available. Keep
+                      source references with each saved record; do not enter passwords or full tax
+                      identifiers.
+                    </p>
+                  </details>
+                  <Link className="text-button" href={href('/documents')}>
+                    View authorized document records →
+                  </Link>
+                </section>
+                <section
+                  className="panel company-evidence-search"
+                  aria-label="Find company evidence"
+                >
+                  <label>
+                    Search saved evidence
+                    <input
+                      aria-label="Search saved evidence"
+                      value={companyQuery}
+                      onChange={(e) => setCompanyQuery(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={reviewOnly}
+                      onChange={(e) => setReviewOnly(e.target.checked)}
+                    />{' '}
+                    Only records needing review
+                  </label>
+                  {pending[0] && (
+                    <p>
+                      <a className="button secondary" href={`#fact-${pending[0].id}`}>
+                        Review next record
+                      </a>
+                    </p>
+                  )}
+                  <p>
+                    Open a section, then a record to review its source or edit it. Counts describe
+                    saved records, not complete qualifications.
+                  </p>
+                  {!data.facts.some(visibleFact) && (
+                    <p role="status">
+                      No saved records match these filters. Clear the search or change the review
+                      filter.
+                    </p>
+                  )}
+                </section>
+                {readiness.groups.map((area) => (
+                  <details
+                    className="panel"
+                    key={area.id}
+                    open={
+                      Boolean(companyQuery) ||
+                      reviewOnly ||
+                      area.facts.some((f) => f.id === focusedFact)
+                    }
+                  >
+                    <summary>
+                      {area.title} · {area.facts.filter(visibleFact).length} shown ·{' '}
+                      {
+                        area.facts.filter((f) => reviewStatus(f, data.reviewAsOf) === 'reviewed')
+                          .length
+                      }{' '}
+                      of {area.facts.length} reviewed
+                    </summary>
+                    <p>{area.why}</p>
+                    {admin && (
+                      <CompanyRecordForm
+                        organizationId={org.id}
+                        types={area.types}
                         structuredEnabled={data.structuredProfilesEnabled}
-                        fact={f}
                         members={data.members}
                         userId={data.userId}
-                        org={org.id}
-                        admin={admin}
-                        asOf={data.reviewAsOf}
-                        key={`${f.id}-${f.updated_at}`}
                       />
-                    ))}
-                  </div>
-                ) : (
-                  <p>
-                    No records visible in this area. Confirm applicable information with your
-                    administrator.
-                  </p>
+                    )}
+                    <p>
+                      {area.facts.length} visible records ·{' '}
+                      {
+                        area.facts.filter((f) => reviewStatus(f, data.reviewAsOf) !== 'reviewed')
+                          .length
+                      }{' '}
+                      need review
+                    </p>
+                    {area.facts.length ? (
+                      <div className="company-grid">
+                        {area.facts.filter(visibleFact).map((f) => (
+                          <FactCard
+                            structuredEnabled={data.structuredProfilesEnabled}
+                            fact={f}
+                            members={data.members}
+                            userId={data.userId}
+                            org={org.id}
+                            admin={admin}
+                            asOf={data.reviewAsOf}
+                            key={`${f.id}-${f.updated_at}`}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p>
+                        No records visible in this area. Confirm applicable information with your
+                        administrator.
+                      </p>
+                    )}
+                  </details>
+                ))}
+                {readiness.other.length > 0 && (
+                  <section className="panel">
+                    <h2>Other company records</h2>
+                    <div className="company-grid">
+                      {readiness.other.filter(visibleFact).map((f) => (
+                        <FactCard
+                          structuredEnabled={data.structuredProfilesEnabled}
+                          fact={f}
+                          members={data.members}
+                          userId={data.userId}
+                          org={org.id}
+                          admin={admin}
+                          asOf={data.reviewAsOf}
+                          key={`${f.id}-${f.updated_at}`}
+                        />
+                      ))}
+                    </div>
+                  </section>
                 )}
-              </details>
-            ))}
-            {readiness.other.length > 0 && (
-              <section className="panel">
-                <h2>Other company records</h2>
-                <div className="company-grid">
-                  {readiness.other.filter(visibleFact).map((f) => (
-                    <FactCard
-                      structuredEnabled={data.structuredProfilesEnabled}
-                      fact={f}
-                      members={data.members}
-                      userId={data.userId}
-                      org={org.id}
-                      admin={admin}
-                      asOf={data.reviewAsOf}
-                      key={`${f.id}-${f.updated_at}`}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-            <InformationRequests data={data} />
+              </CompanyPanel>
+              <CompanyPanel name="requests">
+                <InformationRequests data={data} />
+              </CompanyPanel>
+            </CompanyPortal>
           </>
         )}
         {!recordId && page === 'Opportunities' && (
