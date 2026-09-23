@@ -1,9 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { build } from 'esbuild';
+import path from 'node:path';
 for (const width of [1440, 390])
   test(`Company sections preserve drafts, direct links and history at ${width}px`, async ({
     page,
   }) => {
+    page.on('pageerror', (error) => {
+      throw error;
+    });
     const bundle = await build({
       entryPoints: ['tests/fixtures/company-portal-harness.tsx'],
       bundle: true,
@@ -12,6 +16,7 @@ for (const width of [1440, 390])
       format: 'iife',
       jsx: 'automatic',
       define: { 'process.env.NODE_ENV': '"production"' },
+      alias: { 'next/link': path.resolve('tests/fixtures/link.tsx') },
     });
     await page.route('**/company-layout-test', (r) =>
       r.fulfill({
@@ -35,6 +40,20 @@ for (const width of [1440, 390])
     await page.getByLabel('Company draft').fill('Unsaved contractor details');
     await nav.getByRole('link', { name: 'Overview', exact: true }).click();
     await expect(page.getByLabel('Company draft')).not.toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Turn company details into usable bid evidence' }),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Ask about company records' })).toHaveAttribute(
+      'href',
+      /\/assistant\?organization=/,
+    );
+    await expect(page.getByRole('link', { name: 'Add a PEPMA notice' })).toHaveAttribute(
+      'href',
+      /#pepma-intake$/,
+    );
+    await page.getByRole('link', { name: 'Website service claim', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Saved evidence example' })).toBeVisible();
+    await page.goBack();
     await page.getByRole('link', { name: 'Review a saved record', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Saved evidence example' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Profile overview' })).not.toBeVisible();

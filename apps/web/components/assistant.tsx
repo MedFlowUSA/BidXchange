@@ -66,6 +66,7 @@ export default function Assistant({
         : context
           ? ['Why should we review this opportunity?', 'What could disqualify us?']
           : [
+              `What work does ${name} perform, and which details still need human review?`,
               `What company information needs human review for ${name}?`,
               hasOpportunities
                 ? 'Which saved opportunities are due in the next 14 days?'
