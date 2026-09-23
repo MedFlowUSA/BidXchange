@@ -247,6 +247,30 @@ export function nextActions(
   const href = (path: string) => workspaceHref(path, data.organization.id);
   const now = Date.parse(data.reviewAsOf),
     capture = ['organization_admin', 'capture_manager'].includes(data.organization.role);
+  if (pursuitId && !data.pursuits.some((p) => p.id === pursuitId))
+    return [
+      {
+        title: 'Open an available pursuit',
+        reason: 'This pursuit is not in the current workspace records.',
+        href: href('/pursuits'),
+        priority: 0,
+      },
+    ];
+  if (
+    pursuitId &&
+    data.decisionContext &&
+    data.decisions?.[0]?.context_token === data.decisionContext &&
+    data.decisions[0].decision === 'no_bid'
+  )
+    return [
+      {
+        title: 'Review the recorded no-bid decision',
+        reason:
+          'The current decision is no-bid. Keep its rationale and reconsider only if your team chooses to reopen the pursuit.',
+        href: href(`/pursuits/${pursuitId}`) + '#bid-decision',
+        priority: 0,
+      },
+    ];
   if (opportunityId) {
     const opportunity = data.opportunities.find((o) => o.id === opportunityId),
       existing = data.pursuits.find((p) => p.opportunity_id === opportunityId);
@@ -280,6 +304,20 @@ export function nextActions(
     const pursuit = data.pursuits.find((p) => p.id === pursuitId),
       opportunity = data.opportunities.find((o) => o.id === pursuit?.opportunity_id);
     if (
+      opportunity &&
+      (!opportunity.official_deadline ||
+        !Number.isFinite(Date.parse(opportunity.official_deadline)) ||
+        !opportunity.solicitation_number ||
+        !(opportunity.source_url || opportunity.source_note))
+    )
+      actions.push({
+        title: 'Confirm the official notice details',
+        reason:
+          'The source, solicitation number or valid submission deadline is missing. Check the buyer’s current notice and record the details before planning the response.',
+        href: href(`/opportunities/${opportunity.id}`),
+        priority: 0.1,
+      });
+    if (
       opportunity?.official_deadline &&
       Date.parse(opportunity.official_deadline) - now < 48 * 3600000
     )
@@ -289,6 +327,25 @@ export function nextActions(
         href: href(`/opportunities/${opportunity.id}`),
         priority: 0,
       });
+    if (data.amendments?.some((a) => !a.reviewed))
+      actions.push({
+        title: 'Review the latest amendment',
+        reason:
+          'An amendment has not been marked reviewed. Compare the buyer’s changes before relying on earlier requirements or approvals.',
+        href: href(`/pursuits/${pursuitId}`) + '#opportunity-amendments',
+        priority: 0.2,
+      });
+    if (
+      data.decisions?.[0] &&
+      (!data.decisionContext || data.decisions[0].context_token !== data.decisionContext)
+    )
+      actions.push({
+        title: 'Revisit the recorded bid decision',
+        reason:
+          'The saved decision is not confirmed current. Review changed requirements and evidence before an authorized person reaffirms it.',
+        href: href(`/pursuits/${pursuitId}`) + '#bid-decision',
+        priority: 0.3,
+      });
     for (const r of data.requirements ?? []) {
       if (r.pursuit_id !== pursuitId) continue;
       const finding = data.resolutions?.find((h) => h.requirement_id === r.id);
@@ -297,12 +354,16 @@ export function nextActions(
         ['blocked', 'awaiting_clarification', 'needs_review'].includes(finding.disposition)
       )
         actions.push({
-          title: 'Review requirement: ' + r.requirement,
-          reason: capture
-            ? 'This finding is unresolved or stale.'
-            : 'Review the evidence and ask an authorized reviewer to resolve the finding.',
+          title:
+            (finding?.review_current && finding.disposition === 'blocked'
+              ? 'Resolve recorded blocker: '
+              : 'Review requirement: ') + r.requirement,
+          reason:
+            finding?.review_current && finding.disposition === 'blocked'
+              ? 'A person recorded this blocker. Open its evidence and resolution; an authorized reviewer must record any change.'
+              : 'This finding is unresolved or stale. Review the evidence and ask an authorized reviewer to resolve it.',
           href: href(`/pursuits/${pursuitId}`) + `#requirement-${r.id}`,
-          priority: 1,
+          priority: finding?.review_current && finding.disposition === 'blocked' ? 0.5 : 1,
         });
     }
   }
@@ -322,7 +383,7 @@ export function nextActions(
         title: task.title,
         reason: 'Assigned work is due or overdue.',
         href: href(`/pursuits/${task.pursuit_id}`) + `#task-${task.id}`,
-        priority: 2,
+        priority: pursuitId && Date.parse(task.due_at!) < now ? 0.7 : 2,
       });
   }
   if (page === 'Company') {

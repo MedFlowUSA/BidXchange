@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 import { nextActions, workspaceGuide } from '../lib/workspace-guide';
 import type { TenantData } from '../lib/tenant-types';
+import { pursuitAttention } from '../lib/pursuit-attention';
+import styles from './pursuit-attention.module.css';
 const subscribe = (listener: () => void) => {
   window.addEventListener('bidx-guide', listener);
   window.addEventListener('storage', listener);
@@ -102,13 +104,60 @@ export function NextActions({
 }) {
   const actions = nextActions(data, page, pursuitId, opportunityId),
     primary = actions[0];
+  const attention = pursuitId ? pursuitAttention(data, pursuitId, primary) : null;
   return (
-    <section className="panel next-actions" aria-label="Suggested next actions">
+    <section
+      className={`panel next-actions ${attention ? styles.brief : ''}`}
+      aria-label="Suggested next actions"
+    >
+      {attention && (
+        <dl className={styles.metrics}>
+          <div>
+            <dt>Recorded submission deadline</dt>
+            <dd>{attention.deadline}</dd>
+          </div>
+          <div>
+            <dt>Human-confirmed blockers</dt>
+            <dd>{attention.blockers}</dd>
+          </div>
+          <div>
+            <dt>Open tasks</dt>
+            <dd>
+              {attention.openTasks}
+              <span> · {attention.overdue} overdue</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Decision</dt>
+            <dd>{attention.decisionLabel}</dd>
+          </div>
+        </dl>
+      )}
       <div className="eyebrow">NEXT ACTION</div>
       <h2>
         <Link href={primary.href}>{primary.title}</Link>
       </h2>
       <p>{primary.reason}</p>
+      {attention && (
+        <div className={styles.owner}>
+          <p>
+            <strong>Responsible:</strong> {attention.owner}
+          </p>
+          {attention.taskDue && (
+            <p>
+              <strong>Task due:</strong> {attention.taskDue}
+            </p>
+          )}
+          {attention.handoff && <p>{attention.handoff}</p>}
+          <Link className="button primary" href={primary.href}>
+            Open next action →
+          </Link>
+          <p className={styles.note}>
+            Based on visible saved records at page load. Refresh for updates. Counts do not certify
+            eligibility or a complete register.
+          </p>
+        </div>
+      )}
       {actions.length > 1 && (
         <details>
           <summary>Other actions ({actions.length - 1})</summary>

@@ -135,14 +135,20 @@ try {
     .filter({ hasText: /^Who is bidding/ })
     .click();
   await expect(completion.getByText('To add: Entity type', { exact: true })).toBeVisible();
-  await completion.locator('summary').filter({ hasText: /^Who is bidding/ }).click();
-  await owner.page.screenshot({path:'.tmp/company-portal-desktop.png',fullPage:true});
+  await completion
+    .locator('summary')
+    .filter({ hasText: /^Who is bidding/ })
+    .click();
+  await owner.page.screenshot({ path: '.tmp/company-portal-desktop.png', fullPage: true });
   await owner.page.setViewportSize({ width: 390, height: 844 });
   assert(await owner.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await owner.page.screenshot({ path: '.tmp/profile-completion-mobile.png', fullPage: true });
   await owner.page.setViewportSize({ width: 1440, height: 1000 });
   step = 'assigned information request and administrator closure';
-  await completion.locator('summary').filter({ hasText: /^Who is bidding/ }).click();
+  await completion
+    .locator('summary')
+    .filter({ hasText: /^Who is bidding/ })
+    .click();
   const assign = completion
     .getByRole('group', { name: 'Assign information request', exact: true })
     .first();
@@ -266,6 +272,17 @@ try {
     .getByRole('link', { name: 'Open pursuit: Synthetic school lighting retrofit →', exact: true })
     .click();
   await expect(owner.page).toHaveURL(/\/pursuits\//);
+  const pursuitBrief = owner.page.getByRole('region', { name: 'Suggested next actions' });
+  await expect(
+    pursuitBrief.getByText('Recorded submission deadline', { exact: true }),
+  ).toBeVisible();
+  await expect(pursuitBrief.getByText('No decision recorded', { exact: true })).toBeVisible();
+  await expect(pursuitBrief.getByRole('link', { name: 'Open next action →' })).toBeVisible();
+  await pursuitBrief.screenshot({ path: '.tmp/pursuit-attention-desktop.png' });
+  await owner.page.setViewportSize({ width: 390, height: 844 });
+  assert(await owner.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await pursuitBrief.screenshot({ path: '.tmp/pursuit-attention-mobile.png' });
+  await owner.page.setViewportSize({ width: 1440, height: 1000 });
   step = 'pursuit checklist and sign-off navigation';
   await expect(owner.page.getByText('Planned pursuit tools', { exact: true })).toHaveCount(0);
   const checklist = owner.page.locator('details').filter({

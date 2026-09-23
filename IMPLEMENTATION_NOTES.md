@@ -1,5 +1,9 @@
 # California contractor implementation
 
+## Pursuit next-action brief — September 22
+
+Extend the existing workspace-guide next-action selector and panel rather than add another task or decision system. For an open pursuit, show recorded deadline/time zone, human-confirmed blockers, open/overdue tasks, decision freshness and the responsible assignee or role. Prioritize source deadlines, unreviewed amendments, stale decisions, confirmed blockers and overdue work over generic guidance. Respect a current no-bid decision; never infer submission or eligibility. Use only the selected authorized pursuit's loaded records; no schema, AI call or mutation. Test scope, stale/no-bid behavior, role handoff, priorities, missing dates and desktop/mobile links; run regression, hosted workflow and build before release.
+
 ## Company portal usability — September 22
 
 Replace the long Company page with five hash-addressable sections using existing components: Overview, Edit profile, Saved records, Dates & reminders, Requests. Keep panels mounted to preserve unsaved form state and existing fact/Passport/request deep links; hide inactive panels from keyboard navigation. Add scoped styling, readable controls, six setup cards, clearer company identity and action counts. Preserve role filtering, saved evidence semantics and all mutation paths. No schema or dependencies. Verify direct links, browser history, form preservation, desktop/mobile containment, existing signed-in staging workflow, lint/typecheck/build and deploy the isolated commit.

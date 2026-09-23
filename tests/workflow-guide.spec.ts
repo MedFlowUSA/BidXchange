@@ -77,7 +77,10 @@ test('current no-bid is a recorded decision and does not recommend response or s
     nextActions(data, 'Pursuits', pursuit)
       .map((a) => a.href)
       .join(' '),
-  ).not.toMatch(/response-packages|response-release|bid-decision/);
+  ).not.toMatch(/response-packages|response-release/);
+  expect(nextActions(data, 'Pursuits', pursuit)[0].title).toBe(
+    'Review the recorded no-bid decision',
+  );
   data.decisionContext = 'changed';
   expect(workspaceGuide(data, pursuit).find((s) => s.id === 'bid')?.state).toBe('next');
 });
@@ -125,6 +128,14 @@ for (const mobile of [false, true])
     await page.goto('/workflow-harness');
     await page.addStyleTag({ content: css });
     await page.addScriptTag({ content: js });
+    const brief = page.getByRole('region', { name: 'Suggested next actions' });
+    await expect(brief.getByText('Recorded submission deadline', { exact: true })).toBeVisible();
+    await expect(brief.getByText('Human-confirmed blockers', { exact: true })).toBeVisible();
+    await expect(brief.getByText('No decision recorded', { exact: true })).toBeVisible();
+    await expect(brief.getByRole('link', { name: 'Open next action →' })).toHaveAttribute(
+      'href',
+      /\/opportunities\/opp\?/,
+    );
     await page.getByRole('button', { name: 'Dismiss', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Open getting started' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Workspace guide', exact: true }).click();
