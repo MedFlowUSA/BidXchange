@@ -1,0 +1,78 @@
+.workspace {
+  margin-block: 1.5rem;
+}
+.card {
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-block: 1rem;
+  overflow-wrap: anywhere;
+}
+.card summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.columns > div {
+  min-width: 0;
+}
+.form label {
+  display: grid;
+  gap: 0.4rem;
+  margin-block: 0.8rem;
+}
+.form label:has(input[type='checkbox']) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.form input:not([type='checkbox']),
+.form textarea,
+.form select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.6rem;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  background: white;
+  color: #14213b;
+  font: inherit;
+}
+.form fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0.5rem 0;
+}
+.field {
+  border-top: 1px solid #cbd5e1;
+  padding-block: 1rem;
+}
+.field blockquote {
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  background: #f3f6fa;
+  border-left: 3px solid #536dfe;
+}
+.field blockquote p {
+  white-space: pre-wrap;
+}
+.card pre {
+  white-space: pre-wrap;
+  font: inherit;
+  overflow-wrap: anywhere;
+}
+.form :focus-visible,
+.card summary:focus-visible {
+  outline: 2px solid #2458dd;
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,6 @@
 # Amendment Diffing — design checkpoint
 
-This is a proposal for feature 2, not an implemented capability. Decision Log is feature 1.
+This records the design checkpoint for feature 2. The user authorized implementation on September 22. The first delivered increment is documented in `amendment-comparison.md`: public pasted source versions, rule-based clause comparisons and human-confirmed amendment recording. LLM extraction and private-file processing remain deferred. Decision Log is feature 1.
 
 ## Existing architecture to extend
 
@@ -40,4 +40,4 @@ Use tenant RLS and existing roles throughout. Read access must follow source-doc
 - Prompt-injection text cannot invoke actions or alter extraction instructions.
 - Desktop/mobile show source citations, human controls and the actual invalidation scope clearly.
 
-No migration or feature-2 implementation should begin until this schema/workflow checkpoint is accepted.
+The accepted implementation keeps source versions, candidate items and requirement snapshots in one bounded comparison row and human reviews in a second append-only table, reusing the existing amendment records. This reduces unnecessary model duplication; the generalized five-table/LLM design above remains a possible extension rather than a claim about the delivered schema.

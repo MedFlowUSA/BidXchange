@@ -7,7 +7,7 @@ test('migration links legacy history without inventing historical notice details
   try {
     await db.query('create role service_role');
     const migrations = validateMigrations('supabase/migrations').filter(
-      (m) => m.file > '20260919000499',
+      (m) => m.file > '20260919000499' && m.file <= '20260922003100_decision_memory.sql',
     );
     for (const m of migrations.slice(0, -1)) await db.query(m.sql);
     const user = '72000000-0000-4000-8000-000000000001';
