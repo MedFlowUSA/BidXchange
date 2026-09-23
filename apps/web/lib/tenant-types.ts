@@ -50,6 +50,7 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  amendmentComparisons?: import('./amendment-comparison').ComparisonWorkspace;
   decisionMemory?: import('./decision-memory').DecisionMemory;
   decisionMemoryEnabled?: boolean;
   evidenceMonitoring?: import('./evidence-monitor').EvidenceMonitoring;

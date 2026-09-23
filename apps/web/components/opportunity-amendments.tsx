@@ -1,6 +1,7 @@
 import type { TenantData } from '../lib/tenant-types';
 import { CaptureForm } from './capture-forms';
 import { recordAmendment, reviewAmendment } from '../app/amendment-actions';
+import AmendmentComparison from './amendment-comparison';
 export default function OpportunityAmendments({
   data,
   pursuitId,
@@ -13,6 +14,7 @@ export default function OpportunityAmendments({
   return (
     <section className="panel" id="opportunity-amendments">
       <h2>Opportunity amendments</h2>
+      <AmendmentComparison data={data} opportunityId={pursuit.opportunity_id} />
       <p>
         Record the official change before updating the register. Each amendment requires another
         review of requirements and the bid decision.

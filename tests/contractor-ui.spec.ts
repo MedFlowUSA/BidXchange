@@ -38,6 +38,8 @@ for (const width of [390, 1440])
                         'recordDecision',
                         'recordAmendment',
                         'reviewAmendment',
+                        'saveComparison',
+                        'confirmComparison',
                         'saveRequirement',
                         'saveOpportunity',
                         'savePursuit',

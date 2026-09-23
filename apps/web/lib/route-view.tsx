@@ -7,6 +7,7 @@ import AppShell from '../components/app-shell';
 import { accountContext, loadTenant } from './tenant';
 import { sections, workspaceHref } from './routes';
 import { loadDecisionMemory } from './decision-memory-records';
+import { loadComparisons } from './amendment-comparison-records';
 export type RouteQuery = Promise<Record<string, string | string[] | undefined>>;
 export async function renderWorkspace(
   page: string,
@@ -109,6 +110,20 @@ export async function renderWorkspace(
       memoryPage.success ? memoryPage.data : 0,
       typeof query.decision_query === 'string' ? query.decision_query : '',
     );
+  }
+  if (
+    process.env.BIDXCHANGE_AMENDMENT_COMPARISON_ENABLED === 'true' &&
+    account.supabase &&
+    recordType === 'pursuit' &&
+    ['organization_admin', 'capture_manager'].includes(data.organization.role)
+  ) {
+    const target = data.pursuits.find((p) => p.id === recordId)?.opportunity_id;
+    if (target)
+      data.amendmentComparisons = await loadComparisons(
+        account.supabase,
+        data.organization.id,
+        target,
+      );
   }
   return (
     <TenantWorkspace
