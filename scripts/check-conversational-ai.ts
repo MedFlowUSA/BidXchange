@@ -34,6 +34,8 @@ async function check() {
       async run(name: string) {
         if (name === 'get_workspace_summary')
           return { fictional: true, name: 'Fictional Redwood Electric', liveFeeds: false };
+        if (name === 'get_company_service_profile')
+          return { groups: [{ category: 'territory', records: [record], mayHaveMore: false }] };
         if (
           [
             'search_company_records',

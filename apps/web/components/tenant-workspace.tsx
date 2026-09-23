@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useActionState, useState, useEffect } from 'react';
 import AppShell from './app-shell';
 import ProfileCompletion from './profile-completion';
+import CompanyReview from './company-review';
 import InformationRequests from './information-requests';
 import CompanyPortal, { CompanyPanel } from './company-portal';
 import DecisionMemoryPanel from './decision-memory';
@@ -692,6 +693,7 @@ export default function TenantWorkspace({
                 </CompanyPanel>
               )}
               <CompanyPanel name="overview">
+                <CompanyReview key={org.id + '-review'} data={data} />
                 <ProfileCompletion key={org.id + '-completion'} data={data} />
               </CompanyPanel>
               <CompanyPanel name="dates">

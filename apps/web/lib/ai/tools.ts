@@ -18,6 +18,7 @@ export const toolSchemas = {
   get_upcoming_deadlines: z.object({ days: z.number().int().min(1).max(90) }).strict(),
   get_company_readiness: empty,
   get_authorized_company_facts: empty,
+  get_company_service_profile: empty,
   search_company_records: z
     .object({
       query: z
@@ -60,7 +61,14 @@ type Row = Record<string, unknown> & { id: string };
 const opportunityFields =
   'id,title,solicitation_number,buyer,official_deadline,deadline_timezone,status,created_at,updated_at';
 const factFields =
-  'id,fact_type,label,value,sensitivity,verification_status,effective_date,expiration_date,verified_at,verified_by,last_checked:structured_fields->>last_checked,created_at,updated_at';
+  'id,fact_type,label,value,sensitivity,verification_status,source_type,effective_date,expiration_date,verified_at,verified_by,last_checked:structured_fields->>last_checked,created_at,updated_at';
+function provenance(r: Row) {
+  return r.source_type === 'public_company_website'
+    ? 'company_website_claim'
+    : r.source_type === 'user_supplied_research'
+      ? 'user_supplied_research'
+      : 'see_company_record';
+}
 export class EvidenceTools {
   readonly evidence = new Map<string, Evidence>();
   private remaining = LIMITS.records;
@@ -121,7 +129,14 @@ export class EvidenceTools {
       },
       fields: {
         ...bounded,
-        ...(paths[type] ? { workspaceRoute: paths[type] + `?organization=${this.org}` } : {}),
+        ...(paths[type]
+          ? {
+              workspaceRoute:
+                paths[type] +
+                `?organization=${this.org}` +
+                (type === 'fact' ? `#fact-${r.id}` : ''),
+            }
+          : {}),
       },
     };
     this.evidence.set(key, item);
@@ -159,13 +174,20 @@ export class EvidenceTools {
     if (!rows[0]) throw new AiError('forbidden', 403);
     return this.opportunity(rows[0]);
   }
-  private async facts(search?: { query: string; fact_type: string | null; offset: number }) {
+  private async facts(
+    search?: { query: string; fact_type: string | null; offset: number },
+    categories?: string[],
+    pageSize = 10,
+  ) {
     let query = this.query('profile_facts', factFields).neq('sensitivity', 'unknown');
     if (!['organization_admin', 'executive_approver', 'estimator'].includes(this.role))
       query = query.eq('sensitivity', 'workspace').in('fact_type', publicFactTypes);
     if (search?.query) query = query.ilike('label', `%${search.query.replace(/[%_\\]/g, '')}%`);
     if (search?.fact_type) query = query.eq('fact_type', search.fact_type);
-    const size = Math.min(10, this.remaining);
+    if (categories)
+      query = query.in('fact_type', categories).order('updated_at', { ascending: false });
+    const size = Math.min(pageSize, this.remaining);
+    if (size <= 0) throw new AiError('tool_limit', 429);
     const offset = search?.offset ?? 0;
     const rows = await this.rows(query.order('id').range(offset, offset + size - 1));
     return rows
@@ -179,6 +201,7 @@ export class EvidenceTools {
             label: r.label,
             value: typeof r.value === 'string' ? r.value.slice(0, 1000) : null,
             status: effectiveStatus(r, this.now),
+            provenance: provenance(r),
             sourceFreshness: sourceFreshness(r, this.now),
             expiration: r.expiration_date,
             effectiveDate: r.effective_date,
@@ -352,6 +375,29 @@ export class EvidenceTools {
       case 'get_company_readiness':
       case 'get_authorized_company_facts':
         return this.facts();
+      case 'get_company_service_profile': {
+        // Reserve enough budget for all groups; never present partial execution as full coverage.
+        if (this.remaining < 12) throw new AiError('tool_limit', 429);
+        const groups = [];
+        for (const group of [
+          { name: 'identity', types: ['identity'], limit: 3 },
+          { name: 'services', types: ['capability', 'naics', 'psc'], limit: 6 },
+          { name: 'territory', types: ['territory', 'service_territory'], limit: 3 },
+        ]) {
+          const records = await this.facts(undefined, group.types, group.limit);
+          groups.push({
+            category: group.name,
+            records,
+            mayHaveMore: records.length === group.limit,
+          });
+        }
+        return {
+          groups,
+          readAt: this.now.toISOString(),
+          scope:
+            'Bounded samples of authorized saved records, not all company information or a qualification finding. Use search_company_records by category or label for omitted records. Empty groups mean no records returned within your access, not proof the company lacks that capability. Pending website claims require human review.',
+        };
+      }
       case 'search_company_records': {
         const size = Math.min(10, this.remaining);
         const records = await this.facts({
@@ -560,6 +606,7 @@ export class EvidenceTools {
           lastUpdated: r.updated_at,
           effectiveDate: r.effective_date,
           status: effectiveStatus(r, this.now),
+          provenance: provenance(r),
           sourceFreshness: sourceFreshness(r, this.now),
           expiration: r.expiration_date,
         },

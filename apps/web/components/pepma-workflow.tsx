@@ -10,7 +10,7 @@ import styles from './pepma-workflow.module.css';
 
 export function PepmaIntake({ data }: { data: TenantData }) {
   return (
-    <section className={`panel ${styles.panel}`} aria-label="PEPMA bid intake">
+    <section id="pepma-intake" className={`panel ${styles.panel}`} aria-label="PEPMA bid intake">
       <h2>Bring a PEPMA invitation into your workspace</h2>
       <p>
         Record an invitation you are authorized to access. Public listings may omit invited bids.

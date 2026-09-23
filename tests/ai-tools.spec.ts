@@ -551,6 +551,89 @@ test('company lookup reaches later records and reads saved updates without a syn
   expect(queries.every((q) => !/source_note|source_reference/.test(q.fields))).toBe(true);
 });
 
+test('service profile separates categories, preserves provenance and scopes every role', async () => {
+  const base = {
+    organization_id: org,
+    sensitivity: 'workspace',
+    verification_status: 'pending_verification',
+    source_type: 'public_company_website',
+    value: 'Website claim',
+    source_note: 'PRIVATE NOTE',
+    source_reference: 'PRIVATE URL',
+  };
+  const facts = [
+    ...Array.from({ length: 14 }, (_, n) => ({
+      ...base,
+      id: `identity-${n}`,
+      fact_type: 'identity',
+      label: `Identity ${n}`,
+    })),
+    { ...base, id, fact_type: 'capability', label: 'Appliance installation' },
+    { ...base, id: 'territory', fact_type: 'service_territory', label: 'Service area' },
+    {
+      ...base,
+      id: 'legacy',
+      fact_type: 'territory',
+      label: 'Legacy area',
+      sensitivity: 'restricted',
+    },
+    { ...base, id: 'foreign', organization_id: other, fact_type: 'capability', label: 'FOREIGN' },
+    { ...base, id: 'unknown', sensitivity: 'unknown', fact_type: 'capability', label: 'UNKNOWN' },
+    {
+      ...base,
+      id: 'restricted',
+      sensitivity: 'restricted',
+      fact_type: 'capability',
+      label: 'RESTRICTED',
+    },
+  ];
+  for (const role of roles) {
+    const { db, queries } = fakeDb({ profile_facts: facts });
+    const tools = new EvidenceTools(db, org, role, now);
+    const result = (await tools.run('get_company_service_profile', {})) as {
+      groups: { records: { citation: { id: string }; fields: Row }[]; mayHaveMore: boolean }[];
+    };
+    expect(result.groups[0].records).toHaveLength(3);
+    expect(result.groups[0].mayHaveMore).toBe(true);
+    expect(result.groups[1].records[0]).toMatchObject({
+      citation: { id },
+      fields: { provenance: 'company_website_claim', status: 'pending_verification' },
+    });
+    expect(JSON.stringify(result)).not.toMatch(/FOREIGN|UNKNOWN|PRIVATE/);
+    if (!['organization_admin', 'executive_approver', 'estimator'].includes(role))
+      expect(JSON.stringify(result)).not.toMatch(/RESTRICTED|Legacy area/);
+    const source = await tools.source('fact', id);
+    expect(source.fields.provenance).toBe('company_website_claim');
+    expect(source.fields.workspaceRoute).toBe(`/company?organization=${org}#fact-${id}`);
+    expect(
+      queries.every((q) => q.scope === org && !/source_note|source_reference/.test(q.fields)),
+    ).toBe(true);
+  }
+});
+
+test('service profile refuses exhausted budget and bounds largest record values', async () => {
+  const facts = ['identity', 'capability', 'service_territory'].flatMap((fact_type) =>
+    Array.from({ length: 12 }, (_, n) => ({
+      id: `${fact_type}-${n}`,
+      organization_id: org,
+      fact_type,
+      label: 'L'.repeat(160),
+      value: 'V'.repeat(4000),
+      sensitivity: 'workspace',
+      source_type: 'unexpected private text',
+    })),
+  );
+  const tools = new EvidenceTools(fakeDb({ profile_facts: facts }).db, org, 'viewer', now);
+  const result = await tools.run('get_company_service_profile', {});
+  expect(JSON.stringify(result).length).toBeLessThan(24000);
+  expect(JSON.stringify(result)).not.toContain('unexpected private text');
+  await tools.run('get_company_service_profile', {});
+  await tools.run('get_company_service_profile', {});
+  await expect(tools.run('get_company_service_profile', {})).rejects.toMatchObject({
+    code: 'tool_limit',
+  });
+});
+
 test('company search excludes foreign and unclassified records for every role', async () => {
   const { db } = fakeDb({
     profile_facts: [

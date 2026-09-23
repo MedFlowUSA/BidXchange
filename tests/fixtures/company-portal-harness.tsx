@@ -1,12 +1,24 @@
 import { createRoot } from 'react-dom/client';
 import CompanyPortal, { CompanyPanel } from '../../apps/web/components/company-portal';
+import CompanyReview from '../../apps/web/components/company-review';
 import { qualificationData } from './qualification-data';
 import '../../apps/web/app/globals.css';
 const data = qualificationData();
+data.facts = [
+  {
+    ...data.facts[0],
+    id: 'example',
+    label: 'Website service claim',
+    verification_status: 'pending_verification',
+    verified_by: null,
+    verified_at: null,
+  },
+];
 createRoot(document.getElementById('root')!).render(
   <main style={{ padding: 20, maxWidth: 1100, margin: 'auto' }}>
     <CompanyPortal data={data} reviewCount={2}>
       <CompanyPanel name="overview">
+        <CompanyReview data={data} />
         <section className="panel">
           <h2>Profile overview</h2>
           <a href="#fact-example">Review a saved record</a>
