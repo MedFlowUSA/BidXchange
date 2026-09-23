@@ -11,10 +11,12 @@ const sections = [
   { id: 'records', label: 'Saved records', icon: FileCheck2 },
   { id: 'dates', label: 'Dates & reminders', icon: CalendarDays },
   { id: 'requests', label: 'Requests', icon: ClipboardList },
+  { id: 'decisions', label: 'Decision Log', icon: ClipboardList },
 ] as const;
 type Section = (typeof sections)[number]['id'];
 const ActiveSection = createContext<Section>('overview');
 export function companySection(hash: string): Section {
+  if (hash === '#company-decisions') return 'decisions';
   if (hash.startsWith('#passport-') || hash === '#company-edit') return 'edit';
   if (hash.startsWith('#fact-') || hash === '#company-readiness' || hash === '#company-records')
     return 'records';
@@ -80,12 +82,14 @@ export default function CompanyPortal({
           </div>
         </header>
         <nav className={styles.navigation} aria-label="Company sections">
-          {sections.map(({ id, label, icon: Icon }) => (
-            <a key={id} href={`#company-${id}`} aria-current={active === id ? 'page' : undefined}>
-              <Icon size={17} aria-hidden="true" />
-              {label}
-            </a>
-          ))}
+          {sections
+            .filter((s) => s.id !== 'decisions' || data.decisionMemoryEnabled)
+            .map(({ id, label, icon: Icon }) => (
+              <a key={id} href={`#company-${id}`} aria-current={active === id ? 'page' : undefined}>
+                <Icon size={17} aria-hidden="true" />
+                {label}
+              </a>
+            ))}
         </nav>
         {children}
       </div>

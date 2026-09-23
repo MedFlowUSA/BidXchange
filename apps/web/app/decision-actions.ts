@@ -14,6 +14,7 @@ const schema = z.object({
     .string()
     .refine((v) => v === '' || v in decisionReasons)
     .optional(),
+  reason_codes: z.array(z.string().refine((v) => v in decisionReasons)).max(16),
   pursuit_hours: z.union([z.literal(''), z.coerce.number().finite().min(0).max(100000)]).optional(),
   reason: z.string().trim().min(1).max(4000),
   conditions: z.string().trim().max(4000),
@@ -25,13 +26,22 @@ export async function recordDecision(
 ): Promise<MutationState> {
   if (process.env.BIDXCHANGE_DECISIONS_ENABLED !== 'true')
     return { message: 'Decision recording is not enabled.' };
-  const parsed = schema.safeParse(Object.fromEntries(form));
+  const parsed = schema.safeParse({
+    ...Object.fromEntries(form),
+    reason_codes: form.getAll('reason_codes'),
+  });
   if (!parsed.success)
     return { message: 'Choose a decision, explain the reason, and confirm the decision scope.' };
   try {
     const { user, supabase, choices } = await accountContext();
     const d = parsed.data;
     const contractor = process.env.BIDXCHANGE_REGISTER_SIGNOFF_ENABLED === 'true';
+    const memory = process.env.BIDXCHANGE_DECISION_MEMORY_ENABLED === 'true';
+    if (memory && (!contractor || (d.decision === 'no_bid' && !d.reason_codes.length)))
+      return {
+        message:
+          'Select at least one no-bid reason. The signed-off register workflow must be enabled.',
+      };
     if (!contractor && !['bid', 'no_bid', 'pending'].includes(d.decision))
       return { message: 'Contractor decision memos are not enabled.' };
     if (
@@ -46,21 +56,28 @@ export async function recordDecision(
       return {
         message: 'An active administrator or executive approver must record this decision.',
       };
-    const result = await supabase.rpc('record_pursuit_decision', {
-      org: d.organization_id,
-      pursuit: d.pursuit_id,
-      expected_version: d.version,
-      expected_context: d.context,
-      outcome: d.decision,
-      rationale: d.reason,
-      limits: d.conditions,
-      ...(contractor
-        ? {
-            reason_codes: d.reason_code ? [d.reason_code] : [],
-            pursuit_hours: typeof d.pursuit_hours === 'number' ? d.pursuit_hours : null,
-          }
-        : {}),
-    });
+    const result = await supabase.rpc(
+      memory ? 'record_company_decision' : 'record_pursuit_decision',
+      {
+        org: d.organization_id,
+        pursuit: d.pursuit_id,
+        expected_version: d.version,
+        expected_context: d.context,
+        outcome: d.decision,
+        rationale: d.reason,
+        limits: d.conditions,
+        ...(contractor
+          ? {
+              reason_codes: memory
+                ? [...new Set(d.reason_codes)]
+                : d.reason_code
+                  ? [d.reason_code]
+                  : [],
+              pursuit_hours: typeof d.pursuit_hours === 'number' ? d.pursuit_hours : null,
+            }
+          : {}),
+      },
+    );
     if (result.error || !result.data)
       return {
         message:

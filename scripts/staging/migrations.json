@@ -151,7 +151,12 @@
       "file": "20260922003000_company_information_requests.sql",
       "sha256": "4a310c012162e5538ac262d402eea166cd83bce9d54269c6a3b4dddf027ea7ab",
       "action": "include-schema"
+    },
+    {
+      "file": "20260922003100_decision_memory.sql",
+      "sha256": "7c6f3d01130d0922d1a707e2cbf3a41127d44fd40780a9f8882d32ed4b628b2b",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 18
+  "packageRevision": 19
 }

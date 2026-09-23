@@ -50,6 +50,8 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  decisionMemory?: import('./decision-memory').DecisionMemory;
+  decisionMemoryEnabled?: boolean;
   evidenceMonitoring?: import('./evidence-monitor').EvidenceMonitoring;
   selfServiceEnabled?: boolean;
   contractorWorkflowEnabled?: boolean;

@@ -6,6 +6,7 @@ import TenantWorkspace from '../components/tenant-workspace';
 import AppShell from '../components/app-shell';
 import { accountContext, loadTenant } from './tenant';
 import { sections, workspaceHref } from './routes';
+import { loadDecisionMemory } from './decision-memory-records';
 export type RouteQuery = Promise<Record<string, string | string[] | undefined>>;
 export async function renderWorkspace(
   page: string,
@@ -87,6 +88,28 @@ export async function renderWorkspace(
         </main>
       </AppShell>
     );
+  data.decisionMemoryEnabled = process.env.BIDXCHANGE_DECISION_MEMORY_ENABLED === 'true';
+  if (data.decisionMemoryEnabled && account.supabase && (page === 'Company' || recordId)) {
+    const opportunityId =
+      recordType === 'opportunity'
+        ? recordId
+        : recordType === 'pursuit'
+          ? data.pursuits.find((p) => p.id === recordId)?.opportunity_id
+          : undefined;
+    const memoryPage = z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(1000)
+      .safeParse(query.decision_page ?? 0);
+    data.decisionMemory = await loadDecisionMemory(
+      account.supabase,
+      data.organization.id,
+      opportunityId,
+      memoryPage.success ? memoryPage.data : 0,
+      typeof query.decision_query === 'string' ? query.decision_query : '',
+    );
+  }
   return (
     <TenantWorkspace
       key={data.organization.id}
