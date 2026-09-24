@@ -34,7 +34,7 @@
   font-weight: 700;
   letter-spacing: 0.13em;
 }
-.identity h2 {
+.identity h1 {
   font-size: clamp(21px, 2.4vw, 29px);
   line-height: 1.25;
   margin: 5px 0;
@@ -105,6 +105,7 @@
   background: #edf3ff;
 }
 .portal a:focus-visible,
+.portal button:focus-visible,
 .portal summary:focus-visible,
 .portal input:focus-visible,
 .portal select:focus-visible {
@@ -209,7 +210,150 @@
   gap: 6px;
   flex: 1 1 250px;
 }
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.sectionHeading h2 {
+  margin: 6px 0 0;
+  font-size: 21px;
+}
+.sectionHeading > a,
+.allRecords {
+  font-size: 13px;
+  font-weight: 600;
+}
+.snapshotNote {
+  margin: 12px 0 22px;
+  font-size: 13px;
+}
+.snapshotGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.snapshotCard {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e0e7f1;
+  border-radius: 12px;
+  background: #f8faff;
+}
+.snapshotCard h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+.snapshotCard h3 svg {
+  flex-shrink: 0;
+  color: #45689f;
+}
+.snapshotCard ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.snapshotCard li + li {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e7f1;
+}
+.snapshotCard a {
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.snapshotCard p {
+  font-size: 13px;
+}
+.recordValue {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  margin: 6px 0 10px;
+}
+.recordStatus {
+  display: inline-block;
+  color: #56647b;
+  background: #eaf0f8;
+  border-radius: 5px;
+  padding: 4px 7px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.allRecords {
+  display: inline-block;
+  margin-top: 20px;
+}
+.reviewList {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0;
+  counter-reset: review;
+}
+.reviewList > li {
+  position: relative;
+  padding: 18px 18px 18px 60px;
+  border: 1px solid #dce4f1;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.reviewList > li::before {
+  counter-increment: review;
+  content: counter(review);
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #edf3ff;
+  color: #294b7e;
+  font-size: 13px;
+  font-weight: 600;
+}
+.reviewList h3 {
+  font-size: 14px;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.reviewList p {
+  margin: 0;
+  font-size: 13px;
+}
+.completion > p {
+  margin: 12px 0 18px;
+  font-size: 13px;
+}
+.completion > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sectionCount {
+  display: block;
+  margin: 6px 0 0 14px;
+  color: var(--company-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
 @media (max-width: 700px) {
+  .snapshotGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .snapshotCard {
+    padding: 16px;
+  }
   .hero {
     padding: 20px;
   }

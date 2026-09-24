@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { companyReview } from '../lib/company-review';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData } from '../lib/tenant-types';
+import styles from './company-portal.module.css';
 
 export default function CompanyReview({ data }: { data: TenantData }) {
   const { queue, missing } = companyReview(data.facts, data.reviewAsOf);
@@ -11,14 +12,17 @@ export default function CompanyReview({ data }: { data: TenantData }) {
   const admin = data.organization.role === 'organization_admin';
   return (
     <section className="panel" aria-labelledby="company-review-heading">
-      <h2 id="company-review-heading">Turn company details into usable bid evidence</h2>
+      <div className={styles.eyebrow}>EVIDENCE FOLLOW-UP</div>
+      <h2 id="company-review-heading">Review company evidence</h2>
       <p>
         Check the source, correct the details, then record a human attestation. Website imports and
         saved claims are not automatically approved for a bid.
       </p>
       <p>
-        {queue.length} visible records need attention. Licenses, registrations, insurance and
-        bonding come before general company claims; expired or rejected records come first.
+        <strong>
+          {queue.length} visible {queue.length === 1 ? 'record needs' : 'records need'} attention.
+        </strong>{' '}
+        Expired and rejected records come first, followed by core contracting evidence.
       </p>
       {!admin && (
         <p>
@@ -27,7 +31,7 @@ export default function CompanyReview({ data }: { data: TenantData }) {
         </p>
       )}
       {queue.length ? (
-        <ol>
+        <ol className={styles.reviewList}>
           {(showAll ? queue : queue.slice(0, 5)).map(({ fact, status, reasons }) => (
             <li key={fact.id}>
               <h3>
