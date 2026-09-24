@@ -59,6 +59,21 @@ export function bidControl(data: TenantData, pursuitId: string) {
     })
     .sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity) || a.id.localeCompare(b.id));
   const latest = pursuit ? data.decisions?.[0] : undefined;
+  const submission = dates.find((item) => item.taskId === null);
+  const taskDates = dates
+    .filter((item) => item.taskId !== null)
+    .map((item) => {
+      const task = open.find((task) => task.id === item.taskId)!;
+      return {
+        ...item,
+        needsOwner: !task.assigned_user_id || !active.has(task.assigned_user_id),
+        atOrAfterSubmission:
+          !!submission &&
+          !submission.needsDateReview &&
+          !item.needsDateReview &&
+          item.time! >= submission.time!,
+      };
+    });
   const decisionState = !data.decisionsEnabled
     ? 'Review unavailable'
     : !latest
@@ -70,6 +85,8 @@ export function bidControl(data: TenantData, pursuitId: string) {
     tasks,
     open,
     dates,
+    submission,
+    taskDates,
     overdue: dates.filter((d) => d.taskId && d.overdue).length,
     unassigned: open.filter((t) => !t.assigned_user_id || !active.has(t.assigned_user_id)).length,
     decision: latest?.preliminary_state || latest?.decision || pursuit?.decision || 'Unknown',

@@ -91,7 +91,7 @@ export default function QualificationWorkspace({
           <Link href={`${company}#company-readiness`}>Company evidence</Link>
         </nav>
       </header>
-      <BidControl data={data} pursuitId={pursuitId} />
+      <BidControl key={pursuitId} data={data} pursuitId={pursuitId} />
       <section className="panel" aria-labelledby="evidence-path-title">
         <div className="eyebrow">Evidence graph</div>
         <h2 id="evidence-path-title">Trace a record through this pursuit.</h2>

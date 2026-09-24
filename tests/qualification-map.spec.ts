@@ -221,6 +221,34 @@ test('viewers can follow evidence but cannot assign work', async ({ page }) => {
   ).toHaveCount(0);
 });
 
+test('submission stays visible behind a long backlog and date filters reveal hidden work', async ({
+  page,
+}) => {
+  await mount(page);
+  await page.goto('/qualification-test?deadlines=1');
+  const control = page.getByRole('region', { name: 'Bid control: decision, work and dates' });
+  await expect(
+    control.getByRole('heading', { name: 'Recorded submission deadline' }),
+  ).toBeVisible();
+  await expect(control.getByRole('link', { name: 'Confirm job walk date' })).toHaveCount(0);
+  await control.getByRole('button', { name: 'Show all 12 matching tasks' }).click();
+  await expect(control.getByRole('link', { name: 'Confirm job walk date' })).toBeVisible();
+  await control.getByLabel('Focus on work needing attention').selectOption('dates');
+  await expect(control.getByRole('link', { name: 'Confirm job walk date' })).toBeVisible();
+  await expect(control.getByRole('link', { name: 'Old follow-up 0' })).toHaveCount(0);
+  await control.getByLabel('Focus on work needing attention').selectOption('submission');
+  await expect(control.getByRole('link', { name: 'Check late bond request' })).toBeVisible();
+  await expect(
+    control.getByRole('heading', { name: 'Recorded submission deadline' }),
+  ).toBeVisible();
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+});
+
 test('delivery checks create explicit owner-assigned follow-up without implying capacity', async ({
   page,
 }) => {
