@@ -4,6 +4,7 @@ import { useActionState, useState, useEffect } from 'react';
 import AppShell from './app-shell';
 import ProfileCompletion from './profile-completion';
 import CompanyReview from './company-review';
+import CompanySnapshot from './company-snapshot';
 import InformationRequests from './information-requests';
 import CompanyPortal, { CompanyPanel } from './company-portal';
 import DecisionMemoryPanel from './decision-memory';
@@ -341,32 +342,34 @@ export default function TenantWorkspace({
               </Link>
             </section>
           )}
-        <div className="page-heading">
-          <div>
-            <div className="eyebrow">
-              {org.operating_name.toUpperCase()} · {org.status.toUpperCase()}
+        {(recordId || page !== 'Company') && (
+          <div className="page-heading">
+            <div>
+              <div className="eyebrow">
+                {org.operating_name.toUpperCase()} · {org.status.toUpperCase()}
+              </div>
+              <h1>
+                {recordId
+                  ? (pursuit?.title ?? opportunity?.title)
+                  : page === 'Today'
+                    ? 'Your workspace starts with the facts.'
+                    : page}
+              </h1>
+              <p>
+                {recordId
+                  ? 'A dedicated, organization-scoped record.'
+                  : page === 'Company'
+                    ? 'Manage your profile, review your records and keep information current.'
+                    : 'Authenticated organization data. Working facts require human verification.'}
+              </p>
             </div>
-            <h1>
-              {recordId
-                ? (pursuit?.title ?? opportunity?.title)
-                : page === 'Today'
-                  ? 'Your workspace starts with the facts.'
-                  : page}
-            </h1>
-            <p>
-              {recordId
-                ? 'A dedicated, organization-scoped record.'
-                : page === 'Company'
-                  ? 'Manage your profile, review your records and keep information current.'
-                  : 'Authenticated organization data. Working facts require human verification.'}
-            </p>
+            {!recordId && (page === 'Reports' || page === 'Today') && (
+              <button className="button secondary" onClick={download}>
+                Export brief
+              </button>
+            )}
           </div>
-          {!recordId && (page === 'Reports' || page === 'Today') && (
-            <button className="button secondary" onClick={download}>
-              Export brief
-            </button>
-          )}
-        </div>
+        )}
         {notice && (
           <div className="info-note" role="status">
             {notice}
@@ -693,8 +696,11 @@ export default function TenantWorkspace({
                 </CompanyPanel>
               )}
               <CompanyPanel name="overview">
-                <CompanyReview key={org.id + '-review'} data={data} />
+                <CompanySnapshot data={data} />
                 <ProfileCompletion key={org.id + '-completion'} data={data} />
+              </CompanyPanel>
+              <CompanyPanel name="review">
+                <CompanyReview key={org.id + '-review'} data={data} />
               </CompanyPanel>
               <CompanyPanel name="dates">
                 <EvidenceReminders data={data} />

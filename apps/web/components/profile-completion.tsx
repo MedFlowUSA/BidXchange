@@ -5,6 +5,16 @@ import { profileCompletion } from '../lib/profile-completion';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData } from '../lib/tenant-types';
 import { ProfileInformationRequest } from './information-requests';
+import styles from './company-portal.module.css';
+
+const sectionNames: Record<string, string> = {
+  identity: 'Company basics',
+  registrations: 'Registrations',
+  licenses: 'California licenses',
+  territory: 'Services & territory',
+  coverage: 'Insurance & bonding',
+  experience: 'Past projects',
+};
 
 export default function ProfileCompletion({ data }: { data: TenantData }) {
   const progress = profileCompletion(data.facts, data.reviewAsOf);
@@ -14,11 +24,10 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
     workspaceHref('/company', data.organization.id) +
     (factId ? `#fact-${factId}` : `#passport-${section}`);
   return (
-    <section className="panel" aria-labelledby="profile-completion-title">
+    <section className={`panel ${styles.completion}`} aria-labelledby="profile-completion-title">
       <div className="eyebrow">YOUR COMPANY SETUP</div>
       <h2 id="profile-completion-title">
-        {admin ? 'Level-1 profile completion' : 'Visible Level-1 profile fields'}:{' '}
-        {progress.percent}%
+        {admin ? 'Profile completion' : 'Visible profile completion'}: {progress.percent}%
       </h2>
       <progress
         aria-label="Level-1 profile fields recorded"
@@ -30,11 +39,7 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
         <strong>
           {progress.completed} of {progress.total} checklist fields recorded.
         </strong>{' '}
-        Your saved records update this checklist automatically.
-      </p>
-      <p>
-        Tracks saved profile fields. Evidence review and bid readiness are assessed separately.
-        Unknown fields remain incomplete.
+        This tracks recorded fields, not qualification for a bid. Evidence review is separate.
       </p>
       {data.organization.role !== 'organization_admin' && (
         <p>
@@ -72,7 +77,10 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
         {progress.sections.map((section) => (
           <details key={section.id}>
             <summary>
-              {section.title} · {section.completed}/{section.total} fields recorded
+              <span>{sectionNames[section.id] ?? section.title}</span>
+              <span className={styles.sectionCount}>
+                {section.completed}/{section.total} fields recorded
+              </span>
             </summary>
             {section.items
               .filter((item) => !missingOnly || item.completed < item.total)
