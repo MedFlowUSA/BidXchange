@@ -2,6 +2,47 @@ import { test, expect } from '@playwright/test';
 import { bidControl } from '../apps/web/lib/bid-control';
 import { workflowData, pursuit, user } from './fixtures/workflow-data';
 
+test('submission comparison respects offset equality and refuses unknown time zones', () => {
+  const data = workflowData();
+  data.opportunities[0].official_deadline = '2026-09-21T12:00:00Z';
+  data.tasks = [
+    {
+      id: 'equal',
+      pursuit_id: pursuit,
+      title: 'Same instant',
+      status: 'todo',
+      due_at: '2026-09-21T05:00:00-07:00',
+      due_timezone: 'America/Los_Angeles',
+    },
+    {
+      id: 'before',
+      pursuit_id: pursuit,
+      title: 'Before',
+      status: 'todo',
+      due_at: '2026-09-21T11:59:00Z',
+      due_timezone: 'UTC',
+    },
+    {
+      id: 'unknown',
+      pursuit_id: pursuit,
+      title: 'Unknown zone',
+      status: 'todo',
+      due_at: '2026-09-22T12:00:00Z',
+      due_timezone: 'invalid',
+    },
+  ];
+  let result = bidControl(data, pursuit);
+  expect(
+    result.taskDates.filter((item) => item.atOrAfterSubmission).map((item) => item.id),
+  ).toEqual(['equal']);
+  expect(result.submission?.id).toBe('submission');
+  data.opportunities[0].deadline_timezone = 'invalid';
+  result = bidControl(data, pursuit);
+  expect(result.taskDates.every((item) => !item.atOrAfterSubmission)).toBe(true);
+  data.opportunities[0].official_deadline = null;
+  expect(bidControl(data, pursuit).taskDates.every((item) => !item.atOrAfterSubmission)).toBe(true);
+});
+
 test('bid control excludes unrelated and completed tasks and preserves unknown dates', () => {
   const data = workflowData();
   data.tasks = [
