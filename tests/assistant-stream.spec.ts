@@ -4,6 +4,106 @@ import path from 'node:path';
 let js = '',
   css = '';
 
+test('bid plan stays unsaved until a human reviews and saves; viewer and general mode cannot save', async ({
+  page,
+}) => {
+  const saves: Record<string, unknown>[] = [];
+  await page.route('**/synthetic-task-save', async (route) => {
+    saves.push(JSON.parse(route.request().postData()!));
+    await route.fulfill({
+      json: {
+        success: true,
+        message: 'Task saved after human review.',
+        href: '/pursuits/synthetic#task-synthetic',
+      },
+    });
+  });
+  const answer = {
+    answer: [
+      {
+        text: 'Review the recorded license question before deciding.',
+        sources: ['requirement:55555555-5555-4555-8555-555555555555'],
+      },
+    ],
+    risks: [],
+    nextAction: 'Review the task proposal.',
+    notice: 'AI suggestions require review.',
+    evidence: [],
+    citations: [
+      {
+        key: 'requirement:55555555-5555-4555-8555-555555555555',
+        type: 'requirement',
+        id: '55555555-5555-4555-8555-555555555555',
+        title: 'Recorded requirement',
+        href: '/pursuits/synthetic',
+        status: 'needs_review',
+        sourceDate: null,
+        updatedAt: null,
+      },
+    ],
+    actionToken: 'synthetic-review-token',
+    proposedTasks: [
+      {
+        title: 'Review license evidence',
+        explanation: 'A person needs to compare the saved requirement with the source.',
+        sources: ['requirement:55555555-5555-4555-8555-555555555555'],
+        requirementKey: 'requirement:55555555-5555-4555-8555-555555555555',
+      },
+    ],
+  };
+  await page.route('**/api/assistant', (route) =>
+    route.fulfill({
+      contentType: 'application/x-ndjson',
+      body: JSON.stringify({ type: 'answer', answer }) + '\n',
+    }),
+  );
+  await mount(page);
+  await page.goto('/assistant-test?planning');
+  const ask = async () => {
+    await page.locator('#assistant-question').fill('Help me plan this bid');
+    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await expect(page.getByRole('region', { name: 'AI-proposed bid plan' })).toBeVisible();
+  };
+  await ask();
+  const plan = page.getByRole('region', { name: 'AI-proposed bid plan' });
+  expect(saves).toHaveLength(0);
+  await plan.locator('summary').filter({ hasText: /^Review and save task$/ }).click();
+  await plan
+    .getByLabel('Task title', { exact: true })
+    .fill('Confirm license question with reviewer');
+  await expect(plan.getByLabel('Task owner', { exact: true })).toHaveValue('');
+  await expect(plan.getByLabel('Task deadline with offset', { exact: true })).toHaveValue('');
+  await plan.getByRole('button', { name: 'Review and save task', exact: true }).click();
+  expect(saves).toHaveLength(0);
+  await plan.getByRole('checkbox').check();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await plan.screenshot({ path: `.tmp/assistant-plan-${width}.png` });
+  }
+  await plan.getByRole('button', { name: 'Review and save task', exact: true }).click();
+  await expect(plan.getByText('Task saved after human review.', { exact: true })).toBeVisible();
+  expect(saves).toHaveLength(1);
+  expect(saves[0]).toMatchObject({
+    title: 'Confirm license question with reviewer',
+    status: 'todo',
+    review_confirmed: 'on',
+    action_token: 'synthetic-review-token',
+  });
+  await page.goto('/assistant-test?planning&viewer');
+  await ask();
+  await expect(
+    plan.getByText('A capture manager or administrator can review and save tasks.'),
+  ).toBeVisible();
+  await expect(plan.getByRole('button', { name: 'Review and save task' })).toHaveCount(0);
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await page.locator('#assistant-question').fill('Give general advice');
+  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'AI-proposed bid plan' })).toHaveCount(0);
+});
+
 test('follow-ups send opaque continuation and new chat or mode changes reset it', async ({
   page,
 }) => {
@@ -61,6 +161,12 @@ test.beforeAll(async () => {
       {
         name: 'server-action-transport',
         setup(builder) {
+          builder.onResolve({ filter: /assistant-task-actions$/ }, () => ({
+            path: path.resolve('tests/fixtures/assistant-task-action.ts'),
+          }));
+          builder.onResolve({ filter: /capture-actions$/ }, () => ({
+            path: path.resolve('tests/fixtures/pepma-actions.ts'),
+          }));
           builder.onResolve({ filter: /assistant-document-actions$/ }, () => ({
             path: path.resolve('tests/fixtures/assistant-document-action.ts'),
           }));
@@ -77,7 +183,7 @@ async function mount(page: Page, available = true) {
   await page.route('https://fonts.googleapis.com/**', (r) =>
     r.fulfill({ contentType: 'text/css', body: '' }),
   );
-  await page.route('**/assistant-test', (r) =>
+  await page.route('**/assistant-test*', (r) =>
     r.fulfill({
       contentType: 'text/html',
       body: '<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assistant-harness.css"></head><body><div id="root"></div><script src="/assistant-harness.js"></script></body></html>',

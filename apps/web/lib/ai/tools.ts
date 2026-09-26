@@ -43,6 +43,7 @@ export const toolSchemas = {
     })
     .strict(),
   get_pursuit: record,
+  get_pursuit_requirements: record,
   get_pursuit_releases: record,
   get_response_release: record,
   get_pursuit_tasks: z.object({ id: z.uuid().nullable(), overdue_only: z.boolean() }).strict(),
@@ -519,6 +520,26 @@ export class EvidenceTools {
                 Date.parse(r.due_at) < this.now.getTime(),
             },
             'recorded task',
+            String(r.pursuit_id),
+          ),
+        );
+      }
+      case 'get_pursuit_requirements': {
+        await this.run('get_pursuit', { id: a.id });
+        return (
+          await this.rows(
+            this.query('pursuit_requirements', 'id,pursuit_id,status,created_at,updated_at')
+              .eq('pursuit_id', a.id)
+              .is('archived_at', null)
+              .order('id')
+              .limit(Math.min(10, this.remaining)),
+          )
+        ).map((r) =>
+          this.add(
+            'requirement',
+            { ...r, title: 'Recorded requirement' },
+            { status: r.status, text: 'Excluded pending reviewed disclosure classification.' },
+            'needs human review',
             String(r.pursuit_id),
           ),
         );

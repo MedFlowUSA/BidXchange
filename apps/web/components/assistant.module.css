@@ -156,3 +156,36 @@
     scroll-behavior: auto !important;
   }
 }
+.taskPlan {
+  margin: 24px 0;
+  padding: 18px;
+  border: 1px solid #cbd8ed;
+  border-radius: 12px;
+  background: #f5f8ff;
+}
+.planCard {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid #dce4f1;
+  border-radius: 10px;
+  background: white;
+  overflow-wrap: anywhere;
+}
+.planCard h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+.planCard :global(fieldset) {
+  min-width: 0;
+}
+.planCard :global(input),
+.planCard :global(select),
+.planCard :global(textarea) {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.planCard :global(button:focus-visible),
+.planCard :global(summary:focus-visible) {
+  outline: 3px solid #3459cc;
+  outline-offset: 3px;
+}

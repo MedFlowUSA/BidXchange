@@ -661,6 +661,25 @@ export default function TenantWorkspace({
         {!recordId && page === 'Assistant' && (
           <>
             <section className="panel">
+              <h2>Plan work on a selected bid</h2>
+              <p>
+                Open a pursuit to ask for a source-backed action plan and review proposed tasks
+                before saving them.
+              </p>
+              {data.pursuits.length ? (
+                <ul>
+                  {data.pursuits.slice(0, 8).map((p) => (
+                    <li key={p.id}>
+                      <Link href={href(`/pursuits/${p.id}`) + '#bid-assistant'}>{p.title}</Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Create a pursuit from an opportunity to start a bid plan.</p>
+              )}
+              <Link href={href('/pursuits')}>Browse pursuits</Link>
+            </section>
+            <section className="panel">
               <h2>Opportunity research</h2>
               <p>
                 Ask about opportunities, refine search filters, and compare visible company evidence
@@ -685,6 +704,7 @@ export default function TenantWorkspace({
             organizationId={org.id}
             name={org.operating_name}
             context={{ kind: recordType === 'pursuit' ? 'pursuit' : 'opportunity', id: recordId }}
+            planningData={recordType === 'pursuit' ? data : undefined}
           />
         )}
         {!recordId && page === 'Company' && (

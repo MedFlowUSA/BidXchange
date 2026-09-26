@@ -132,6 +132,24 @@ export async function POST(request: Request) {
             result.answer,
             records,
           );
+          if (
+            body.mode === 'workspace' &&
+            body.context?.kind === 'pursuit' &&
+            result.answer.proposedTasks?.length
+          ) {
+            const keys = new Set([
+              `pursuit:${body.context.id}`,
+              ...result.answer.proposedTasks.flatMap((p) => p.sources),
+            ]);
+            const planScope = { ...scope, context: 'task-plan:' + JSON.stringify(body.context) };
+            result.answer.actionToken = sealConversation(
+              readConversation(undefined, config.key, planScope),
+              config.key,
+              'Review proposed tasks',
+              { ...result.answer, answer: [], risks: [], nextAction: '' },
+              records.filter((record) => keys.has(record.citation.key)),
+            );
+          }
           if (controller.signal.aborted) throw new AiError('cancelled', 499);
           const finalAccess = await authorizeAi(body.organizationId);
           if (finalAccess.user.id !== account.user.id || finalAccess.role !== account.role)
