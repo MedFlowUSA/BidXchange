@@ -161,7 +161,12 @@
       "file": "20260922003200_amendment_comparison.sql",
       "sha256": "0136edb2bb630e61d2ad2aafbe423dbc6859cb2b529db390dd938bfb7988ae07",
       "action": "include-schema"
+    },
+    {
+      "file": "20260926003300_financial_passport_access.sql",
+      "sha256": "9494919d02b32a0ca75f769585568eb743edae2bdd6dc736666da098eb97d6f9",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 20
+  "packageRevision": 21
 }

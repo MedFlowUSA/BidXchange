@@ -2,6 +2,9 @@
 import Link from 'next/link';
 import { useActionState, useState, useEffect } from 'react';
 import AppShell from './app-shell';
+import PursuitNextStep from './pursuit-next-step';
+import { findSource } from '../lib/sources/registry';
+import { hasCurrentRegisterSignoff } from '../lib/workspace-guide';
 import ProfileCompletion from './profile-completion';
 import CompanyReview from './company-review';
 import CompanySnapshot from './company-snapshot';
@@ -17,7 +20,7 @@ import { PepmaIntake, PepmaWorkflow } from './pepma-workflow';
 import { isPepmaUrl } from '../lib/pepma';
 import AssistantUsage from './assistant-usage';
 import { displayDate } from '../lib/ai/policy';
-import PursuitFoundation from './pursuit-foundation';
+import { freshnessRadar } from '../lib/california-passport';
 import PursuitDecisionBrief from './pursuit-decision-brief';
 import ContractReadinessBrief from './contract-readiness-brief';
 import DeliveryReview from './delivery-review';
@@ -291,6 +294,35 @@ export default function TenantWorkspace({
       choices={data.choices}
       userEmail={data.userEmail}
       records={records}
+      badges={{
+        pursuit:
+          (data.resolutions ?? []).filter((r) => r.review_current && r.disposition === 'blocked')
+            .length +
+          data.tasks.filter(
+            (t) =>
+              t.status !== 'complete' &&
+              t.due_at &&
+              Date.parse(t.due_at) < Date.parse(data.reviewAsOf),
+          ).length,
+        passport: freshnessRadar(data.facts, data.reviewAsOf).filter(
+          (r) => r.stale || r.window === 'expired',
+        ).length,
+      }}
+      assistant={
+        <Assistant
+          key={recordId ?? org.id}
+          organizationId={org.id}
+          name={org.operating_name}
+          expanded
+          hasOpportunities={data.opportunities.length > 0}
+          context={
+            recordId
+              ? { kind: recordType === 'pursuit' ? 'pursuit' : 'opportunity', id: recordId }
+              : undefined
+          }
+          planningData={recordType === 'pursuit' ? data : undefined}
+        />
+      }
       onHelp={() => setGuideOpen(true)}
     >
       {guideOpen && (
@@ -307,7 +339,7 @@ export default function TenantWorkspace({
           </div>
         )}
         {page === 'Today' && <GettingStarted data={data} onOpen={() => setGuideOpen(true)} />}
-        {['Today', 'Opportunities', 'Pursuits'].includes(page) && (
+        {!recordId && ['Today', 'Opportunities', 'Pursuits'].includes(page) && (
           <NextActions
             data={data}
             page={page}
@@ -352,18 +384,52 @@ export default function TenantWorkspace({
                 {recordId
                   ? (pursuit?.title ?? opportunity?.title)
                   : page === 'Today'
-                    ? 'Your workspace starts with the facts.'
+                    ? 'Today'
                     : page === 'Assistant'
                       ? 'BidBuddy'
-                      : page}
+                      : page === 'Opportunities'
+                        ? 'All bids'
+                        : page}
               </h1>
               <p>
                 {recordId
-                  ? 'A dedicated, organization-scoped record.'
+                  ? `${opportunity?.buyer ?? 'Buyer not recorded'} · ${deadline} · ${opportunity?.deadline_timezone ?? 'Time zone not recorded'}`
                   : page === 'Company'
                     ? 'Manage your profile, review your records and keep information current.'
                     : 'Authenticated organization data. Working facts require human verification.'}
               </p>
+              {pursuit && opportunity && (
+                <>
+                  <p>
+                    {opportunity.source_details?.place || 'Location not recorded'} ·{' '}
+                    {opportunity.estimated_value == null
+                      ? 'Value not stated'
+                      : new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                          maximumFractionDigits: 0,
+                        }).format(opportunity.estimated_value)}{' '}
+                    ·{' '}
+                    {findSource(opportunity.source_details?.sourceId ?? '')?.name ??
+                      'Portal not recorded'}
+                  </p>
+                  <div className="bid-chips">
+                    <span>
+                      {
+                        (data.resolutions ?? []).filter(
+                          (r) => r.review_current && r.disposition === 'blocked',
+                        ).length
+                      }{' '}
+                      blockers
+                    </span>
+                    <span>
+                      {hasCurrentRegisterSignoff(data)
+                        ? 'Register signed off'
+                        : 'Register needs review'}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
             {!recordId && (page === 'Reports' || page === 'Today') && (
               <button className="button secondary" onClick={download}>
@@ -377,43 +443,36 @@ export default function TenantWorkspace({
             {notice}
           </div>
         )}
-        {recordId && opportunity && data.decisionMemory && <DecisionMemoryPanel data={data} />}
+        {recordType === 'opportunity' && opportunity && data.decisionMemory && (
+          <DecisionMemoryPanel data={data} />
+        )}
         {recordId && opportunity ? (
           recordType === 'pursuit' ? (
             <>
-              {pursuit && (
-                <details className="panel">
-                  <summary>Open this pursuit’s workflow checklist</summary>
-                  <GuideContent data={data} pursuitId={pursuit.id} />
-                </details>
-              )}
-              {pursuit && <BidReview data={data} pursuitId={pursuit.id} />}
-              {pursuit && isPepmaUrl(opportunity.source_url) && (
-                <PepmaWorkflow data={data} pursuitId={pursuit.id} canEdit={capture} />
-              )}
-              <PursuitFoundation
-                source={opportunity.source_url ?? opportunity.source_note ?? 'Not provided'}
-                deadline={deadline}
-                timezone={opportunity.deadline_timezone}
-                opportunityHref={href('/opportunities/' + opportunity.id)}
-                decisionPanel={
-                  data.decisionsEnabled && pursuit ? (
-                    <PursuitDecision data={data} pursuit={pursuit} />
-                  ) : undefined
-                }
-              >
+              {pursuit && <PursuitNextStep data={data} pursuitId={pursuit.id} />}
+              <details className="panel">
+                <summary>More on this bid</summary>
+                {data.decisionMemory && <DecisionMemoryPanel data={data} />}
+                {pursuit && <NextActions data={data} page={page} pursuitId={pursuit.id} />}
+                {pursuit && <GuideContent data={data} pursuitId={pursuit.id} />}
+                {pursuit && <BidReview data={data} pursuitId={pursuit.id} />}
                 {pursuit && <ContractReadinessBrief data={data} pursuitId={pursuit.id} />}
                 {pursuit && <DeliveryReview data={data} pursuitId={pursuit.id} />}
                 {pursuit && <PursuitDecisionBrief data={data} pursuitId={pursuit.id} />}
-                {pursuit && <RegisterSignoff data={data} pursuitId={pursuit.id} />}
-                {pursuit && <OpportunityAmendments data={data} pursuitId={pursuit.id} />}
                 {pursuit && (
-                  <EvidenceStressTest
-                    key={`stress:${data.organization.id}:${pursuit.id}`}
-                    data={data}
-                    pursuitId={pursuit.id}
-                  />
+                  <EvidenceStressTest key={pursuit.id} data={data} pursuitId={pursuit.id} />
                 )}
+                {pursuit && isPepmaUrl(opportunity.source_url) && (
+                  <PepmaWorkflow data={data} pursuitId={pursuit.id} canEdit={capture} />
+                )}
+                <Link href={href('/opportunities/' + opportunity.id)}>
+                  Source notice and intake →
+                </Link>
+              </details>
+              <section className="panel" aria-labelledby="requirements-heading">
+                <span id="pursuit-requirements" />
+                <h2 id="requirements-heading">Requirements register</h2>
+                <p>Incomplete until signed off.</p>
                 {capture && (
                   <NoticeExcerptReview
                     key={`notice:${org.id}:${recordId}`}
@@ -421,125 +480,127 @@ export default function TenantWorkspace({
                     pursuitId={recordId}
                   />
                 )}
-                <section className="panel" aria-labelledby="requirements-heading">
-                  <span id="pursuit-requirements" />
-                  <h2 id="requirements-heading">Requirements and gaps</h2>
+                <p>
+                  Capture the notice requirements and assign the next review. This register does not
+                  verify compliance or determine eligibility.
+                </p>
+                <Link href={href('/company')}>Review company evidence</Link>
+                {!(data.requirements ?? []).length && (
                   <p>
-                    Capture the notice requirements and assign the next review. This register does
-                    not verify compliance or determine eligibility.
+                    No requirements recorded for this pursuit yet. This does not mean the notice has
+                    no requirements.
                   </p>
-                  <Link href={href('/company')}>Review company evidence</Link>
-                  {!(data.requirements ?? []).length && (
+                )}
+                {(data.requirements ?? []).length > 500 && (
+                  <p role="status">
+                    Showing the first 500 requirements. This is a partial register; additional
+                    records are not shown.
+                  </p>
+                )}
+                {(data.requirements ?? []).slice(0, 500).map((requirement) => (
+                  <article
+                    className="panel"
+                    key={requirement.id}
+                    id={`requirement-${requirement.id}`}
+                  >
+                    <h3>{requirement.requirement}</h3>
                     <p>
-                      No requirements recorded for this pursuit yet. This does not mean the notice
-                      has no requirements.
+                      Notice citation:{' '}
+                      {requirement.citation || 'Not recorded; source review needed'}
                     </p>
-                  )}
-                  {(data.requirements ?? []).length > 500 && (
-                    <p role="status">
-                      Showing the first 500 requirements. This is a partial register; additional
-                      records are not shown.
-                    </p>
-                  )}
-                  {(data.requirements ?? []).slice(0, 500).map((requirement) => (
-                    <article
-                      className="panel"
-                      key={requirement.id}
-                      id={`requirement-${requirement.id}`}
-                    >
-                      <h3>{requirement.requirement}</h3>
+                    {!(
+                      data.resolutionsEnabled &&
+                      data.resolutions?.some(
+                        (r) => r.requirement_id === requirement.id && r.review_current,
+                      )
+                    ) && (
                       <p>
-                        Notice citation:{' '}
-                        {requirement.citation || 'Not recorded; source review needed'}
+                        Follow-up:{' '}
+                        {Object.hasOwn(requirementStatuses, requirement.status)
+                          ? requirementStatuses[
+                              requirement.status as keyof typeof requirementStatuses
+                            ]
+                          : 'Needs review'}
                       </p>
-                      {!(
-                        data.resolutionsEnabled &&
-                        data.resolutions?.some(
-                          (r) => r.requirement_id === requirement.id && r.review_current,
-                        )
-                      ) && (
-                        <p>
-                          Follow-up:{' '}
-                          {Object.hasOwn(requirementStatuses, requirement.status)
-                            ? requirementStatuses[
-                                requirement.status as keyof typeof requirementStatuses
-                              ]
-                            : 'Needs review'}
-                        </p>
-                      )}
+                    )}
+                    <p>
+                      Owner:{' '}
+                      {requirement.owner_user_id === data.userId
+                        ? 'You'
+                        : (requirement.owner_user_id ?? 'Unassigned')}
+                    </p>
+                    {capture && (
+                      <RequirementForm data={data} pursuitId={recordId} requirement={requirement} />
+                    )}
+                    {data.resolutionsEnabled && (
+                      <RequirementResolution data={data} requirement={requirement} />
+                    )}
+                    {capture && <RequirementAmendment data={data} requirement={requirement} />}
+                    {capture && (
+                      <RequirementCorrection
+                        key={`correct:${requirement.id}:${requirement.updated_at}`}
+                        data={data}
+                        requirement={requirement}
+                      />
+                    )}
+                    {data.documentsEnabled && (
+                      <RequirementDocuments data={data} requirement={requirement} />
+                    )}
+                    {data.evidenceReviewsEnabled && (
+                      <EvidenceUseReview data={data} requirement={requirement} />
+                    )}
+                  </article>
+                ))}
+                {capture && <RequirementForm data={data} pursuitId={recordId} />}
+                <RequirementArchive data={data} />
+                {pursuit && <RegisterSignoff data={data} pursuitId={pursuit.id} />}
+              </section>
+              <section className="panel" id="pursuit-tasks">
+                <h2>Tasks</h2>
+                <ContractorTaskTemplate data={data} pursuitId={recordId} />
+                {data.tasks
+                  .filter((t) => t.pursuit_id === recordId)
+                  .map((t) => (
+                    <div className="panel" key={t.id} id={`task-${t.id}`}>
+                      <h3>{t.title}</h3>
                       <p>
-                        Owner:{' '}
-                        {requirement.owner_user_id === data.userId
+                        {t.status.replaceAll('_', ' ')} · Owner:{' '}
+                        {t.assigned_user_id === data.userId
                           ? 'You'
-                          : (requirement.owner_user_id ?? 'Unassigned')}
+                          : (t.assigned_user_id ?? 'Unassigned')}
                       </p>
-                      {capture && (
-                        <RequirementForm
-                          data={data}
-                          pursuitId={recordId}
-                          requirement={requirement}
-                        />
-                      )}
-                      {data.resolutionsEnabled && (
-                        <RequirementResolution data={data} requirement={requirement} />
-                      )}
-                      {capture && <RequirementAmendment data={data} requirement={requirement} />}
-                      {capture && (
-                        <RequirementCorrection
-                          key={`correct:${requirement.id}:${requirement.updated_at}`}
-                          data={data}
-                          requirement={requirement}
-                        />
-                      )}
-                      {data.documentsEnabled && (
-                        <RequirementDocuments data={data} requirement={requirement} />
-                      )}
-                      {data.evidenceReviewsEnabled && (
-                        <EvidenceUseReview data={data} requirement={requirement} />
-                      )}
-                    </article>
+                      <p>Due: {displayDate(t.due_at, t.due_timezone ?? org.default_timezone)}</p>
+                      {t.requirement_id &&
+                        data.archivedRequirements?.some((r) => r.id === t.requirement_id) && (
+                          <p>
+                            This task remains linked to an archived requirement. Review the{' '}
+                            <a href="#requirement-archive-title">correction history</a> before
+                            completing or updating it.
+                          </p>
+                        )}
+                      {capture && <TaskForm data={data} pursuitId={recordId} task={t} />}
+                    </div>
                   ))}
-                  {capture && <RequirementForm data={data} pursuitId={recordId} />}
-                  <RequirementArchive data={data} />
-                </section>
-                <ResponsePackages
-                  key={`response:${org.id}:${recordId}`}
-                  data={data}
-                  pursuitId={recordId}
-                />
-                <ResponseReleases data={data} pursuitId={recordId} />
-                <section className="panel" id="pursuit-tasks">
-                  <h2>Tasks</h2>
-                  <ContractorTaskTemplate data={data} pursuitId={recordId} />
-                  {data.tasks
-                    .filter((t) => t.pursuit_id === recordId)
-                    .map((t) => (
-                      <div className="panel" key={t.id} id={`task-${t.id}`}>
-                        <h3>{t.title}</h3>
-                        <p>
-                          {t.status.replaceAll('_', ' ')} · Owner:{' '}
-                          {t.assigned_user_id === data.userId
-                            ? 'You'
-                            : (t.assigned_user_id ?? 'Unassigned')}
-                        </p>
-                        <p>Due: {displayDate(t.due_at, t.due_timezone ?? org.default_timezone)}</p>
-                        {t.requirement_id &&
-                          data.archivedRequirements?.some((r) => r.id === t.requirement_id) && (
-                            <p>
-                              This task remains linked to an archived requirement. Review the{' '}
-                              <a href="#requirement-archive-title">correction history</a> before
-                              completing or updating it.
-                            </p>
-                          )}
-                        {capture && <TaskForm data={data} pursuitId={recordId} task={t} />}
-                      </div>
-                    ))}
-                  {!data.tasks.some((t) => t.pursuit_id === recordId) && (
-                    <p>No tasks assigned yet. Add the next action with an owner and deadline.</p>
-                  )}
-                  {capture && <TaskForm data={data} pursuitId={recordId} />}
-                </section>
-              </PursuitFoundation>
+                {!data.tasks.some((t) => t.pursuit_id === recordId) && (
+                  <p>No tasks assigned yet. Add the next action with an owner and deadline.</p>
+                )}
+                {capture && <TaskForm data={data} pursuitId={recordId} />}
+              </section>
+              {data.decisionsEnabled && pursuit && (
+                <PursuitDecision data={data} pursuit={pursuit} />
+              )}
+              <ResponsePackages
+                key={`response:${org.id}:${recordId}`}
+                data={data}
+                pursuitId={recordId}
+              />
+              <ResponseReleases data={data} pursuitId={recordId} />
+              {pursuit && (
+                <details className="panel">
+                  <summary>Amendments</summary>
+                  <OpportunityAmendments data={data} pursuitId={pursuit.id} />
+                </details>
+              )}
             </>
           ) : (
             <section className="panel record-page">
@@ -613,51 +674,6 @@ export default function TenantWorkspace({
             <InformationRequests key={org.id + '-requests-today'} data={data} compact />
             <EvidenceReminders data={data} />
             <EvidenceRenewals key={org.id} data={data} />
-            <div className="stats-grid">
-              {[
-                ['Recorded opportunities', data.opportunities.length],
-                ['Pursuits', data.pursuits.length],
-                ['Facts awaiting review', pending.length],
-                [
-                  'Needs information',
-                  data.onboarding.filter((i) => i.status === 'needs_information').length,
-                ],
-              ].map(([label, n]) => (
-                <div className="stat-card" key={label}>
-                  <div>{label}</div>
-                  <strong>{n}</strong>
-                  <small>Records available in your current view</small>
-                </div>
-              ))}
-            </div>
-            <div className="report-grid">
-              <section className="panel">
-                <h2>Complete company readiness</h2>
-                <p>
-                  Start with current licensing, registrations, insurance, bonding, and named
-                  approval authority.
-                </p>
-                <Link className="button primary" href={href('/company')}>
-                  Review company facts
-                </Link>
-              </section>
-              <section className="panel">
-                <h2>A clean pursuit pipeline</h2>
-                <p>
-                  {data.opportunities.length === 0
-                    ? 'No opportunities have been entered for this organization. Demo records have not been imported.'
-                    : `${data.opportunities.length} opportunities recorded.`}
-                </p>
-                <Link className="text-button" href={href('/opportunities')}>
-                  Open opportunity inbox →
-                </Link>
-              </section>
-            </div>
-            <Assistant
-              hasOpportunities={data.opportunities.length > 0}
-              organizationId={org.id}
-              name={org.operating_name}
-            />
           </>
         )}
         {!recordId && page === 'Assistant' && (
@@ -691,24 +707,9 @@ export default function TenantWorkspace({
                 Open BidBuddy opportunity research
               </Link>
             </section>
-            <Assistant
-              hasOpportunities={data.opportunities.length > 0}
-              organizationId={org.id}
-              name={org.operating_name}
-              expanded
-            />
           </>
         )}
         {!recordId && page === 'Assistant' && admin && <AssistantUsage organizationId={org.id} />}
-        {recordId && (
-          <Assistant
-            key={recordId}
-            organizationId={org.id}
-            name={org.operating_name}
-            context={{ kind: recordType === 'pursuit' ? 'pursuit' : 'opportunity', id: recordId }}
-            planningData={recordType === 'pursuit' ? data : undefined}
-          />
-        )}
         {!recordId && page === 'Company' && (
           <>
             <CompanyPortal key={org.id} data={data} reviewCount={pending.length}>
@@ -719,7 +720,8 @@ export default function TenantWorkspace({
               )}
               <CompanyPanel name="overview">
                 <CompanySnapshot data={data} />
-                <ProfileCompletion key={org.id + '-completion'} data={data} />
+                <ProfileCompletion data={data} />
+                <EvidenceRenewals key={org.id + '-overview-radar'} data={data} />
               </CompanyPanel>
               <CompanyPanel name="review">
                 <CompanyReview key={org.id + '-review'} data={data} />

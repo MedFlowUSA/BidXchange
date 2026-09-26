@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 test('direct demo routes survive refresh and browser history', async ({ page }) => {
   await page.goto('/company?workspace=demo');
-  await expect(page.getByRole('heading', { name: 'Company', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Passport', exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Company', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Passport', exact: true })).toBeVisible();
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
   if (await menu.isVisible()) await menu.click();
   await page
@@ -28,12 +28,16 @@ test('direct demo routes survive refresh and browser history', async ({ page }) 
   await page.goto('/pursuits/DEMO-002?workspace=demo');
   await expect(
     page.getByRole('heading', {
-      name: 'Practice one bid from review to submission record',
+      name: 'Community aquatic center rehabilitation',
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.getByRole('heading', { name: /^2\. Requirements Register/ })).toBeVisible();
-  await expect(page.getByRole('checkbox', { name: 'Prepare cost estimate' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Requirements register', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('checkbox', { name: 'Alex: confirm license classification' }),
+  ).toBeVisible();
 });
 test('protected routes redirect and unauthorized IDs never switch tenant', async ({ page }) => {
   await page.goto('/operations');
@@ -53,7 +57,10 @@ test('protected routes redirect and unauthorized IDs never switch tenant', async
 test('workspace picker hides GES from guests and global search is bounded', async ({ page }) => {
   await page.goto('/dashboard?workspace=demo');
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
-  if (await menu.isVisible()) await menu.click();
+  await expect(
+    page.getByRole('heading', { name: 'Municipal building energy retrofit', exact: true }),
+  ).toBeVisible();
+  if ((page.viewportSize()?.width ?? 1440) <= 768) await menu.click();
   await page.getByRole('button', { name: 'Switch workspace' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Apex Energy Demo');
@@ -70,7 +77,7 @@ test('workspace picker hides GES from guests and global search is bounded', asyn
   await expect(page).toHaveURL(/opportunities\/DEMO-001/);
 });
 test('keyboard dialog focus is confined and export produces nonempty content', async ({ page }) => {
-  await page.goto('/dashboard?workspace=demo');
+  await page.goto('/opportunities?workspace=demo');
   await page.getByRole('button', { name: 'Add opportunity', exact: true }).focus();
   await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog');

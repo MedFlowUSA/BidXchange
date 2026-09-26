@@ -6,6 +6,12 @@ async function navigate(page: Page, name: string) {
     await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
     return;
   }
+  if (name === 'Pursuits') {
+    await page.goto('/pursuits?workspace=demo');
+    await expect(page.locator('main h1')).toHaveText('Pursuits');
+    return;
+  }
+  const label = name === 'Company' ? 'Passport' : name === 'Opportunities' ? 'All bids' : name;
   await expect(page.locator('main h1')).toBeVisible();
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
   if (await menu.isVisible()) await menu.click();
@@ -16,15 +22,21 @@ async function navigate(page: Page, name: string) {
     if (!(await more.evaluate((el) => el.hasAttribute('open'))))
       await more.locator('summary').click();
   }
-  await page.getByRole('navigation').getByRole('link', { name, exact: false }).click();
-  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await page
+    .getByRole('navigation', {
+      name: name === 'Reports' ? 'More navigation' : 'Main navigation',
+      exact: true,
+    })
+    .getByRole('link', { name: label, exact: false })
+    .click();
+  await expect(page.getByRole('heading', { name: label, exact: true })).toBeVisible();
 }
 test('dashboard, navigation, search and empty results', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/dashboard?workspace=demo');
   await expect(
-    page.getByRole('heading', { name: 'A clear path to your next pursuit.' }),
+    page.getByRole('heading', { name: 'Municipal building energy retrofit' }),
   ).toBeVisible();
   await navigate(page, 'Opportunities');
   await page.getByRole('textbox', { name: 'Search opportunities' }).fill('weatherization');
@@ -36,15 +48,15 @@ test('dashboard, navigation, search and empty results', async ({ page }) => {
   await page.getByRole('button', { name: 'Clear filters' }).click();
   for (const name of ['Pursuits', 'Company', 'Documents', 'Reports']) {
     await navigate(page, name);
-    await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+    await expect(page.locator('main h1')).toBeVisible();
   }
   expect(errors).toEqual([]);
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
   ).toBeTruthy();
 });
-test('manual intake persists and unverified eligibility blocks pursuit', async ({ page }) => {
-  await page.goto('/dashboard?workspace=demo');
+test('manual intake persists and unresolved review blocks pursuit', async ({ page }) => {
+  await page.goto('/opportunities?workspace=demo');
   await page.getByRole('button', { name: 'Add opportunity', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Opportunity title').fill('Fictional retrofit test');
@@ -62,35 +74,26 @@ test('manual intake persists and unverified eligibility blocks pursuit', async (
     '',
   );
   await page.getByLabel('Demo workflow stage').selectOption('In review');
-  await page.getByRole('link', { name: /Back to (opportunities|pursuits)/ }).click();
-  await expect(page.locator('main h1')).toHaveText(/^(Opportunities|Pursuits)$/);
+  await page.getByRole('link', { name: /Back to (all bids|opportunities|pursuits)/ }).click();
+  await expect(page.locator('main h1')).toHaveText(/^(All bids|Pursuits)$/);
   await navigate(page, 'Pursuits');
   await expect(
     page.getByRole('heading', { name: 'Fictional retrofit test', exact: true }),
   ).toBeVisible();
 });
-test('eligible pursuit supports tasks and exports a labeled brief', async ({ page }) => {
-  await page.goto('/dashboard?workspace=demo');
-  await page
-    .getByRole('heading', { name: 'Municipal building energy retrofit', exact: true })
-    .click();
-  const dialog = page.getByRole('region', { name: 'Opportunity details' });
-  await dialog.getByLabel('Demo workflow stage').selectOption('Pursuing');
-  await dialog.getByRole('checkbox', { name: 'Confirm estimating capacity' }).check();
-  await page.getByRole('link', { name: /Back to (opportunities|pursuits)/ }).click();
-  await expect(page.locator('main h1')).toHaveText(/^(Opportunities|Pursuits)$/);
-  await navigate(page, 'Pursuits');
-  await page
-    .getByRole('heading', { name: 'Municipal building energy retrofit', exact: true })
-    .click();
-  await expect(dialog.getByRole('checkbox', { name: 'Confirm estimating capacity' })).toBeChecked();
-  await page.getByRole('link', { name: /Back to (opportunities|pursuits)/ }).click();
-  await expect(page.locator('main h1')).toHaveText(/^(Opportunities|Pursuits)$/);
+test('legacy intake task edits persist and exports retain fictional labeling', async ({ page }) => {
+  await page.goto('/opportunities/DEMO-002?workspace=demo');
+  await page.getByRole('checkbox', { name: 'Prepare cost estimate', exact: true }).check();
+  await page.reload();
+  await expect(
+    page.getByRole('checkbox', { name: 'Prepare cost estimate', exact: true }),
+  ).toBeChecked();
   await navigate(page, 'Reports');
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export brief', exact: true }).click();
   expect((await download).suggestedFilename()).toBe('bidxchange-demo-brief.txt');
 });
+
 test('failed licensing blocks a pursuit and documents open accessibly', async ({ page }) => {
   await page.goto('/dashboard?workspace=demo');
   await navigate(page, 'Opportunities');

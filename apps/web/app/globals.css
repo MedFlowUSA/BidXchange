@@ -2652,3 +2652,320 @@ a.nav-item {
   font-size: 0.8125rem;
   line-height: 1.5;
 }
+.nav-count {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: #fbb63d;
+  color: #101c38;
+  font-size: 12px;
+  font-weight: 700;
+}
+.mobile-bottom-nav,
+.buddy-fab {
+  display: none;
+}
+.mobile-bottom-nav a {
+  position: relative;
+}
+.mobile-nav-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #fbb63d;
+  color: #101c38;
+  border-radius: 12px;
+  padding: 1px 5px;
+  font-weight: 700;
+}
+.dialog.assistant-drawer {
+  margin: 0 0 0 auto;
+  width: min(840px, 96vw);
+  max-width: 96vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+  overflow-y: auto;
+}
+.assistant-drawer .dialog-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 3;
+  padding-bottom: 14px;
+}
+.bid-workspace {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.bid-workspace section[id],
+.bid-workspace [id],
+#pursuit-requirements {
+  scroll-margin-top: 24px;
+}
+.bid-heading h1 {
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.2;
+  margin: 8px 0 12px;
+}
+.bid-heading p {
+  margin: 8px 0;
+  color: #4b5971;
+}
+.bid-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+.bid-chips span {
+  border: 1px solid #d6deeb;
+  border-radius: 20px;
+  background: white;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.bid-next {
+  border-left: 4px solid #e4a22b;
+  background: #edf2ff;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.bid-next p {
+  margin: 6px 0 0;
+  color: #344663;
+}
+.bid-next .button {
+  flex-shrink: 0;
+}
+.bid-more {
+  margin: 12px 0 22px;
+}
+.bid-more nav {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 14px 0;
+}
+.bid-more summary {
+  cursor: pointer;
+  color: #38517b;
+}
+.bid-workspace .panel {
+  margin: 0 0 22px;
+  padding: 24px;
+}
+.bid-workspace label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  margin: 16px 0;
+  color: #293c5b;
+}
+.bid-workspace input:not([type='checkbox']),
+.bid-workspace select,
+.bid-workspace textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #b8c5d9;
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+  color: #152743;
+}
+.bid-workspace .checklist-row {
+  flex-direction: row;
+  align-items: center;
+  font-weight: 400;
+}
+.bid-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+.bid-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.bid-evidence {
+  padding: 16px;
+  border: 1px solid #e9ce93;
+  border-radius: 8px;
+  background: #fffbf2;
+  margin: 16px 0;
+}
+.requirement-row,
+.passport-record {
+  border-bottom: 1px solid #dbe2ec;
+  padding: 15px 0;
+}
+.requirement-row summary,
+.passport-record summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.requirement-row summary:before,
+.passport-record summary:before {
+  content: '›';
+  font-size: 20px;
+  color: #5472ab;
+}
+.requirement-row[open] summary:before,
+.passport-record[open] summary:before {
+  content: '⌄';
+}
+.requirement-row summary > span:first-of-type,
+.passport-record summary > span:first-of-type {
+  flex: 1;
+}
+.requirement-row p,
+.passport-record p {
+  color: #44546d;
+  line-height: 1.6;
+}
+.requirement-status {
+  font-size: 12px;
+  border-radius: 5px;
+  padding: 5px 9px;
+  background: #edf0f5;
+  white-space: nowrap;
+}
+.requirement-status.blocker {
+  color: #862f22;
+  background: #fff0e9;
+}
+.requirement-status.reviewed {
+  color: #145c47;
+  background: #e7f5ee;
+}
+.radar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.radar-grid > div {
+  border: 1px solid #d6dfeb;
+  border-radius: 8px;
+  padding: 14px;
+}
+.passport-record dl {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+}
+.passport-record dd {
+  margin: 0;
+}
+.portal-playbook {
+  border-top: 1px solid #dbe2ec;
+  margin-top: 20px;
+  padding-top: 16px;
+}
+.portal-playbook li {
+  margin-bottom: 12px;
+}
+.workspace-skeleton div {
+  height: 52px;
+  margin: 16px 0;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #edf0f6, #f8faff, #edf0f6);
+}
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #d6deeb;
+    z-index: 30;
+    padding: 8px 4px max(8px, env(safe-area-inset-bottom));
+    justify-content: space-around;
+  }
+  .mobile-bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #4b5b75;
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  .mobile-bottom-nav a[aria-current='page'] {
+    color: #234ff2;
+    font-weight: 700;
+  }
+  .main-shell {
+    padding-bottom: 90px;
+  }
+  .buddy-trigger {
+    display: none;
+  }
+  .buddy-fab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: fixed;
+    right: 14px;
+    bottom: 82px;
+    z-index: 31;
+    border: 0;
+    border-radius: 24px;
+    padding: 12px 16px;
+    background: #152745;
+    color: white;
+    box-shadow: 0 4px 15px #15274530;
+  }
+  .bid-next {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 15px;
+    gap: 12px;
+  }
+  .bid-workspace .panel {
+    padding: 16px;
+  }
+  .bid-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .radar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .requirement-row summary {
+    gap: 7px;
+    align-items: start;
+    font-size: 13px;
+  }
+  .requirement-status {
+    font-size: 11px;
+  }
+  .bid-chips {
+    gap: 5px;
+  }
+  .bid-chips span {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+  .passport-record dl {
+    grid-template-columns: 1fr;
+  }
+  .bid-workspace {
+    overflow-wrap: anywhere;
+  }
+}

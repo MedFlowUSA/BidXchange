@@ -43,6 +43,7 @@ export async function POST(request: Request) {
       new Date(),
       recordLimit,
     );
+    if (body.mode === 'workspace') await evidence.restrictToContext(body.context);
     const shared = body.sharedRequirements
       ? await readSharedRequirements(
           account.db,
@@ -148,6 +149,7 @@ export async function POST(request: Request) {
             new Date(),
             recordLimit,
           );
+          if (body.mode === 'workspace') await current.restrictToContext(body.context);
           const records: Evidence[] = [];
           if (shared) {
             const freshExcerpt = body.sharedRequirements

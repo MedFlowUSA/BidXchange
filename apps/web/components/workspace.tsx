@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppShell from './app-shell';
 import Dialog from './dialog';
-import Assistant from './assistant';
 import PublicDemoAssistant from './public-demo-assistant';
+import DemoPassport from './demo-passport';
+import { useDemoPassport } from './demo-passport-state';
 import DemoBidRehearsal from './demo-bid-rehearsal';
 import { sections, workspaceHref, type OrganizationChoice } from '../lib/routes';
 import {
   ArrowDownToLine,
-  ArrowRight,
   ArrowUpRight,
   CalendarDays,
   Check,
@@ -25,8 +25,6 @@ import {
   Search,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
-  Target,
   X,
 } from 'lucide-react';
 import { seedOpportunities, sampleDocuments, type Opportunity, type Stage } from '../lib/demo';
@@ -94,8 +92,6 @@ const isOpportunity = (v: unknown): v is Opportunity => {
 };
 
 export default function Workspace({
-  liveDemoAssistant = false,
-  demoAssistantEnabled = false,
   initialPage = 'Today',
   recordId,
   recordType,
@@ -111,14 +107,14 @@ export default function Workspace({
   userEmail?: string;
 }) {
   const router = useRouter();
+  const { insuranceCurrent } = useDemoPassport();
+  const [bidAttention, setBidAttention] = useState(1);
   const page = recordId
     ? recordType === 'pursuit'
       ? 'Pursuit workspace'
       : 'Opportunity details'
     : initialPage;
   const setPage = (name: string) => router.push(workspaceHref(sections[name] ?? '/dashboard'));
-  const setSelectedId = (id: string) =>
-    router.push(workspaceHref('/opportunities/' + encodeURIComponent(id)));
   const [items, setItems] = useState<Opportunity[]>(seedOpportunities);
   const [loaded, setLoaded] = useState(false);
   const [query, setQuery] = useState('');
@@ -167,9 +163,6 @@ export default function Workspace({
     }
   }, [toast]);
   const selected = items.find((o) => o.id === recordId);
-  const strong = items.filter(
-    (o) => reviewState(o.gates, o.factors).band === 'Evidence recorded' && o.stage !== 'Passed',
-  );
   const pursuits = items.filter((o) => o.stage === 'Pursuing');
   const openTasks = pursuits.flatMap((o) =>
     o.tasks.filter((t) => !t.done).map((t) => ({ ...t, opportunity: o })),
@@ -264,7 +257,11 @@ export default function Workspace({
   const card = (o: Opportunity) => {
     const fit = reviewState(o.gates, o.factors);
     return (
-      <Link className="opportunity-card" key={o.id} href={workspaceHref(`/opportunities/${o.id}`)}>
+      <Link
+        className="opportunity-card"
+        key={o.id}
+        href={workspaceHref(`/${o.id === 'DEMO-001' ? 'pursuits' : 'opportunities'}/${o.id}`)}
+      >
         <div className="card-top">
           <span className="category">{o.category}</span>
           <span
@@ -272,7 +269,9 @@ export default function Workspace({
           >
             {o.gates.some((g) => g.status === 'fail')
               ? 'Potential blocker'
-              : 'Human review required'}
+              : o.id === 'DEMO-001'
+                ? '1 blocker'
+                : 'Review pending'}
           </span>
         </div>
         <h3>{o.title}</h3>
@@ -332,230 +331,50 @@ export default function Workspace({
       choices={choices}
       userEmail={userEmail}
       records={searchRecords}
+      badges={{ pursuit: bidAttention, passport: insuranceCurrent ? 0 : 1 }}
+      assistant={<PublicDemoAssistant />}
       onHelp={() => setModal('help')}
       onNotifications={() => setModal('notifications')}
     >
       <main>
-        <div className="page-heading">
-          <div>
-            <div className="eyebrow">YOUR GOVERNMENT CONTRACTING WORKSPACE</div>
-            <h1>
-              {page === 'Today'
-                ? 'A clear path to your next pursuit.'
-                : page === 'Assistant'
-                  ? 'BidBuddy'
-                  : page}
-            </h1>
-            <p>
-              {
-                (
-                  {
-                    Today: 'The right opportunities. The next priorities. All in one place.',
-                    Opportunities: 'Find the work that fits. Know why it matters.',
-                    Pursuits: 'Keep every response moving, from decision to readiness.',
-                    Company: 'Start each pursuit with company evidence and human review.',
-                    Documents: 'The evidence and templates behind a confident response.',
-                    Reports: 'A clear view of your pipeline and the work behind it.',
-                  } as Record<string, string>
-                )[page]
-              }
-            </p>
-          </div>
-          <button className="button primary" onClick={() => setModal('add')}>
-            <Plus size={17} />
-            Add opportunity
-          </button>
-        </div>
-        <div className="demo-banner">
-          <span>
-            <Sparkles size={15} />
-            <b>A workspace to explore.</b> Fictional sample data · Changes saved in this browser.
-          </span>
-          <button onClick={() => setModal('help')}>
-            About this preview <ArrowUpRight size={14} />
-          </button>
-        </div>
-
-        {(page === 'Today' || page === 'Company' || page === 'Pursuits') && !recordId && (
-          <div className="panel">
-            <h2>Try the connected bid workflow</h2>
-            <p>
-              Review fictional evidence, sign off requirements, record a decision and rehearse
-              version approval. Then see what an amendment changes. Exercise changes reset when you
-              leave.
-            </p>
-            <Link className="button" href={workspaceHref('/pursuits/DEMO-001')}>
-              Practice the municipal retrofit bid
-            </Link>
+        {!recordId && (
+          <div className="page-heading">
+            <div>
+              <div className="eyebrow">APEX ENERGY DEMO</div>
+              <h1>
+                {page === 'Company'
+                  ? 'Passport'
+                  : page === 'Opportunities'
+                    ? 'All bids'
+                    : page === 'Assistant'
+                      ? 'BidBuddy'
+                      : page}
+              </h1>
+            </div>
+            {page === 'Opportunities' && (
+              <button className="button primary" onClick={() => setModal('add')}>
+                <Plus size={17} />
+                Add opportunity
+              </button>
+            )}
           </div>
         )}
+        {!recordId && <p className="outline-tag">Sample company · not a live bid.</p>}
         {page === 'Today' && (
-          <>
-            <div className="stats-grid">
-              {[
-                {
-                  label: 'Opportunities to review',
-                  value: items.filter((o) => o.stage === 'Inbox').length,
-                  icon: Search,
-                  sub: 'Ready for a closer look',
-                  className: 'blue',
-                },
-                {
-                  label: 'Opportunities with recorded evidence',
-                  value: strong.length,
-                  icon: ShieldCheck,
-                  sub: 'Passed sample eligibility checks',
-                  className: 'green',
-                },
-                {
-                  label: 'Active pursuits',
-                  value: pursuits.length,
-                  icon: Target,
-                  sub: 'From qualification to readiness',
-                  className: 'golden',
-                },
-                {
-                  label: 'Open pursuit tasks',
-                  value: openTasks.length,
-                  icon: ClipboardList,
-                  sub: 'Your next steps, in focus',
-                  className: 'purple',
-                },
-              ].map(({ label, value, icon: Icon, sub, className }) => (
-                <div className="stat-card" key={label}>
-                  <div>
-                    <span>{label}</span>
-                    <Icon size={19} className={className} />
-                  </div>
-                  <strong>{String(value).padStart(2, '0')}</strong>
-                  <small>{sub}</small>
-                </div>
-              ))}
-            </div>
-            <div className="dashboard-columns">
-              <section>
-                <div className="section-heading">
-                  <div>
-                    <h2>
-                      Worth a closer look <span className="count-pill">{strong.length}</span>
-                    </h2>
-                    <p>
-                      Your opportunities with recorded evidence, with the reasoning to back them.
-                    </p>
-                  </div>
-                  <button
-                    className="text-button"
-                    onClick={() => {
-                      go('Opportunities');
-                      setFilter('Evidence recorded');
-                    }}
-                  >
-                    View inbox <ArrowRight size={16} />
-                  </button>
-                </div>
-                <div className="opportunity-grid">
-                  {strong.slice(0, 2).map(card)}
-                  {!strong.length && (
-                    <div className="empty-state">
-                      No opportunities with recorded evidence yet. Review the inbox to get started.
-                    </div>
-                  )}
-                </div>
-                <div className="section-heading priorities-heading">
-                  <div>
-                    <h2>Keep things moving</h2>
-                    <p>A little progress today. A stronger response tomorrow.</p>
-                  </div>
-                  <span className="subtle-label">PURSUIT TASKS</span>
-                </div>
-                <div className="task-list">
-                  {openTasks.slice(0, 3).map((t, i) => (
-                    <button
-                      className="task-row"
-                      key={`${t.opportunity.id}-${t.title}`}
-                      onClick={() => setSelectedId(t.opportunity.id)}
-                    >
-                      <span className="task-number">0{i + 1}</span>
-                      <div>
-                        <b>{t.title}</b>
-                        <small>{t.opportunity.title}</small>
-                      </div>
-                      <span className="task-chip">To do</span>
-                      <ArrowUpRight size={17} />
-                    </button>
-                  ))}
-                  {!openTasks.length && (
-                    <div className="empty-state">
-                      <CheckCircle2 size={24} />
-                      All pursuit tasks are complete.
-                    </div>
-                  )}
-                </div>
-              </section>
-              <aside className="right-column">
-                <div className="readiness-card">
-                  <div className="section-heading">
-                    <h2>A stronger starting point</h2>
-                    <ShieldCheck size={20} />
-                  </div>
-                  <p>Your company readiness</p>
-                  <div className="readiness-value">
-                    4<span>/ 6</span>
-                    <span className="amber mini-badge">2 to review</span>
-                  </div>
-                  <div className="readiness-progress">
-                    <span />
-                  </div>
-                  <div className="readiness-row">
-                    <CheckCircle2 size={15} />
-                    Core capabilities<span>Ready</span>
-                  </div>
-                  <div className="readiness-row">
-                    <CheckCircle2 size={15} />
-                    Service territory<span>Ready</span>
-                  </div>
-                  <div className="readiness-row pending">
-                    <span className="small-circle" />
-                    Insurance evidence<span>Review</span>
-                  </div>
-                  <button className="button secondary full" onClick={() => go('Company')}>
-                    Review company profile
-                    <ArrowRight size={15} />
-                  </button>
-                  <small>Fictional company evidence · human review required</small>
-                </div>
-                <div className="brief-card">
-                  <span className="brief-icon">
-                    <FileText size={23} />
-                  </span>
-                  <div className="eyebrow">THE BIG PICTURE</div>
-                  <h2>
-                    Your opportunity brief.
-                    <br />
-                    Ready when you are.
-                  </h2>
-                  <p>Bring the pipeline, fit, and next steps into your next conversation.</p>
-                  <button onClick={exportReport}>
-                    Export demo brief <ArrowDownToLine size={16} />
-                  </button>
-                </div>
-              </aside>
-            </div>
-            <div className="source-strip">
-              <span className="source-icon">
-                <FolderOpen size={18} />
-              </span>
-              <div>
-                <b>Start focused. Expand with confidence.</b>
-                <p>
-                  Manual opportunity intake is available. Procurement source connections come next.
-                </p>
-              </div>
-              <span className="outline-tag">No live feeds connected</span>
-            </div>
-          </>
+          <section className="panel">
+            <h2>Work needing attention</h2>
+            <ul>
+              <li>Bid bond: confirm available capacity with Casey.</li>
+              <li>Jordan: calendar the mandatory job walk.</li>
+              {!insuranceCurrent && (
+                <li>General liability insurance expired. Renew it in the Passport.</li>
+              )}
+            </ul>
+            <Link className="button primary" href={workspaceHref('/pursuits/DEMO-001')}>
+              Continue municipal retrofit
+            </Link>
+          </section>
         )}
-
         {page === 'Opportunities' && (
           <>
             <div className="inbox-toolbar">
@@ -676,80 +495,7 @@ export default function Workspace({
           </>
         )}
 
-        {page === 'Company' && (
-          <>
-            <Link className="text-button" href={workspaceHref('/documents')}>
-              Company documents →
-            </Link>
-            <div className="company-hero">
-              <span className="large-avatar">AE</span>
-              <div>
-                <div className="eyebrow">FICTIONAL COMPANY PROFILE</div>
-                <h2>Apex Energy Demo</h2>
-                <p>Energy efficiency · Building upgrades · Pool rehabilitation</p>
-              </div>
-              <span className="outline-tag">Southern California</span>
-            </div>
-            <div className="company-grid">
-              {[
-                {
-                  title: 'Core capabilities',
-                  value: 'Energy & building improvements',
-                  detail: 'NAICS 238990 · Sample classification',
-                  status: 'Sample ready',
-                },
-                {
-                  title: 'Service territory',
-                  value: 'Southern California',
-                  detail: 'Los Angeles, Orange, Riverside, San Bernardino, San Diego',
-                  status: 'Sample ready',
-                },
-                {
-                  title: 'Licenses',
-                  value: 'B · General Building / C-53 · Pools',
-                  detail: 'Fictional credentials. No real license number is used.',
-                  status: 'Sample ready',
-                },
-                {
-                  title: 'Supplier registrations',
-                  value: 'Local supplier profile',
-                  detail: 'Sample validity through December 2026',
-                  status: 'Sample ready',
-                },
-                {
-                  title: 'Insurance evidence',
-                  value: 'Evidence required',
-                  detail:
-                    'Review expiration, source and attestation in the live Passport. The rehearsal includes an expired-policy example.',
-                  status: 'Needs review',
-                },
-                {
-                  title: 'Bonding capacity',
-                  value: '$2M single-project limit',
-                  detail: 'Illustrative only · aggregate capacity needs confirmation',
-                  status: 'Needs review',
-                },
-              ].map((f) => (
-                <div className="panel fact-card" key={f.title}>
-                  <div className="flex-between">
-                    <h3>{f.title}</h3>
-                    <span className={`fit ${f.status === 'Needs review' ? 'amber' : 'green'}`}>
-                      {f.status}
-                    </span>
-                  </div>
-                  <strong>{f.value}</strong>
-                  <p>{f.detail}</p>
-                  <div className="fact-source">Source: fictional seed · Owner: demo member</div>
-                </div>
-              ))}
-            </div>
-            <div className="info-note">
-              <ShieldCheck size={20} />
-              Real company facts retain source, owner, attestation history, and expiration dates.
-              This preview does not verify or publish credentials.
-            </div>
-          </>
-        )}
+        {page === 'Company' && <DemoPassport />}
 
         {page === 'Documents' && (
           <>
@@ -885,37 +631,25 @@ export default function Workspace({
             </p>
           </section>
         )}
-        {liveDemoAssistant && (page === 'Today' || page === 'Assistant' || recordId) && (
-          <PublicDemoAssistant />
-        )}
-        {!liveDemoAssistant && (page === 'Today' || page === 'Assistant' || recordId) && (
-          <Assistant
-            demo
-            demoEnabled={demoAssistantEnabled}
-            name="Apex Energy Demo"
-            expanded={page === 'Assistant'}
-          />
-        )}
         {selected &&
-          (recordType !== 'pursuit' ||
-            selected.stage !== 'Inbox' ||
-            selected.id === 'DEMO-001') && (
+          (recordType !== 'pursuit' || selected.stage !== 'Inbox' || selected.id === 'DEMO-001') &&
+          (recordType === 'pursuit' ? (
+            <DemoBidRehearsal
+              key={selected.id}
+              opportunity={selected}
+              onAttention={setBidAttention}
+            />
+          ) : (
             <section className="panel record-page" aria-label="Opportunity details">
-              <Link
-                className="text-button"
-                href={workspaceHref(recordType === 'pursuit' ? '/pursuits' : '/opportunities')}
-              >
-                Back to {recordType === 'pursuit' ? 'pursuits' : 'opportunities'}
+              <Link className="text-button" href={workspaceHref('/opportunities')}>
+                Back to all bids
               </Link>
-              {recordType === 'pursuit' && (
-                <DemoBidRehearsal key={selected.id} opportunity={selected} />
-              )}
               <div className="detail-content">
                 <div className="card-top">
                   <span className="category">{selected.category}</span>
                   <span className="outline-tag">{selected.id} · Fictional</span>
                 </div>
-                <h2 className="detail-title">{selected.title}</h2>
+                <h1 className="detail-title">{selected.title}</h1>
                 <p>
                   {selected.buyer} · {selected.location}
                 </p>
@@ -1017,7 +751,7 @@ export default function Workspace({
                 </div>
               </div>
             </section>
-          )}
+          ))}
 
         <footer>
           <span>

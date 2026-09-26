@@ -15,6 +15,13 @@ export default function RegisterSignoff({
   if (!data.registerSignoffsEnabled) return null;
   const latest = data.registerSignoffs?.[0];
   const current = hasCurrentRegisterSignoff(data);
+  const requirements = (data.requirements ?? []).filter((r) => r.pursuit_id === pursuitId);
+  const remaining = requirements.filter(
+    (r) =>
+      !data.resolutions?.some(
+        (h) => h.requirement_id === r.id && h.review_current && h.disposition !== 'needs_review',
+      ),
+  ).length;
   return (
     <section className="panel" id="register-signoff">
       <h2>Requirements Register sign-off</h2>
@@ -34,6 +41,11 @@ export default function RegisterSignoff({
           ? 'A human sign-off matches this review context.'
           : 'Human sign-off is required before a final bid or no-bid decision.'}
       </p>
+      {!current && (
+        <p>
+          Incomplete until signed off. {remaining} requirements still need a recorded disposition.
+        </p>
+      )}
       {latest && (
         <p>
           Last sign-off: {latest.signed_off_at} by{' '}
@@ -60,7 +72,7 @@ export default function RegisterSignoff({
               the source, including omissions, blockers and unresolved questions. This is not an
               eligibility certification.
             </label>
-            <button className="button primary">
+            <button className="button primary" disabled={!requirements.length || remaining > 0}>
               {pending ? 'Saving…' : 'Sign off Requirements Register'}
             </button>
           </fieldset>

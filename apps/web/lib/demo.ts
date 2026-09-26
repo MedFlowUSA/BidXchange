@@ -30,7 +30,7 @@ const gates: Gate[] = [
   {
     name: 'Mandatory events',
     status: 'pass',
-    evidence: 'Sample solicitation §3 · No mandatory event',
+    evidence: 'Sample solicitation §4 · Review mandatory job-walk instructions',
   },
   {
     name: 'Registration',
@@ -61,7 +61,7 @@ export const seedOpportunities: Opportunity[] = [
     gates,
     factors: factors(96),
     tasks: [
-      { title: 'Review scope and eligibility', done: true },
+      { title: 'Review scope and requirements', done: true },
       { title: 'Confirm estimating capacity', done: false },
       { title: 'Prepare bid/no-bid recommendation', done: false },
     ],
@@ -82,7 +82,7 @@ export const seedOpportunities: Opportunity[] = [
     gates,
     factors: factors(89),
     tasks: [
-      { title: 'Review scope and eligibility', done: true },
+      { title: 'Review scope and requirements', done: true },
       { title: 'Prepare cost estimate', done: false },
       { title: 'Collect project references', done: false },
     ],
@@ -126,7 +126,7 @@ export const seedOpportunities: Opportunity[] = [
     timezone: 'America/Los_Angeles',
     value: 480000,
     summary:
-      'Design and install fleet charging infrastructure. This fictional notice requires electrical licensing that the demo company does not hold.',
+      'Design and install fleet charging infrastructure. This fictional notice requires electrical licensing that requires a fresh scope review.',
     stage: 'Inbox',
     gates: gates.map((g, i) =>
       i === 0
@@ -134,7 +134,7 @@ export const seedOpportunities: Opportunity[] = [
             ...g,
             status: 'fail',
             evidence:
-              'Sample solicitation §2.1 requires C-10. No verified C-10 license or approved partner on file.',
+              'Sample solicitation §2.1 requires C-10. Review current C-10 evidence against the stated scope.',
           }
         : g,
     ),
@@ -156,7 +156,7 @@ export const seedOpportunities: Opportunity[] = [
     stage: 'Inbox',
     gates,
     factors: factors(73),
-    tasks: [{ title: 'Review scope and eligibility', done: false }],
+    tasks: [{ title: 'Review scope and requirements', done: false }],
   },
 ];
 export const sampleDocuments = [
@@ -170,7 +170,7 @@ export const sampleDocuments = [
     name: 'Energy retrofit · scope summary',
     category: 'Solicitation',
     status: 'Sample',
-    text: 'FICTIONAL SOLICITATION — DEMO-001\nScope: lighting, controls, insulation for three municipal facilities.\nRequired license: B.\nNo mandatory site meeting.\nDue: October 8, 2026, 2:00 PM America/Los_Angeles.\nFor interface testing only.',
+    text: 'FICTIONAL SOLICITATION — DEMO-001\nScope: lighting, controls, insulation for three municipal facilities.\nRequired license: B.\nMandatory job walk: review section 4.\nDue: October 8, 2026, 2:00 PM America/Los_Angeles.\nFor interface testing only.',
   },
   {
     name: 'Bid readiness checklist',

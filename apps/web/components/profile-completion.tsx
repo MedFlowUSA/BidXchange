@@ -26,21 +26,8 @@ export default function ProfileCompletion({ data }: { data: TenantData }) {
   return (
     <section className={`panel ${styles.completion}`} aria-labelledby="profile-completion-title">
       <div className="eyebrow">YOUR COMPANY SETUP</div>
-      <h2 id="profile-completion-title">
-        {admin ? 'Profile completion' : 'Visible profile completion'}: {progress.percent}%
-      </h2>
-      <progress
-        aria-label="Level-1 profile fields recorded"
-        value={progress.completed}
-        max={progress.total}
-        style={{ width: '100%', height: 18 }}
-      />
-      <p>
-        <strong>
-          {progress.completed} of {progress.total} checklist fields recorded.
-        </strong>{' '}
-        This tracks recorded fields, not qualification for a bid. Evidence review is separate.
-      </p>
+      <h2 id="profile-completion-title">What to add next</h2>
+      <p>Complete missing Level-1 fields, then review the supporting evidence against each bid.</p>
       {data.organization.role !== 'organization_admin' && (
         <p>
           Your view may exclude restricted records. Ask your administrator to review company-wide
