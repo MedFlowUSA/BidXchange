@@ -34,3 +34,9 @@ Official implementation guidance reviewed: [OpenAI safety guidance](https://deve
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:secrets`, and `git diff --check`: passed.
 - Server tests cover role and tenant/pursuit isolation, archived/changed requirements, bounded excerpts, source citations, source changes during generation, scope-bound continuation, and inclusion of the selected source in task review tokens.
 - Early browser failures exposed an unnecessary conversation clear on ordinary mode changes and a missing test-harness mount. Both were corrected before the successful full run.
+
+## Live acceptance and wording refinement
+
+The first production acceptance on release `87ff75f` passed all twelve checks: real-provider explanation, source citation, explicit task review/save, ownership/deadline linkage, unchanged requirement status, mobile containment, general-mode exclusion, stale-selection rejection, tenant denial and test-fixture shutdown. Only fictional records were used.
+
+Manual review of that answer found an inferred record-retention duty and unnecessary internal disclosure wording. The follow-up policy now explicitly separates literal clause meaning, unanswered questions and suggested follow-up work; it prohibits turning “collect” into “collect and retain” and keeps internal record IDs/disclosure markers out of prose. Human comparison with the original source remains required.
