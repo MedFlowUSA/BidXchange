@@ -738,6 +738,24 @@ export default function Assistant({
                     </button>
                   )}
                 </div>
+                <p role="status" aria-live="polite">
+                  {pending ? status : ''}
+                </p>
+                {error && (
+                  <div role="alert">
+                    <p>{error}</p>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      disabled={pending || savedBusy || !available}
+                      onClick={() =>
+                        void ask(selected?.question ?? prompt, true, selected?.mode ?? mode)
+                      }
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
                 {canShare && mode === 'workspace' && (
                   <RequirementReviewSelection
                     requirements={
@@ -834,23 +852,6 @@ export default function Assistant({
                   </fieldset>
                 )}
               </form>
-              <p role="status" aria-live="polite">
-                {pending ? status : ''}
-              </p>
-              {error && (
-                <div role="alert">
-                  <p>{error}</p>
-                  <button
-                    className="button secondary"
-                    disabled={pending || savedBusy || !available}
-                    onClick={() =>
-                      void ask(selected?.question ?? prompt, true, selected?.mode ?? mode)
-                    }
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
             </div>
             <aside aria-label="Conversations">
               <button
