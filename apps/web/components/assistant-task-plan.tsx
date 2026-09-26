@@ -53,7 +53,8 @@ function Proposal({
           <p>{requirement.requirement}</p>
           <p>{requirement.citation}</p>
           <p>
-            {answer.sharedRequirement?.id === requirement.id
+            {answer.sharedRequirement?.id === requirement.id ||
+            answer.sharedRequirements?.some((item) => item.id === requirement.id)
               ? 'The assistant used the excerpt you selected. Review the full wording and AI suggestion before saving a follow-up.'
               : 'The assistant used status metadata, not this private clause text. Check the wording before saving a follow-up.'}
           </p>

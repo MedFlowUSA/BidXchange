@@ -20,6 +20,14 @@ export const sharedRequirementSchema = z
   .strict();
 export type SharedRequirement = z.infer<typeof sharedRequirementSchema>;
 export type RequirementExcerpt = SharedRequirement & { text: string; truncated: boolean };
+export const reviewSelectionSchema = z
+  .array(sharedRequirementSchema)
+  .min(1)
+  .max(8)
+  .refine(
+    (items) => new Set(items.map((item) => item.id)).size === items.length,
+    'Select each requirement only once.',
+  );
 export const requestSchema = z
   .object({
     organizationId: z.uuid(),
@@ -29,8 +37,13 @@ export const requestSchema = z
     mode: z.enum(['general', 'workspace']).default('workspace'),
     continuation: z.string().max(70000).optional(),
     sharedRequirement: sharedRequirementSchema.optional(),
+    sharedRequirements: reviewSelectionSchema.optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (value) => !(value.sharedRequirement && value.sharedRequirements),
+    'Choose one sharing mode.',
+  );
 export type AssistantContext = z.infer<typeof contextSchema>;
 export type Citation = {
   key: string;
@@ -58,6 +71,8 @@ export const answerSchema = z
   .strict();
 export type Answer = z.infer<typeof answerSchema> & {
   sharedRequirement?: RequirementExcerpt;
+  sharedRequirements?: RequirementExcerpt[];
+  requirementReview?: RequirementReview;
   proposedTasks?: ProposedTask[];
   actionToken?: string;
   citations: Citation[];
@@ -77,6 +92,25 @@ export const proposedTaskSchema = z
 export type ProposedTask = z.infer<typeof proposedTaskSchema>;
 export const planningAnswerSchema = answerSchema.extend({
   proposedTasks: z.array(proposedTaskSchema).max(4),
+});
+export const requirementReviewSchema = z
+  .array(
+    z
+      .object({
+        requirementKey: z.string().min(1).max(100),
+        meaning: z.string().min(1).max(1200),
+        assessment: z.enum(['records_found', 'needs_evidence', 'needs_clarification']),
+        comparison: z.string().min(1).max(1200),
+        companySources: z.array(z.string().min(1).max(100)).max(4),
+        nextStep: z.string().min(1).max(600),
+      })
+      .strict(),
+  )
+  .min(1)
+  .max(8);
+export type RequirementReview = z.infer<typeof requirementReviewSchema>;
+export const reviewAnswerSchema = planningAnswerSchema.extend({
+  requirementReview: requirementReviewSchema,
 });
 export const NO_EVIDENCE =
   'I could not verify that from the records currently available to BidXchange.';

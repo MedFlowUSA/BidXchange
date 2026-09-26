@@ -35,7 +35,7 @@ export function readConversation(
       JSON.stringify(data.scope) !== JSON.stringify(scope) ||
       data.expires < now ||
       data.turns.length > 4 ||
-      data.refs.length > 16
+      data.refs.length > 32
     )
       throw Error();
     return data;
@@ -66,13 +66,18 @@ export function sealConversation(
   const refs = new Map(memory.refs.map((r) => [r.type + ':' + r.id, r]));
   for (const e of records)
     refs.set(e.citation.key, { type: e.citation.type, id: e.citation.id, hash: evidenceHash(e) });
-  if (refs.size > 16) return undefined;
+  // Selected reviews need room for eight clauses plus their company evidence.
+  if (refs.size > (answer.requirementReview ? 32 : 16)) return undefined;
   const prose = [
     ...answer.answer.map((a) => a.text),
     ...answer.risks,
     answer.nextAction,
     ...(answer.proposedTasks ?? []).map(
       (task) => `Unsaved task suggestion: ${task.title}. ${task.explanation}`,
+    ),
+    ...(answer.requirementReview ?? []).map(
+      (row) =>
+        `AI review suggestion: ${row.meaning}\n${row.comparison}\nSuggested next step: ${row.nextStep}`,
     ),
   ]
     .filter(Boolean)

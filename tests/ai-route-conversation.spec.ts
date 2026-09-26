@@ -14,6 +14,7 @@ test('assistant route replays authenticated history, rejects foreign scope befor
     histories: [] as unknown[],
     planning: false,
     shared: false,
+    batch: false,
     changeSharedAfterModel: false,
     excerpts: [] as unknown[],
     requirement: {
@@ -53,6 +54,12 @@ test('assistant route replays authenticated history, rejects foreign scope befor
             },
             is() {
               return query;
+            },
+            in() {
+              return query;
+            },
+            then(resolve: (value: unknown) => unknown) {
+              return Promise.resolve(resolve({ data: [fixture.requirement], error: null }));
             },
             async maybeSingle() {
               return { data: fixture.requirement, error: null };
@@ -140,6 +147,17 @@ test('assistant route replays authenticated history, rejects foreign scope befor
                 },
               }
             : {}),
+          ...(fixture.batch
+            ? {
+                sharedRequirements: [
+                  {
+                    id: fixture.requirement.id,
+                    updatedAt: fixture.requirement.updated_at,
+                    consent: true,
+                  },
+                ],
+              }
+            : {}),
         }),
       }),
     );
@@ -210,4 +228,24 @@ test('assistant route replays authenticated history, rejects foreign scope befor
   const stale = JSON.parse((await (await post()).text()).trim());
   expect(stale).toMatchObject({ type: 'error', code: 'conversation_changed' });
   expect(stale.answer).toBeUndefined();
+  fixture.shared = false;
+  fixture.batch = true;
+  fixture.changeSharedAfterModel = false;
+  fixture.role = 'viewer';
+  const batchReservations = fixture.reservations;
+  expect((await post()).status).toBe(403);
+  expect(fixture.reservations).toBe(batchReservations);
+  fixture.role = 'organization_admin';
+  const reviewed = JSON.parse((await (await post()).text()).trim());
+  expect(reviewed.type).toBe('answer');
+  expect(reviewed.answer.sharedRequirements).toHaveLength(1);
+  expect(Array.isArray(fixture.excerpts.at(-1))).toBe(true);
+  fixture.batch = false;
+  expect((await post(reviewed.answer.continuation)).status).toBe(409);
+  fixture.batch = true;
+  fixture.requirement.updated_at = '2026-09-25T00:00:00Z';
+  fixture.changeSharedAfterModel = true;
+  const staleBatch = JSON.parse((await (await post()).text()).trim());
+  expect(staleBatch).toMatchObject({ type: 'error', code: 'conversation_changed' });
+  expect(staleBatch.answer).toBeUndefined();
 });

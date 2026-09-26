@@ -4,6 +4,90 @@ import path from 'node:path';
 let js = '',
   css = '';
 
+test('selected requirement review previews consent, sends only identifiers and resets when selection or mode changes', async ({
+  page,
+}) => {
+  const requests: Record<string, unknown>[] = [];
+  await page.route('**/api/assistant', (route) => {
+    const body = route.request().postDataJSON();
+    requests.push(body);
+    const selected = body.sharedRequirements ?? [];
+    return route.fulfill({
+      contentType: 'application/x-ndjson',
+      body:
+        JSON.stringify({
+          type: 'answer',
+          answer: {
+            answer: [],
+            risks: [],
+            nextAction: '',
+            notice: 'AI suggestions',
+            evidence: [],
+            citations: selected.map((s: { id: string }) => ({
+              key: `requirement:${s.id}`,
+              id: s.id,
+              type: 'requirement',
+              title: 'Source requirement',
+              status: 'needs_review',
+              href: '/source',
+            })),
+            sharedRequirements: selected.map((s: { id: string }) => ({
+              ...s,
+              text: 'Synthetic excerpt',
+              truncated: false,
+            })),
+            requirementReview: selected.map((s: { id: string }) => ({
+              requirementKey: `requirement:${s.id}`,
+              meaning: 'Provide evidence',
+              assessment: 'needs_evidence',
+              comparison: 'No supporting records returned.',
+              companySources: [],
+              nextStep: 'Request current evidence',
+            })),
+            continuation: 'opaque',
+          },
+        }) + '\n',
+    });
+  });
+  await mount(page);
+  await page.goto('/assistant-test?planning');
+  const selection = page.getByRole('group', {
+    name: 'Review bid requirements together',
+    exact: true,
+  });
+  await selection.locator('summary').click();
+  await selection.getByRole('checkbox', { name: /Requirement 1:/ }).check();
+  await selection.getByRole('checkbox', { name: /Requirement 2:/ }).check();
+  await expect(selection.locator('blockquote')).toHaveCount(2);
+  await page.locator('#assistant-question').fill('Review this bid');
+  await expect(page.getByRole('button', { name: 'Ask BidBuddy', exact: true })).toBeDisabled();
+  await selection.getByRole('checkbox', { name: /authorized to share them/ }).check();
+  await selection.getByRole('button', { name: 'Use bid review question' }).click();
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(
+    page.getByRole('region', { name: 'Selected requirement review', exact: true }),
+  ).toBeVisible();
+  expect(requests[0].sharedRequirements).toHaveLength(2);
+  expect(JSON.stringify(requests[0])).not.toContain('License scope');
+  expect(requests[0]).not.toHaveProperty('sharedRequirement');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await selection.getByRole('checkbox', { name: /Requirement 2:/ }).uncheck();
+  await expect(
+    selection.getByRole('checkbox', { name: /authorized to share them/ }),
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole('region', { name: 'Selected requirement review', exact: true }),
+  ).toHaveCount(0);
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await page.locator('#assistant-question').fill('Explain a bond');
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect.poll(() => requests.length).toBe(2);
+  expect(requests[1]).not.toHaveProperty('sharedRequirements');
+  expect(requests[1]).not.toHaveProperty('continuation');
+  await page.goto('/assistant-test?planning&viewer');
+  await expect(selection).toHaveCount(0);
+});
+
 test('requirement excerpts require explicit sharing and reset across conversations and modes', async ({
   page,
 }) => {
@@ -484,9 +568,7 @@ for (const change of ['revoked', 'role', 'pagehide'] as const) {
     );
     await expect(page.getByLabel('Ask about Synthetic Test Company')).toHaveValue('');
     if (change === 'revoked')
-      await expect(
-        page.getByRole('button', { name: 'Ask BidBuddy', exact: true }),
-      ).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Ask BidBuddy', exact: true })).toBeDisabled();
     expect(
       await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),
     ).toEqual({ local: 0, session: 0 });

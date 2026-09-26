@@ -183,6 +183,11 @@
   margin: 0 0 10px;
   font-size: 15px;
 }
+.reviewItem {
+  margin: 14px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #dce4f1;
+}
 .planCard :global(fieldset) {
   min-width: 0;
 }

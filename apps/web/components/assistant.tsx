@@ -15,6 +15,10 @@ import { createAssistantDocument } from '../app/assistant-document-actions';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData } from '../lib/tenant-types';
 import AssistantTaskPlan from './assistant-task-plan';
+import {
+  RequirementReviewSelection,
+  RequirementReviewResult,
+} from './assistant-requirement-review';
 type Conversation = {
   id: string;
   question: string;
@@ -52,6 +56,7 @@ export default function Assistant({
   const [mode, setMode] = useState<'general' | 'workspace'>('workspace');
   const [sharingChoice, setSharingChoice] = useState<RequirementExcerpt>();
   const [sharingConfirmed, setSharingConfirmed] = useState(false);
+  const [reviewChoices, setReviewChoices] = useState<RequirementExcerpt[]>([]);
   const canShare =
     !demo &&
     context?.kind === 'pursuit' &&
@@ -111,6 +116,7 @@ export default function Assistant({
       documentRequest.current = null;
       thread.current = null;
       setSharingChoice(undefined);
+      setReviewChoices([]);
       setSharingConfirmed(false);
     };
     const check = () =>
@@ -153,6 +159,7 @@ export default function Assistant({
       documentRequest.current = null;
       thread.current = null;
       setSharingChoice(undefined);
+      setReviewChoices([]);
       setSharingConfirmed(false);
     };
     window.addEventListener('pagehide', clear);
@@ -172,16 +179,26 @@ export default function Assistant({
     setActive(null);
     setError('');
     setSharingChoice(choice);
+    setReviewChoices([]);
     setSharingConfirmed(confirmed);
   }
   useEffect(() => {
     setSharingChoice(undefined);
+    setReviewChoices([]);
     setSharingConfirmed(false);
   }, [organizationId, context?.kind, context?.id]);
+  function changeReview(items: RequirementExcerpt[], confirmed = false) {
+    changeSharing(undefined, confirmed);
+    setReviewChoices(items);
+  }
   async function ask(question = prompt, retry = false, answerMode = mode, fresh = false) {
     if (pending || actionLock.current || !question.trim() || !available) return;
-    if (answerMode === 'workspace' && sharingChoice && !sharingConfirmed) {
-      setError('Review the excerpt and confirm sharing, or choose no requirement.');
+    if (
+      answerMode === 'workspace' &&
+      (sharingChoice || reviewChoices.length > 0) &&
+      !sharingConfirmed
+    ) {
+      setError('Review the selected excerpts and confirm sharing, or clear the selection.');
       return;
     }
     actionLock.current = true;
@@ -285,6 +302,15 @@ export default function Assistant({
                 },
               }
             : {}),
+          ...(answerMode === 'workspace' && canShare && sharingConfirmed && reviewChoices.length
+            ? {
+                sharedRequirements: reviewChoices.map(({ id, updatedAt }) => ({
+                  id,
+                  updatedAt,
+                  consent: true,
+                })),
+              }
+            : {}),
           ...(continuation ? { continuation } : {}),
         }),
         signal: abort.signal,
@@ -296,8 +322,9 @@ export default function Assistant({
           setConversations([]);
           setActive(null);
           setSharingChoice(undefined);
+          setReviewChoices([]);
           setSharingConfirmed(false);
-          if (sharingChoice)
+          if (sharingChoice || reviewChoices.length)
             throw new Error(
               'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
             );
@@ -326,8 +353,9 @@ export default function Assistant({
               setConversations([]);
               setActive(null);
               setSharingChoice(undefined);
+              setReviewChoices([]);
               setSharingConfirmed(false);
-              if (sharingChoice)
+              if (sharingChoice || reviewChoices.length)
                 throw new Error(
                   'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
                 );
@@ -459,6 +487,7 @@ export default function Assistant({
                   setError('');
                   setFeedback('');
                   setSharingChoice(undefined);
+                  setReviewChoices([]);
                   setSharingConfirmed(false);
                 }}
               >
@@ -498,6 +527,7 @@ export default function Assistant({
                   setError('');
                   setFeedback('');
                   setSharingChoice(undefined);
+                  setReviewChoices([]);
                   setSharingConfirmed(false);
                 }}
               >
@@ -616,6 +646,7 @@ export default function Assistant({
                       in your next question.
                     </p>
                   )}
+                  <RequirementReviewResult answer={selected.answer} />
                   {selected.answer.evidence.map((item) => (
                     <details key={item.citation.key}>
                       <summary>
@@ -685,6 +716,15 @@ export default function Assistant({
                           await navigator.clipboard.writeText(
                             [
                               ...selected.answer!.answer.map((a) => a.text),
+                              ...(selected.answer!.requirementReview?.length
+                                ? [
+                                    'AI review of selected excerpts only. Human review required; no requirement status changed.',
+                                    ...selected.answer!.requirementReview.map(
+                                      (row, index) =>
+                                        `Requirement ${index + 1}\nWhat it asks: ${row.meaning}\nCompany-record comparison: ${row.comparison}\nSuggested next step: ${row.nextStep}`,
+                                    ),
+                                  ]
+                                : []),
                               ...selected.answer!.risks,
                               selected.answer!.nextAction,
                               ...selected.answer!.citations.map(
@@ -727,7 +767,7 @@ export default function Assistant({
                       disabled={pending}
                       onChange={(e) => {
                         thread.current = null;
-                        if (sharingChoice) changeSharing(undefined);
+                        if (sharingChoice || reviewChoices.length) changeSharing(undefined);
                         setMode(e.target.value as 'general' | 'workspace');
                       }}
                     >
@@ -735,6 +775,22 @@ export default function Assistant({
                       <option value="workspace">Workspace records</option>
                     </select>
                   </label>
+                )}
+                {canShare && mode === 'workspace' && (
+                  <RequirementReviewSelection
+                    requirements={
+                      planningData?.requirements?.filter((r) => r.pursuit_id === context?.id) ?? []
+                    }
+                    selected={reviewChoices}
+                    confirmed={sharingConfirmed}
+                    disabled={pending || !available}
+                    onChange={changeReview}
+                    onQuestion={() =>
+                      setPrompt(
+                        'Review each selected requirement against our company records. Explain what it asks, cite relevant records and their freshness, identify missing evidence or clarification, and propose follow-up tasks without duplicating existing work.',
+                      )
+                    }
+                  />
                 )}
                 {canShare && mode === 'workspace' && (
                   <fieldset className={styles.planCard} disabled={pending || !available}>
@@ -831,7 +887,9 @@ export default function Assistant({
                       pending ||
                       !available ||
                       !prompt.trim() ||
-                      (mode === 'workspace' && !!sharingChoice && !sharingConfirmed)
+                      (mode === 'workspace' &&
+                        (!!sharingChoice || reviewChoices.length > 0) &&
+                        !sharingConfirmed)
                     }
                   >
                     Ask BidBuddy
