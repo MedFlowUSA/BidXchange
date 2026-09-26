@@ -3,7 +3,42 @@ import {
   type Evidence,
   type RequirementExcerpt,
   type RequirementReview,
+  type Answer,
 } from './contracts';
+
+export function presentRequirementReview(answer: Answer, selected: RequirementExcerpt[]): Answer {
+  // Only generated prose is normalized. Preserve exact quoted excerpts and source identifiers.
+  const text = (value: string) => {
+    for (const [index, item] of selected.entries())
+      value = value.replaceAll(item.id, String(index + 1));
+    for (const [machine, label] of Object.entries({
+      check_date_missing_or_invalid: 'last-checked date missing or invalid',
+      future_check_date: 'last-checked date is in the future',
+      human_attested: 'attested by a person',
+      pending_verification: 'awaiting human review',
+      no_recorded_review: 'no recorded human review',
+    }))
+      value = value.replaceAll(machine, label);
+    return value;
+  };
+  return {
+    ...answer,
+    answer: answer.answer.map((item) => ({ ...item, text: text(item.text) })),
+    risks: answer.risks.map(text),
+    nextAction: text(answer.nextAction),
+    requirementReview: answer.requirementReview?.map((row) => ({
+      ...row,
+      meaning: text(row.meaning),
+      comparison: text(row.comparison),
+      nextStep: text(row.nextStep),
+    })),
+    proposedTasks: answer.proposedTasks?.map((task) => ({
+      ...task,
+      title: text(task.title),
+      explanation: text(task.explanation),
+    })),
+  };
+}
 
 // Validate coverage and provenance. These checks do not certify the model's interpretation.
 export function validateRequirementReview(

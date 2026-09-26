@@ -17,7 +17,11 @@ import { EvidenceTools, functionTools } from './tools';
 import { generalAnswer } from './general';
 import type { ChatTurn } from './conversation';
 import { validateTaskProposals } from './planning';
-import { REVIEW_POLICY, validateRequirementReview } from './requirement-review';
+import {
+  REVIEW_POLICY,
+  validateRequirementReview,
+  presentRequirementReview,
+} from './requirement-review';
 export type ModelClient = Pick<OpenAI, 'responses'>;
 export async function runAssistant(
   client: ModelClient,
@@ -220,21 +224,22 @@ export async function runAssistant(
     const evidence = keys
       .map((key) => tools.evidence.get(key)!)
       .filter((item) => item.citation.type !== 'workspace');
+    const answer: Answer = {
+      answer: parsed.data.answer,
+      risks: [
+        ...(!evidence.length && !parsed.data.answer.length ? [NO_EVIDENCE] : []),
+        ...parsed.data.risks,
+      ],
+      nextAction: parsed.data.nextAction,
+      ...(planning ? { proposedTasks } : {}),
+      ...(requirementReview ? { requirementReview } : {}),
+      citations: evidence.map((item) => item.citation),
+      evidence,
+      notice:
+        'AI analysis and suggestions—not an approved finding. Company claims should be checked against the cited records.',
+    };
     return {
-      answer: {
-        answer: parsed.data.answer,
-        risks: [
-          ...(!evidence.length && !parsed.data.answer.length ? [NO_EVIDENCE] : []),
-          ...parsed.data.risks,
-        ],
-        nextAction: parsed.data.nextAction,
-        ...(planning ? { proposedTasks } : {}),
-        ...(requirementReview ? { requirementReview } : {}),
-        citations: evidence.map((item) => item.citation),
-        evidence,
-        notice:
-          'AI analysis and suggestions—not an approved finding. Company claims should be checked against the cited records.',
-      },
+      answer: review ? presentRequirementReview(answer, review) : answer,
       inputTokens,
       outputTokens,
     };
