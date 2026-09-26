@@ -13,6 +13,14 @@ test('assistant route replays authenticated history, rejects foreign scope befor
     revokeAfterModel: false,
     histories: [] as unknown[],
     planning: false,
+    shared: false,
+    changeSharedAfterModel: false,
+    excerpts: [] as unknown[],
+    requirement: {
+      id: '55555555-5555-4555-8555-555555555555',
+      requirement: 'All subcontractors supply registration evidence.',
+      updated_at: '2026-09-25T00:00:00Z',
+    },
     record: {
       citation: {
         key: 'pursuit:22222222-2222-4222-8222-222222222222',
@@ -34,7 +42,24 @@ test('assistant route replays authenticated history, rejects foreign scope befor
         fixture.reservations++;
         return { data: 'reserved', error: null };
       },
-      from() {
+      from(table: string) {
+        if (table === 'pursuit_requirements') {
+          const query = {
+            select() {
+              return query;
+            },
+            eq() {
+              return query;
+            },
+            is() {
+              return query;
+            },
+            async maybeSingle() {
+              return { data: fixture.requirement, error: null };
+            },
+          };
+          return query;
+        }
         return {
           select() {
             return {
@@ -71,9 +96,11 @@ test('assistant route replays authenticated history, rejects foreign scope befor
               {
                 config: `export const aiConfig=()=>({key:'synthetic-secret',model:'test',orgLimit:10,userLimit:10});`,
                 server: `export const requireSameOrigin=()=>{}; export async function authorizeAi(){return {user:{id:fixture.user},role:fixture.role,db:fixture.db};}`,
-                tools: `export class EvidenceTools { evidence=new Map(); async run(){if(fixture.planning)this.evidence.set(fixture.record.citation.key,fixture.record);} async source(){return fixture.record;} }`,
-                engine: `export async function runAssistant(a,b,c,d,e,f,g,authorize,mode,history){
+                tools: `export class EvidenceTools { evidence=new Map(); async run(){if(fixture.planning)this.evidence.set(fixture.record.citation.key,fixture.record);} async source(type,id){const r=type==='requirement'?{citation:{...fixture.record.citation,type:'requirement',id,key:'requirement:'+id,updatedAt:fixture.requirement.updated_at},fields:{...fixture.record.fields,status:'needs_review'}}:fixture.record;this.evidence.set(r.citation.key,r);return r;} }`,
+                engine: `export async function runAssistant(a,b,c,d,e,f,g,authorize,mode,history,shared){
           await authorize(); fixture.histories.push(history);
+          fixture.excerpts.push(shared);
+          if(fixture.changeSharedAfterModel)fixture.requirement.updated_at='2026-09-26T00:00:00Z';
           if(fixture.revokeAfterModel) fixture.user='revoked-user';
           return {answer:{answer:[{text:'Useful suggested plan.',sources:[]}],risks:[],nextAction:'',citations:[],evidence:[],notice:'AI analysis',...(fixture.planning?{proposedTasks:[{title:'Review pursuit',explanation:'Review the saved record.',sources:[fixture.record.citation.key],requirementKey:null}]}:{})},inputTokens:1,outputTokens:1};
         }`,
@@ -104,6 +131,15 @@ test('assistant route replays authenticated history, rejects foreign scope befor
           context: fixture.planning ? { kind: 'pursuit', id: fixture.record.citation.id } : null,
           mode: 'workspace',
           continuation,
+          ...(fixture.shared
+            ? {
+                sharedRequirement: {
+                  id: fixture.requirement.id,
+                  updatedAt: fixture.requirement.updated_at,
+                  consent: true,
+                },
+              }
+            : {}),
         }),
       }),
     );
@@ -148,4 +184,30 @@ test('assistant route replays authenticated history, rejects foreign scope befor
   expect(() =>
     readConversation(planned.answer.continuation, 'synthetic-secret', planScope),
   ).toThrow();
+  fixture.shared = true;
+  const reservations = fixture.reservations;
+  expect((await post()).status).toBe(403);
+  expect(fixture.reservations).toBe(reservations);
+  fixture.role = 'organization_admin';
+  const sharedAnswer = JSON.parse((await (await post()).text()).trim()).answer;
+  expect(sharedAnswer.sharedRequirement.text).toBe(fixture.requirement.requirement);
+  expect(fixture.excerpts.at(-1)).toMatchObject({
+    id: fixture.requirement.id,
+    text: fixture.requirement.requirement,
+  });
+  expect(
+    readConversation(sharedAnswer.actionToken, 'synthetic-secret', {
+      ...planScope,
+      role: fixture.role,
+    }).refs.map((r) => r.id),
+  ).toContain(fixture.requirement.id);
+  fixture.shared = false;
+  const reserved = fixture.reservations;
+  expect((await post(sharedAnswer.continuation)).status).toBe(409);
+  expect(fixture.reservations).toBe(reserved);
+  fixture.shared = true;
+  fixture.changeSharedAfterModel = true;
+  const stale = JSON.parse((await (await post()).text()).trim());
+  expect(stale).toMatchObject({ type: 'error', code: 'conversation_changed' });
+  expect(stale.answer).toBeUndefined();
 });

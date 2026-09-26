@@ -164,12 +164,20 @@
   background: #f5f8ff;
 }
 .planCard {
+  min-width: 0;
   margin-top: 16px;
   padding: 18px;
   border: 1px solid #dce4f1;
   border-radius: 10px;
   background: white;
   overflow-wrap: anywhere;
+}
+.planCard blockquote {
+  margin: 12px 0;
+  padding: 12px;
+  border-left: 3px solid #3459cc;
+  background: #f5f8ff;
+  white-space: pre-wrap;
 }
 .planCard h4 {
   margin: 0 0 10px;

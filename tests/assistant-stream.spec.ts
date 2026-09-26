@@ -4,6 +4,77 @@ import path from 'node:path';
 let js = '',
   css = '';
 
+test('requirement excerpts require explicit sharing and reset across conversations and modes', async ({
+  page,
+}) => {
+  const requests: Record<string, unknown>[] = [];
+  await page.route('**/api/assistant', (r) => {
+    requests.push(r.request().postDataJSON());
+    return r.fulfill({
+      contentType: 'application/x-ndjson',
+      body:
+        JSON.stringify({
+          type: 'answer',
+          answer: {
+            answer: [{ text: 'Synthetic explanation', sources: [] }],
+            risks: [],
+            nextAction: '',
+            citations: [],
+            evidence: [],
+            notice: 'Human review',
+            continuation: 'opaque',
+          },
+        }) + '\n',
+    });
+  });
+  await mount(page);
+  await page.goto('/assistant-test?planning');
+  const select = page.getByLabel('Requirement to explain', { exact: true });
+  await expect(select).toBeEnabled();
+  await select.selectOption('55555555-5555-4555-8555-555555555555');
+  await page.locator('#assistant-question').fill('Explain this clause');
+  const ask = page.getByRole('button', { name: 'Ask BidXchange', exact: true });
+  await expect(ask).toBeDisabled();
+  expect(requests).toHaveLength(0);
+  await page.getByRole('checkbox', { name: /authorized to share it with AI/ }).check();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page
+    .getByRole('group', { name: 'Explain a requirement', exact: true })
+    .screenshot({ path: test.info().outputPath('requirement-sharing.png') });
+  await ask.click();
+  await expect(page.getByRole('article')).toContainText('Synthetic explanation');
+  expect(requests[0].sharedRequirement).toMatchObject({
+    id: '55555555-5555-4555-8555-555555555555',
+    consent: true,
+  });
+  expect(JSON.stringify(requests[0])).not.toContain('License scope');
+  await page.getByRole('button', { name: 'New conversation', exact: true }).click();
+  await expect(select).toHaveValue('');
+  await page.locator('#assistant-question').fill('Plan next steps');
+  await ask.click();
+  await expect.poll(() => requests.length).toBe(2);
+  expect(requests[1]).not.toHaveProperty('sharedRequirement');
+  expect(requests[1]).not.toHaveProperty('continuation');
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await expect(select).toHaveCount(0);
+  await page.locator('#assistant-question').fill('Explain procurement');
+  await ask.click();
+  await expect.poll(() => requests.length).toBe(3);
+  expect(requests[2]).not.toHaveProperty('sharedRequirement');
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('workspace');
+  await select.selectOption('55555555-5555-4555-8555-555555555555');
+  await page.getByRole('checkbox', { name: /authorized to share it with AI/ }).check();
+  await page.route('**/api/assistant', (r) =>
+    r.fulfill({ status: 409, json: { code: 'conversation_changed', message: 'Source changed' } }),
+  );
+  await page.locator('#assistant-question').fill('Explain the selected requirement');
+  await ask.click();
+  await expect(page.getByRole('alert')).toContainText('Refresh the pursuit');
+  await expect(select).toHaveValue('');
+  await page.goto('/assistant-test?planning&viewer');
+  await expect(page.getByLabel('Requirement to explain', { exact: true })).toHaveCount(0);
+});
+
 test('bid plan stays unsaved until a human reviews and saves; viewer and general mode cannot save', async ({
   page,
 }) => {
@@ -67,7 +138,10 @@ test('bid plan stays unsaved until a human reviews and saves; viewer and general
   await ask();
   const plan = page.getByRole('region', { name: 'AI-proposed bid plan' });
   expect(saves).toHaveLength(0);
-  await plan.locator('summary').filter({ hasText: /^Review and save task$/ }).click();
+  await plan
+    .locator('summary')
+    .filter({ hasText: /^Review and save task$/ })
+    .click();
   await plan
     .getByLabel('Task title', { exact: true })
     .fill('Confirm license question with reviewer');

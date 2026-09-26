@@ -11,6 +11,15 @@ export type Role = (typeof roles)[number];
 export const contextSchema = z
   .object({ kind: z.enum(['opportunity', 'pursuit']), id: z.uuid() })
   .strict();
+export const sharedRequirementSchema = z
+  .object({
+    id: z.uuid(),
+    updatedAt: z.string().min(1).max(60),
+    consent: z.literal(true),
+  })
+  .strict();
+export type SharedRequirement = z.infer<typeof sharedRequirementSchema>;
+export type RequirementExcerpt = SharedRequirement & { text: string; truncated: boolean };
 export const requestSchema = z
   .object({
     organizationId: z.uuid(),
@@ -19,6 +28,7 @@ export const requestSchema = z
     context: contextSchema.nullable(),
     mode: z.enum(['general', 'workspace']).default('workspace'),
     continuation: z.string().max(70000).optional(),
+    sharedRequirement: sharedRequirementSchema.optional(),
   })
   .strict();
 export type AssistantContext = z.infer<typeof contextSchema>;
@@ -47,6 +57,7 @@ export const answerSchema = z
   })
   .strict();
 export type Answer = z.infer<typeof answerSchema> & {
+  sharedRequirement?: RequirementExcerpt;
   proposedTasks?: ProposedTask[];
   actionToken?: string;
   citations: Citation[];
