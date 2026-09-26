@@ -9,6 +9,7 @@ import {
 } from '../lib/ai/contracts';
 import { canShareRequirement, requirementExcerptLimit } from '../lib/ai/requirement-sharing';
 import styles from './assistant.module.css';
+import { requestAssistantAnswer, AssistantResponseError } from '../lib/ai/client-response';
 import { evidenceLabel, evidenceValue } from '../lib/ai/display';
 import { responseCommand } from '../lib/response-command';
 import { createAssistantDocument } from '../app/assistant-document-actions';
@@ -295,10 +296,8 @@ export default function Assistant({
         setConversations((old) => old.map((c) => (c.id === id ? { ...c, answer } : c)));
         return;
       }
-      const response = await fetch('/api/assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const answer = await requestAssistantAnswer(
+        {
           organizationId,
           requestId: id,
           prompt: question,
@@ -323,71 +322,28 @@ export default function Assistant({
               }
             : {}),
           ...(continuation ? { continuation } : {}),
-        }),
-        signal: abort.signal,
-      });
-      if (!response.ok) {
-        const failure = await response.json();
-        if (failure.code === 'conversation_changed') {
-          thread.current = null;
-          setConversations([]);
-          setActive(null);
-          setSharingChoice(undefined);
-          setReviewChoices([]);
-          setSharingConfirmed(false);
-          if (sharingChoice || reviewChoices.length)
-            throw new Error(
-              'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
-            );
-        }
-        throw new Error(failure.message ?? 'BidBuddy is unavailable.');
-      }
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response received.');
-      const decoder = new TextDecoder();
-      let buffer = '',
-        received = false;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-          if (!line) continue;
-          const event = JSON.parse(line);
-          if (abort.signal.aborted) break;
-          if (event.type === 'status') setStatus(event.text);
-          if (event.type === 'error') {
-            if (event.code === 'conversation_changed') {
-              thread.current = null;
-              setConversations([]);
-              setActive(null);
-              setSharingChoice(undefined);
-              setReviewChoices([]);
-              setSharingConfirmed(false);
-              if (sharingChoice || reviewChoices.length)
-                throw new Error(
-                  'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
-                );
-            }
-            throw new Error(event.message);
-          }
-          if (event.type === 'answer') {
-            thread.current = event.answer.continuation
-              ? { mode: answerMode, token: event.answer.continuation }
-              : null;
-            setPrompt('');
-            received = true;
-            setConversations((old) =>
-              old.map((c) => (c.id === id ? { ...c, answer: event.answer } : c)),
-            );
-          }
-        }
-      }
-      if (!received)
-        throw new Error('The stream ended before a verified answer arrived. Please retry.');
+        },
+        { signal: abort.signal, onStatus: setStatus },
+      );
+      if (abort.signal.aborted) return;
+      thread.current = answer.continuation
+        ? { mode: answerMode, token: answer.continuation }
+        : null;
+      setPrompt('');
+      setConversations((old) => old.map((c) => (c.id === id ? { ...c, answer } : c)));
     } catch (error) {
+      if (error instanceof AssistantResponseError && error.code === 'conversation_changed') {
+        thread.current = null;
+        setConversations([]);
+        setActive(null);
+        setSharingChoice(undefined);
+        setReviewChoices([]);
+        setSharingConfirmed(false);
+        if (sharingChoice || reviewChoices.length)
+          error = new Error(
+            'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
+          );
+      }
       setError(
         abort.signal.aborted
           ? 'Generation cancelled.'
@@ -426,12 +382,9 @@ export default function Assistant({
         <div>
           <div className="eyebrow">BY BIDXCHANGE</div>
           <h2>BidBuddy</h2>
-          <p>Your AI assistant for understanding requirements and planning your next move.</p>
+          <p>Ask questions, review requirements, and plan your bid work.</p>
           <p>
-            {name} ·{' '}
-            {demo
-              ? 'Fictional scripted demonstration'
-              : 'General questions and authorized workspace records'}
+            {name} · {demo ? 'Fictional scripted demonstration' : 'Your selected company'}
           </p>
         </div>
         <button className="button secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -441,15 +394,9 @@ export default function Assistant({
       {open && (
         <>
           <p className="info-note">
-            {demo ? FEED_NOTICE : 'Explore options, draft messages and plan your bid work.'} AI
-            suggestions need your review. Nothing is approved or submitted for you.
+            {demo ? FEED_NOTICE + ' ' : ''}AI suggestions need your review. BidBuddy does not
+            approve or submit bids.
           </p>
-          {!demo && (
-            <p>
-              Use Workspace records for company context, or General questions for broader advice.
-              This chat has no live web browsing. Do not enter passwords or API keys.
-            </p>
-          )}
           {!demo && (
             <div className="info-note" aria-label="Company records connection">
               <strong>
@@ -457,11 +404,18 @@ export default function Assistant({
                   ? `Company records selected: ${name}`
                   : 'Company records off for general questions'}
               </strong>
-              <p>
-                Workspace answers read your latest saved, authorized Passport and the selected bid
-                on each question. Save changes in Passport first, then ask again or refresh an
-                answer. Earlier answers remain snapshots.
-              </p>
+              <details>
+                <summary>What BidBuddy can access</summary>
+                <p>
+                  Workspace answers read your latest saved, authorized company records and the
+                  selected bid on each question. Save profile changes first, then ask again or
+                  refresh an answer. Earlier answers remain snapshots.
+                </p>
+                <p>
+                  General questions do not use company records. This chat has no live web browsing.
+                  Do not enter passwords or API keys.
+                </p>
+              </details>
               <Link href={workspaceHref('/company', organizationId)}>Manage company records</Link>
             </div>
           )}
@@ -481,7 +435,7 @@ export default function Assistant({
             <p role="status">
               {demo
                 ? 'The fictional scripted assistant is disabled. No paid AI is available in the public demo.'
-                : 'AI is unavailable for this workspace. An operator must configure the model, credentials, usage limits and organization activation.'}
+                : 'AI is unavailable for this workspace. Ask your workspace administrator to check access. Your company records and bid tools are still available.'}
             </p>
           ) : null}
           {canShare &&
@@ -498,115 +452,6 @@ export default function Assistant({
               />
             )}
           <div className={styles.layout}>
-            <aside aria-label="Conversations">
-              <button
-                className="button secondary"
-                disabled={pending || savedBusy}
-                onClick={() => {
-                  setActive(null);
-                  setConversations([]);
-                  thread.current = null;
-                  setPrompt('');
-                  documentRequest.current = null;
-                  setError('');
-                  setFeedback('');
-                  setSharingChoice(undefined);
-                  setReviewChoices([]);
-                  setSharingConfirmed(false);
-                }}
-              >
-                New conversation
-              </button>
-              <p>
-                Up to eight recent exchanges provide follow-up context for 30 minutes. Unsaved
-                conversations clear when you leave or reload.{' '}
-                {context?.kind === 'pursuit'
-                  ? 'Save below to return later; saved copies remain private to your account.'
-                  : 'Open a bid in Pursuits to save and resume its conversation.'}
-              </p>
-              {!demo && available && organizationId && context?.kind === 'pursuit' && (
-                <AssistantSavedConversation
-                  key={`${organizationId}:${context.id}:${savedSession}`}
-                  organizationId={organizationId}
-                  pursuitId={context.id}
-                  checkpoint={
-                    selected?.mode === 'workspace' ? selected.answer?.saveCheckpoint : undefined
-                  }
-                  disabled={pending || savedBusy}
-                  onBusy={setSavedBusy}
-                  onResume={(answer, turns) => {
-                    thread.current = answer.continuation
-                      ? { mode: 'workspace', token: answer.continuation }
-                      : null;
-                    const restored = turns.map((turn, i) => ({
-                      id: crypto.randomUUID(),
-                      question: turn.question,
-                      mode: 'workspace' as const,
-                      answer:
-                        i === turns.length - 1
-                          ? answer
-                          : {
-                              answer: [{ text: turn.answer, sources: [] }],
-                              risks: [],
-                              nextAction: '',
-                              citations: [],
-                              evidence: [],
-                              notice:
-                                'Earlier saved AI answer. Ask a new question to review current records.',
-                            },
-                    }));
-                    setConversations(restored);
-                    setActive(restored.at(-1)?.id ?? null);
-                    setMode('workspace');
-                    setSharingChoice(answer.sharedRequirement);
-                    setReviewChoices(answer.sharedRequirements ?? []);
-                    setSharingConfirmed(
-                      !!answer.sharedRequirement || !!answer.sharedRequirements?.length,
-                    );
-                    setPrompt('');
-                    setError('');
-                    setFeedback('');
-                    documentRequest.current = null;
-                  }}
-                />
-              )}
-              {conversations.map((c, i) => (
-                <button
-                  className={styles.conversation}
-                  key={c.id}
-                  disabled={pending || savedBusy}
-                  aria-pressed={c.id === active}
-                  onClick={() => {
-                    setActive(c.id);
-                    setMode(c.mode);
-                    thread.current = c.answer?.continuation
-                      ? { mode: c.mode, token: c.answer.continuation }
-                      : null;
-                    setFeedback('');
-                  }}
-                >
-                  {i + 1}. {c.question}
-                </button>
-              ))}
-              <button
-                className="text-button"
-                disabled={pending || savedBusy}
-                onClick={() => {
-                  setConversations([]);
-                  thread.current = null;
-                  setActive(null);
-                  setPrompt('');
-                  documentRequest.current = null;
-                  setError('');
-                  setFeedback('');
-                  setSharingChoice(undefined);
-                  setReviewChoices([]);
-                  setSharingConfirmed(false);
-                }}
-              >
-                Clear conversations
-              </button>
-            </aside>
             <div className={styles.content}>
               {conversations.some((c) => c.id !== active && c.answer) && (
                 <section className={styles.transcript} aria-label="Conversation history">
@@ -644,27 +489,30 @@ export default function Assistant({
                     ))}
                 </section>
               )}
-              <div className={styles.suggestions} hidden={conversations.length > 0}>
-                {!demo && context?.kind === 'pursuit' && (
-                  <button
-                    className="button secondary"
-                    disabled={pending || savedBusy}
-                    onClick={() => setPrompt('Create a response outline for this solicitation')}
-                  >
-                    Create a response outline for this solicitation
-                  </button>
-                )}
-                {questions.map((q) => (
-                  <button
-                    key={q}
-                    className="button secondary"
-                    disabled={pending || savedBusy}
-                    onClick={() => setPrompt(q)}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
+              <details hidden={conversations.length > 0}>
+                <summary>Suggested questions</summary>
+                <div className={styles.suggestions}>
+                  {!demo && context?.kind === 'pursuit' && (
+                    <button
+                      className="button secondary"
+                      disabled={pending || savedBusy}
+                      onClick={() => setPrompt('Create a response outline for this solicitation')}
+                    >
+                      Create a response outline for this solicitation
+                    </button>
+                  )}
+                  {questions.map((q) => (
+                    <button
+                      key={q}
+                      className="button secondary"
+                      disabled={pending || savedBusy}
+                      onClick={() => setPrompt(q)}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </details>
               {selected?.document && (
                 <article aria-label="BidBuddy document">
                   <h3>Response draft</h3>
@@ -853,6 +701,43 @@ export default function Assistant({
                     </select>
                   </label>
                 )}
+                <label htmlFor="assistant-question">
+                  {!demo && mode === 'general' ? 'Ask a question' : `Ask about ${name}`}
+                </label>
+                <textarea
+                  id="assistant-question"
+                  value={prompt}
+                  onChange={(event) => setPrompt(event.target.value)}
+                  maxLength={3000}
+                  rows={3}
+                  required
+                  disabled={pending || savedBusy || !available}
+                />
+                <div className={styles.actions}>
+                  <button
+                    className="button primary"
+                    disabled={
+                      pending ||
+                      savedBusy ||
+                      !available ||
+                      !prompt.trim() ||
+                      (mode === 'workspace' &&
+                        (!!sharingChoice || reviewChoices.length > 0) &&
+                        !sharingConfirmed)
+                    }
+                  >
+                    Ask BidBuddy
+                  </button>
+                  {pending && !responseCommand(selected?.question ?? '') && (
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={() => controller.current?.abort()}
+                    >
+                      Cancel generation
+                    </button>
+                  )}
+                </div>
                 {canShare && mode === 'workspace' && (
                   <RequirementReviewSelection
                     requirements={
@@ -948,43 +833,6 @@ export default function Assistant({
                     )}
                   </fieldset>
                 )}
-                <label htmlFor="assistant-question">
-                  {!demo && mode === 'general' ? 'Ask a question' : `Ask about ${name}`}
-                </label>
-                <textarea
-                  id="assistant-question"
-                  value={prompt}
-                  onChange={(event) => setPrompt(event.target.value)}
-                  maxLength={3000}
-                  rows={3}
-                  required
-                  disabled={pending || savedBusy || !available}
-                />
-                <div className={styles.actions}>
-                  <button
-                    className="button primary"
-                    disabled={
-                      pending ||
-                      savedBusy ||
-                      !available ||
-                      !prompt.trim() ||
-                      (mode === 'workspace' &&
-                        (!!sharingChoice || reviewChoices.length > 0) &&
-                        !sharingConfirmed)
-                    }
-                  >
-                    Ask BidBuddy
-                  </button>
-                  {pending && !responseCommand(selected?.question ?? '') && (
-                    <button
-                      type="button"
-                      className="button secondary"
-                      onClick={() => controller.current?.abort()}
-                    >
-                      Cancel generation
-                    </button>
-                  )}
-                </div>
               </form>
               <p role="status" aria-live="polite">
                 {pending ? status : ''}
@@ -1004,6 +852,115 @@ export default function Assistant({
                 </div>
               )}
             </div>
+            <aside aria-label="Conversations">
+              <button
+                className="button secondary"
+                disabled={pending || savedBusy}
+                onClick={() => {
+                  setActive(null);
+                  setConversations([]);
+                  thread.current = null;
+                  setPrompt('');
+                  documentRequest.current = null;
+                  setError('');
+                  setFeedback('');
+                  setSharingChoice(undefined);
+                  setReviewChoices([]);
+                  setSharingConfirmed(false);
+                }}
+              >
+                New conversation
+              </button>
+              <p>
+                Up to eight recent exchanges provide follow-up context for 30 minutes. Unsaved
+                conversations clear when you leave or reload.{' '}
+                {context?.kind === 'pursuit'
+                  ? 'Save below to return later; saved copies remain private to your account.'
+                  : 'Open a bid in Pursuits to save and resume its conversation.'}
+              </p>
+              {!demo && available && organizationId && context?.kind === 'pursuit' && (
+                <AssistantSavedConversation
+                  key={`${organizationId}:${context.id}:${savedSession}`}
+                  organizationId={organizationId}
+                  pursuitId={context.id}
+                  checkpoint={
+                    selected?.mode === 'workspace' ? selected.answer?.saveCheckpoint : undefined
+                  }
+                  disabled={pending || savedBusy}
+                  onBusy={setSavedBusy}
+                  onResume={(answer, turns) => {
+                    thread.current = answer.continuation
+                      ? { mode: 'workspace', token: answer.continuation }
+                      : null;
+                    const restored = turns.map((turn, i) => ({
+                      id: crypto.randomUUID(),
+                      question: turn.question,
+                      mode: 'workspace' as const,
+                      answer:
+                        i === turns.length - 1
+                          ? answer
+                          : {
+                              answer: [{ text: turn.answer, sources: [] }],
+                              risks: [],
+                              nextAction: '',
+                              citations: [],
+                              evidence: [],
+                              notice:
+                                'Earlier saved AI answer. Ask a new question to review current records.',
+                            },
+                    }));
+                    setConversations(restored);
+                    setActive(restored.at(-1)?.id ?? null);
+                    setMode('workspace');
+                    setSharingChoice(answer.sharedRequirement);
+                    setReviewChoices(answer.sharedRequirements ?? []);
+                    setSharingConfirmed(
+                      !!answer.sharedRequirement || !!answer.sharedRequirements?.length,
+                    );
+                    setPrompt('');
+                    setError('');
+                    setFeedback('');
+                    documentRequest.current = null;
+                  }}
+                />
+              )}
+              {conversations.map((c, i) => (
+                <button
+                  className={styles.conversation}
+                  key={c.id}
+                  disabled={pending || savedBusy}
+                  aria-pressed={c.id === active}
+                  onClick={() => {
+                    setActive(c.id);
+                    setMode(c.mode);
+                    thread.current = c.answer?.continuation
+                      ? { mode: c.mode, token: c.answer.continuation }
+                      : null;
+                    setFeedback('');
+                  }}
+                >
+                  {i + 1}. {c.question}
+                </button>
+              ))}
+              <button
+                className="text-button"
+                disabled={pending || savedBusy}
+                onClick={() => {
+                  setConversations([]);
+                  thread.current = null;
+                  setActive(null);
+                  setPrompt('');
+                  documentRequest.current = null;
+                  setError('');
+                  setFeedback('');
+                  setSharingChoice(undefined);
+                  setReviewChoices([]);
+                  setSharingConfirmed(false);
+                }}
+              >
+                Clear conversations
+              </button>
+            </aside>
           </div>
         </>
       )}

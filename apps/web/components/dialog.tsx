@@ -17,8 +17,13 @@ export default function Dialog({
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
+    const returnFocus = document.activeElement;
     dialog?.showModal();
-    return () => dialog?.close();
+    return () => {
+      dialog?.close();
+      if (returnFocus instanceof HTMLElement && returnFocus.isConnected)
+        returnFocus.focus({ preventScroll: true });
+    };
   }, []);
   return (
     <dialog
@@ -29,9 +34,16 @@ export default function Dialog({
         if (event.key !== 'Tab') return;
         const nodes = Array.from(
           ref.current?.querySelectorAll<HTMLElement>(
-            'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]',
+            'button, a[href], input, select, textarea, summary, [tabindex]',
           ) ?? [],
-        ).filter((node) => node.getClientRects().length > 0);
+        ).filter(
+          (node) =>
+            node.tabIndex >= 0 &&
+            !node.matches(':disabled') &&
+            !node.closest('[inert]') &&
+            node.checkVisibility({ checkVisibilityCSS: true }) &&
+            node.getClientRects().length > 0,
+        );
         const first = nodes[0];
         const last = nodes[nodes.length - 1];
         if (event.shiftKey && document.activeElement === first) {
@@ -42,14 +54,25 @@ export default function Dialog({
           first?.focus();
         }
       }}
-      onCancel={close}
+      onCancel={(event) => {
+        event.preventDefault();
+        close();
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) close();
+        if (e.target !== e.currentTarget) return;
+        const bounds = e.currentTarget.getBoundingClientRect();
+        if (
+          e.clientX < bounds.left ||
+          e.clientX > bounds.right ||
+          e.clientY < bounds.top ||
+          e.clientY > bounds.bottom
+        )
+          close();
       }}
     >
       <div className="dialog-header">
         <h2>{title}</h2>
-        <button className="icon-button" aria-label="Close dialog" onClick={close}>
+        <button type="button" className="icon-button" aria-label="Close dialog" onClick={close}>
           <X size={20} />
         </button>
       </div>

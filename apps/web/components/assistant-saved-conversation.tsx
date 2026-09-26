@@ -23,7 +23,17 @@ export default function AssistantSavedConversation({
     [message, setMessage] = useState('');
   const endpoint = `/api/assistant/conversations?organizationId=${organizationId}&pursuitId=${pursuitId}`;
   const operation = useRef<AbortController | null>(null);
-  useEffect(() => () => operation.current?.abort(), []);
+  useEffect(
+    () => () => {
+      const active = operation.current;
+      operation.current = null;
+      if (active) {
+        active.abort();
+        onBusy(false);
+      }
+    },
+    [onBusy],
+  );
   useEffect(() => {
     const abort = new AbortController();
     void fetch(endpoint, { cache: 'no-store', signal: abort.signal })
@@ -89,7 +99,8 @@ export default function AssistantSavedConversation({
       if (!abort.signal.aborted)
         setMessage(e instanceof Error ? e.message : 'Saved conversation unavailable.');
     } finally {
-      if (!abort.signal.aborted) {
+      if (operation.current === abort) {
+        operation.current = null;
         setBusy(false);
         onBusy(false);
       }

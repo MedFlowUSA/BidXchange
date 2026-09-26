@@ -4,6 +4,105 @@ import path from 'node:path';
 let js = '',
   css = '';
 
+for (const operation of ['source review', 'saved conversation'] as const)
+  test(`collapsing during ${operation} releases the busy lock and ignores late output`, async ({
+    page,
+  }) => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let started = false;
+    await page.route('**/api/assistant/conversations**', async (route) => {
+      if (route.request().method() === 'GET')
+        return route.fulfill({
+          json: { saved: { saved_at: '2026-09-26T12:00:00Z', expires_at: '2026-10-26T12:00:00Z' } },
+        });
+      started = true;
+      await gate;
+      await route
+        .fulfill({ status: 503, json: { message: 'Late saved response' } })
+        .catch(() => {});
+    });
+    await page.route('**/api/assistant', async (route) => {
+      started = true;
+      await gate;
+      await route
+        .fulfill({
+          contentType: 'application/x-ndjson',
+          body: '{"type":"error","message":"Late source response"}\n',
+        })
+        .catch(() => {});
+    });
+    await mount(page);
+    await page.goto('/assistant-test?planning');
+    try {
+      if (operation === 'source review') {
+        await page
+          .locator('summary')
+          .filter({ hasText: /^Review solicitation text$/ })
+          .click();
+        await page.getByLabel('Notice title and version').fill('Fictional notice');
+        await page
+          .getByLabel('Solicitation text', { exact: true })
+          .fill('The prime must collect DIR records.');
+        await page.getByRole('checkbox', { name: /authorized to share it with AI/ }).check();
+        await page.getByRole('button', { name: 'Review solicitation', exact: true }).click();
+      } else {
+        await page.getByRole('button', { name: 'Resume saved conversation', exact: true }).click();
+      }
+      await expect.poll(() => started).toBe(true);
+      await expect(page.locator('#assistant-question')).toBeDisabled();
+      await page.getByRole('button', { name: 'Collapse BidBuddy', exact: true }).click();
+      await page.getByRole('button', { name: 'Open BidBuddy', exact: true }).click();
+      await expect(page.locator('#assistant-question')).toBeEnabled();
+      release();
+      await page.locator('#assistant-question').fill('What should I check next?');
+      await expect(page.getByRole('button', { name: 'Ask BidBuddy', exact: true })).toBeEnabled();
+      await expect(page.getByRole('alert')).toHaveCount(0);
+    } finally {
+      release();
+    }
+  });
+
+test('phone composer precedes history and optional clause controls; final line without newline renders', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('**/api/assistant', (route) =>
+    route.fulfill({
+      contentType: 'application/x-ndjson',
+      body: JSON.stringify({
+        type: 'answer',
+        answer: {
+          answer: [{ text: 'Check the current record.', sources: [] }],
+          risks: [],
+          nextAction: 'Review',
+          citations: [],
+          evidence: [],
+        },
+      }),
+    }),
+  );
+  await mount(page);
+  await page.goto('/assistant-test?planning');
+  const question = page.locator('#assistant-question');
+  const position = await question.boundingBox();
+  const history = await page.getByRole('complementary', { name: 'Conversations' }).boundingBox();
+  const review = await page
+    .getByRole('group', { name: 'Review bid requirements together', exact: true })
+    .boundingBox();
+  expect(position!.y).toBeLessThan(history!.y);
+  expect(position!.y).toBeLessThan(review!.y);
+  await question.fill('What next?');
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(page.getByRole('article', { name: 'BidBuddy answer' })).toContainText(
+    'Check the current record.',
+  );
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: '.tmp/bidbuddy-reliability-phone.png', fullPage: true });
+});
+
 for (const width of [390, 1440])
   test(`solicitation text review requires sharing and a human save at ${width}px`, async ({
     page,
