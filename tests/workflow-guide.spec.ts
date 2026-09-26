@@ -151,7 +151,10 @@ for (const mobile of [false, true])
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByText('Record an actual human submission', { exact: true }).click();
-    await page.getByLabel('Actual submission time').fill('2026-09-21T10:00:00Z');
+    await page.getByLabel('Actual submission time').fill('2026-09-21T10:00');
+    await expect(page.locator('input[name="submitted_at"]')).toHaveValue(
+      '2026-09-21T10:00:00.000Z',
+    );
     await page
       .getByLabel('Receipt reference (text only)', { exact: true })
       .fill('Training receipt');

@@ -37,6 +37,7 @@ import RequirementResolution from './requirement-resolution';
 import RequirementAmendment from './requirement-amendment';
 import { DocumentLibrary, RequirementDocuments } from './document-library';
 import TodayTaskQueue from './today-task-queue';
+import TaskContext from './task-context';
 import CompanyRecordForm from './company-record-form';
 import CompanyPassport from './company-passport';
 import PortalShortcuts from './portal-shortcuts';
@@ -570,14 +571,7 @@ export default function TenantWorkspace({
                           : (t.assigned_user_id ?? 'Unassigned')}
                       </p>
                       <p>Due: {displayDate(t.due_at, t.due_timezone ?? org.default_timezone)}</p>
-                      {t.requirement_id &&
-                        data.archivedRequirements?.some((r) => r.id === t.requirement_id) && (
-                          <p>
-                            This task remains linked to an archived requirement. Review the{' '}
-                            <a href="#requirement-archive-title">correction history</a> before
-                            completing or updating it.
-                          </p>
-                        )}
+                      <TaskContext data={data} task={t} />
                       {capture && <TaskForm data={data} pursuitId={recordId} task={t} />}
                     </div>
                   ))}

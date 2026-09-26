@@ -10,6 +10,7 @@ import {
 import { requirementStatuses } from '../lib/capture-input';
 import type { MutationState } from '../app/actions';
 import type { LiveOpportunity, TenantData } from '../lib/tenant-types';
+import ZonedDateField from './zoned-date-field';
 
 type Field = {
   name: string;
@@ -18,6 +19,7 @@ type Field = {
   max?: number;
   multiline?: boolean;
   inputType?: 'date';
+  dateTimeZone?: { field: string } | { fixed: string };
   options?: { value: string; label: string }[];
 };
 export function CaptureForm({
@@ -57,6 +59,21 @@ export function CaptureForm({
           <fieldset disabled={pending || state.success}>
             <legend>{label}</legend>
             {fields.map((field) => {
+              if (field.dateTimeZone)
+                return (
+                  <ZonedDateField
+                    key={field.name}
+                    name={field.name}
+                    label={field.label}
+                    initialValue={initial[field.name] ?? ''}
+                    required={field.required}
+                    timeZone={
+                      'field' in field.dateTimeZone
+                        ? (draft[field.dateTimeZone.field] ?? '')
+                        : field.dateTimeZone.fixed
+                    }
+                  />
+                );
               const props = {
                 name: field.name,
                 'aria-label': field.label,
@@ -125,7 +142,7 @@ export function CaptureForm({
   );
 }
 const deadlineNote =
-  'Enter timestamps with an explicit UTC offset, for example 2026-10-15T14:00:00-07:00. The offset fixes the instant; the time zone controls display. Leave unknown dates blank.';
+  'Choose the date and local time shown in the notice, then check the time zone and saved-time preview. Changing the time zone keeps the entered clock time. Leave unknown dates blank.';
 export function RequirementForm({
   data,
   pursuitId,
@@ -232,8 +249,12 @@ export function OpportunityForm({
         { name: 'source_url', label: 'Source URL', max: 2000 },
         { name: 'source_note', label: 'Source note', max: 2000, multiline: true },
         { name: 'summary', label: 'Scope summary', max: 6000, multiline: true },
-        { name: 'official_deadline', label: 'Official deadline with offset', max: 40 },
         { name: 'deadline_timezone', label: 'Deadline time zone', required: true, max: 100 },
+        {
+          name: 'official_deadline',
+          label: 'Official deadline',
+          dateTimeZone: { field: 'deadline_timezone' },
+        },
       ]}
     />
   );
@@ -326,8 +347,8 @@ export function TaskForm({
               })),
           ],
         },
-        { name: 'due_at', label: 'Task deadline with offset', max: 40 },
         { name: 'due_timezone', label: 'Task time zone', required: true, max: 100 },
+        { name: 'due_at', label: 'Task deadline', dateTimeZone: { field: 'due_timezone' } },
         ...(data.contractorWorkflowEnabled
           ? [
               {

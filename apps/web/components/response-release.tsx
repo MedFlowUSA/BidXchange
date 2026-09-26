@@ -13,6 +13,7 @@ import { readResponseDraft } from '../lib/response-package';
 import { responseProgress } from '../lib/response-progress';
 import PortalPlaybook from './portal-playbook';
 import { EXTERNAL_COMPLETION, releaseHandoff } from '../lib/submission-handoff';
+import ZonedDateField from './zoned-date-field';
 
 function ActionForm({
   build,
@@ -217,9 +218,12 @@ function Freeze({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
           label="Official source / amendment version reviewed"
           maxLength={500}
         />
-        <Field
+        <ZonedDateField
           name="reviewed_at"
-          label="Source reviewed at (ISO timestamp with timezone, e.g. 2026-09-21T09:00:00-07:00)"
+          label="Source reviewed at"
+          initialValue=""
+          timeZone={data.organization.default_timezone}
+          required
         />
         <Field name="method" label="Required submission method" maxLength={200} />
         <Field name="portal" label="Buyer portal URL or submission destination (no credentials)" />
@@ -483,9 +487,12 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
               label="Actual portal / destination"
               value={v.snapshot.checklist.portal}
             />
-            <Field
+            <ZonedDateField
               name="submitted_at"
-              label="Actual submission time (ISO timestamp with timezone)"
+              label="Actual submission time"
+              initialValue=""
+              timeZone={data.organization.default_timezone}
+              required
             />
             <Field
               name="confirmation"
@@ -500,10 +507,11 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
               required={false}
             />
             <Field name="notes" label="Submission notes / reason for correction or resubmission" />
-            <Field
+            <ZonedDateField
               name="followup_at"
-              label="Follow-up date and time (optional ISO timestamp with timezone)"
-              required={false}
+              label="Follow-up date and time"
+              initialValue=""
+              timeZone={data.organization.default_timezone}
             />
             <label>
               <input type="checkbox" name="confirmed" required />I am the named submitter. I confirm
@@ -618,10 +626,11 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
                   </p>
                 </fieldset>
               )}
-              <Field
+              <ZonedDateField
                 name="due"
-                label="Due date (optional ISO timestamp with timezone)"
-                required={false}
+                label="Due date"
+                initialValue=""
+                timeZone={data.organization.default_timezone}
               />
             </ActionForm>
           )}
