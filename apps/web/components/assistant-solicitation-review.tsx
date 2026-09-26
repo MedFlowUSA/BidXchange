@@ -5,6 +5,7 @@ import type { Answer } from '../lib/ai/contracts';
 import { solicitationInputSchema, solicitationTextLimit } from '../lib/ai/solicitation-contracts';
 import { RequirementForm } from './capture-forms';
 import styles from './assistant.module.css';
+import { requestAssistantAnswer } from '../lib/ai/client-response';
 
 export default function AssistantSolicitationReview({
   data,
@@ -38,10 +39,15 @@ export default function AssistantSolicitationReview({
     };
     window.addEventListener('pagehide', clear);
     return () => {
-      controller.current?.abort();
+      const active = controller.current;
+      controller.current = null;
+      if (active) {
+        active.abort();
+        onBusy(false);
+      }
       window.removeEventListener('pagehide', clear);
     };
-  }, []);
+  }, [onBusy]);
   async function review() {
     if (busy || disabled) return;
     const parsed = solicitationInputSchema.safeParse({ title, url, text, consent });
@@ -57,11 +63,8 @@ export default function AssistantSolicitationReview({
     onBusy(true);
     setError('');
     try {
-      const response = await fetch('/api/assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: abort.signal,
-        body: JSON.stringify({
+      const result = await requestAssistantAnswer(
+        {
           organizationId: data.organization.id,
           requestId: crypto.randomUUID(),
           context: { kind: 'pursuit', id: pursuitId },
@@ -69,30 +72,9 @@ export default function AssistantSolicitationReview({
           prompt:
             'Review the supplied solicitation text. Identify source-quoted candidate requirements, compare them with authorized company records, and suggest human follow-up.',
           solicitation: parsed.data,
-        }),
-      });
-      if (!response.ok) {
-        const failure = await response.json();
-        throw Error(failure.message ?? 'The review could not be completed.');
-      }
-      const reader = response.body?.getReader();
-      if (!reader) throw Error('No review received.');
-      const decoder = new TextDecoder();
-      let buffer = '',
-        result: Answer | undefined;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-          if (!line) continue;
-          const event = JSON.parse(line);
-          if (event.type === 'error') throw Error(event.message);
-          if (event.type === 'answer') result = event.answer;
-        }
-      }
+        },
+        { signal: abort.signal },
+      );
       if (abort.signal.aborted) return;
       if (!result?.solicitationReview)
         throw Error('No validated review arrived. Your text is kept so you can retry.');
@@ -101,7 +83,8 @@ export default function AssistantSolicitationReview({
     } catch (e) {
       if (!abort.signal.aborted) setError(e instanceof Error ? e.message : 'Review unavailable.');
     } finally {
-      if (!abort.signal.aborted) {
+      if (controller.current === abort) {
+        controller.current = null;
         setBusy(false);
         onBusy(false);
       }
@@ -201,7 +184,9 @@ export default function AssistantSolicitationReview({
             type="button"
             className="button secondary"
             onClick={() => {
-              controller.current?.abort();
+              const active = controller.current;
+              controller.current = null;
+              active?.abort();
               setBusy(false);
               onBusy(false);
               setError('Review cancelled. Your text has been kept.');
