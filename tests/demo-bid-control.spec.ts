@@ -74,7 +74,21 @@ for (const width of [390, 1440])
       name: width === 390 ? 'Mobile navigation' : 'Main navigation',
       exact: true,
     });
-    await navigation.getByRole('link', { name: /Passport/ }).click();
+    await navigation.getByRole('link', { name: /Company profile/ }).click();
+    await expect(page.locator('main h1')).toHaveText('Company profile');
+    await expect(page.getByRole('heading', { name: 'Apex Energy', exact: true })).toBeVisible();
+    await expect(page.locator('#demo-company-overview')).toContainText('Redlands, California');
+    await expect(page.locator('#demo-company-overview')).toContainText('fictional');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({ path: `.tmp/demo-profile-local-${width}.png` });
+    const companyNav = page.getByRole('navigation', { name: 'Demo company sections' });
+    await companyNav.getByRole('link', { name: 'Past projects', exact: true }).click();
+    await expect(page.locator('#demo-company-projects .passport-record')).toHaveCount(3);
+    await page.locator('#demo-company-projects summary').first().click();
+    await expect(page.locator('#demo-company-projects')).toContainText('Canyon Civic Hall');
+    await companyNav.getByRole('link', { name: 'Radar', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Keep the evidence current' })).toBeVisible();
     await page.getByRole('button', { name: 'Simulate insurance renewal', exact: true }).click();
     await page.getByRole('link', { name: 'Open municipal retrofit', exact: true }).click();

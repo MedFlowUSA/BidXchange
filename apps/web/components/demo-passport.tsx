@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useDemoPassport } from './demo-passport-state';
+import styles from './demo-passport.module.css';
 
 export default function DemoPassport() {
   const { insuranceCurrent, setInsuranceCurrent } = useDemoPassport();
@@ -67,12 +68,105 @@ export default function DemoPassport() {
       'Not applicable',
     ],
   ];
+  const recordCard = ([title, value, status, expiration]: string[]) => (
+    <details className="passport-record" key={title}>
+      <summary>
+        <span>{title}</span>
+        <span>{status}</span>
+      </summary>
+      <p>{value}</p>
+      <dl>
+        <dt>Source</dt>
+        <dd>Fictional company record · sample source note entered by Alex</dd>
+        <dt>Last checked</dt>
+        <dd>September 25, 2026</dd>
+        <dt>Expiration</dt>
+        <dd>{expiration}</dd>
+        <dt>Attested by</dt>
+        <dd>
+          {status === 'Attested'
+            ? 'Alex · fictional attestation, September 25, 2026'
+            : 'New attestation needed'}
+        </dd>
+      </dl>
+    </details>
+  );
   return (
     <div className="bid-workspace">
+      <nav className={styles.navigation} aria-label="Demo company sections">
+        <a className="button secondary" href="#demo-company-overview">
+          Overview
+        </a>
+        <a className="button secondary" href="#demo-company-records">
+          Company records
+        </a>
+        <a className="button secondary" href="#passport-radar">
+          Radar
+        </a>
+        <a className="button secondary" href="#demo-company-projects">
+          Past projects
+        </a>
+      </nav>
+      <section className="panel" id="demo-company-overview" aria-labelledby="demo-company-name">
+        <div className="eyebrow">FICTIONAL COMPANY PROFILE</div>
+        <h2 id="demo-company-name">Apex Energy</h2>
+        <p>
+          A California electrical contractor providing lighting retrofits, building controls and
+          energy-efficiency improvements for public facilities.
+        </p>
+        <div className={styles.profileGrid}>
+          <div>
+            <h3>Company details</h3>
+            <p>
+              Legal name: Apex Energy Demo LLC
+              <br />
+              DBA: Apex Energy
+              <br />
+              Headquarters: Redlands, California
+            </p>
+          </div>
+          <div>
+            <h3>Services and territory</h3>
+            <p>
+              Electrical work, lighting and building controls.
+              <br />
+              San Bernardino and Riverside counties; 60-mile service radius from Redlands.
+              <br />
+              NAICS: 238210
+            </p>
+          </div>
+        </div>
+        <p>
+          All company details, qualifications and projects here are fictional. This profile shows
+          how reusable company records support a bid review; it does not establish eligibility.
+        </p>
+        <p>
+          <strong>Needs attention:</strong>{' '}
+          {insuranceCurrent
+            ? 'General liability renewal recorded in this demo. Review its use against the bid requirements.'
+            : 'General liability insurance is expired.'}{' '}
+          Aggregate bonding availability still needs review.
+        </p>
+        <Link className="button primary" href="/pursuits/DEMO-001?workspace=demo">
+          See this profile in the municipal retrofit bid
+        </Link>
+      </section>
+      <section className="panel" id="demo-company-records" aria-labelledby="demo-records-heading">
+        <h2 id="demo-records-heading">Company records</h2>
+        <p>
+          The Company Passport holds identity, registrations, service territory, bonding and
+          insurance. Open a record to see its source, review state and dates.
+        </p>
+        {records.slice(0, 11).map(recordCard)}
+      </section>
       <section className="panel" id="passport-radar">
         <div className="eyebrow">EXPIRATION AND FRESHNESS RADAR</div>
         <h2>Keep the evidence current</h2>
         <p>Illustrated as of September 26, 2026. Review dates against each new notice.</p>
+        <p>
+          Try a renewal below, then open the bid to see what changes. This simulation resets when
+          you reload the page.
+        </p>
         <div className="radar-grid">
           <div>
             <b>Expired</b>
@@ -105,30 +199,13 @@ export default function DemoPassport() {
           Open municipal retrofit
         </Link>
       </section>
-      <section className="panel">
-        <h2>Level-1 Passport</h2>
-        <p>Company, registrations, territory, coverage and three projects. No uploads needed.</p>
-        {records.map(([title, value, status, expiration]) => (
-          <details className="passport-record" key={title}>
-            <summary>
-              <span>{title}</span>
-              <span>{status}</span>
-            </summary>
-            <p>{value}</p>
-            <dl>
-              <dt>Source</dt>
-              <dd>Sample company record · source note entered by Alex</dd>
-              <dt>Last checked</dt>
-              <dd>September 25, 2026</dd>
-              <dt>Expiration</dt>
-              <dd>{expiration}</dd>
-              <dt>Attested by</dt>
-              <dd>
-                {status === 'Attested' ? 'Alex · September 25, 2026' : 'New attestation needed'}
-              </dd>
-            </dl>
-          </details>
-        ))}
+      <section className="panel" id="demo-company-projects" aria-labelledby="demo-projects-heading">
+        <h2 id="demo-projects-heading">Past projects</h2>
+        <p>
+          Three fictional examples show customer, role, value band, scope, location and permission
+          to disclose. These are sample records, not real project references.
+        </p>
+        {records.slice(11).map(recordCard)}
       </section>
       <Link href="/documents?workspace=demo">Company documents →</Link>
     </div>

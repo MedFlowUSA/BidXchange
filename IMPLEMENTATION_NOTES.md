@@ -1,5 +1,9 @@
 # California contractor implementation
 
+## Demo company-profile discoverability — September 26
+
+The public demo already routes `/company?workspace=demo` to DemoPassport, but navigation and the page title say only Passport and lead with Radar. Use Company profile consistently in desktop/mobile navigation and the demo heading/search entry. Extend the existing fictional Apex records with a readable company overview and anchors for business records, Radar and past projects; preserve the insurance simulation shared with the municipal-retrofit rehearsal. No real-company records, new models, storage or API calls. Verify direct links/reload, navigation at phone/desktop sizes, fictional labels, no tenant API requests and insurance-to-bid continuity; run typecheck/lint/build and relevant regression tests before deployment.
+
 ## App-wide audit and deadline entry — September 26
 
 Also found that saved task instructions and priority were visible only inside the bid lead's edit form. Expose the existing workspace-visible notes, priority and same-pursuit requirement link on the task card; retain archive warnings and explain the existing role restriction to team members. Show priority on Today without changing deadline order. No new access or mutation authority. Test viewer instructions, line breaks, unavailable/foreign requirement handling and mobile long-text containment.

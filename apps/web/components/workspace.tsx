@@ -320,8 +320,9 @@ export default function Workspace({
       href: workspaceHref('/documents'),
     })),
     {
-      title: 'Apex Energy Demo capabilities',
-      category: 'Company facts',
+      title: 'Apex Energy Demo company profile',
+      category: 'Company profile',
+      text: 'Passport, services, territory, licenses, insurance and past projects',
       href: workspaceHref('/company'),
     },
   ];
@@ -343,7 +344,7 @@ export default function Workspace({
               <div className="eyebrow">APEX ENERGY DEMO</div>
               <h1>
                 {page === 'Company'
-                  ? 'Passport'
+                  ? 'Company profile'
                   : page === 'Opportunities'
                     ? 'All bids'
                     : page === 'Assistant'
@@ -367,7 +368,7 @@ export default function Workspace({
               <li>Bid bond: confirm available capacity with Casey.</li>
               <li>Jordan: calendar the mandatory job walk.</li>
               {!insuranceCurrent && (
-                <li>General liability insurance expired. Renew it in the Passport.</li>
+                <li>General liability insurance expired. Review it in Company profile.</li>
               )}
             </ul>
             <Link className="button primary" href={workspaceHref('/pursuits/DEMO-001')}>
