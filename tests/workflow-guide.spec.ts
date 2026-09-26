@@ -128,6 +128,13 @@ for (const mobile of [false, true])
     await page.goto('/workflow-harness');
     await page.addStyleTag({ content: css });
     await page.addScriptTag({ content: js });
+    await expect(
+      page.getByRole('link', { name: 'Download handoff checklist (PDF)' }),
+    ).toHaveAttribute(
+      'href',
+      /\/api\/response-releases\/handoff\?organization=.*&release=.*&checksum=.*&format=pdf$/,
+    );
+    await expect(page.getByText('Not ready for handoff', { exact: true })).toBeVisible();
     const brief = page.getByRole('region', { name: 'Suggested next actions' });
     await expect(brief.getByText('Recorded submission deadline', { exact: true })).toBeVisible();
     await expect(brief.getByText('Human-confirmed blockers', { exact: true })).toBeVisible();

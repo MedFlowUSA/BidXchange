@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { TenantData } from '../lib/tenant-types';
 import { hasCurrentRegisterSignoff } from '../lib/workspace-guide';
 import { freshnessRadar } from '../lib/california-passport';
-import { EXTERNAL_COMPLETION } from '../lib/submission-handoff';
+import { releaseHandoff } from '../lib/submission-handoff';
 
 export function pursuitNextStep(data: TenantData, pursuitId: string) {
   const rows = (data.requirements ?? []).filter((r) => r.pursuit_id === pursuitId);
@@ -55,12 +55,9 @@ export function pursuitNextStep(data: TenantData, pursuitId: string) {
     };
   const release = data.releaseWorkflow?.versions[0];
   if (
-    !release?.status?.current ||
-    release.status.blockers.length ||
-    data.amendments?.some((a) => !a.reviewed) ||
-    !(['pricing', 'signatures', 'certifications'] as const).every((key) =>
-      release.snapshot.checklist[key].reference.includes(EXTERNAL_COMPLETION),
-    )
+    !release ||
+    !releaseHandoff(release.snapshot.checklist, release.checksum, release.status).ready ||
+    data.amendments?.some((a) => !a.reviewed)
   )
     return {
       title: 'Open submission handoff',

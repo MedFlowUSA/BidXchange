@@ -1,4 +1,49 @@
 import { reviewedPortalUrl } from './sources/portal-url';
+import { z } from 'zod';
+import type { ReleaseChecklist } from './response-release';
+
+const handoffStatus = z.object({
+  current: z.boolean(),
+  checksum: z.string(),
+  blockers: z.array(z.string()),
+  approvals: z.object({
+    pricing: z.boolean(),
+    compliance: z.boolean(),
+    final: z.boolean(),
+    submission: z.boolean(),
+  }),
+});
+/** A prepared checklist alone is not a human-authorized handoff. */
+export function releaseHandoff(checklist: ReleaseChecklist, checksum: string, status: unknown) {
+  const externalComplete = (['pricing', 'signatures', 'certifications'] as const).every((key) =>
+    checklist[key].reference.split(/\r?\n/).some((line) => line.trim() === EXTERNAL_COMPLETION),
+  );
+  const gaps: string[] = [];
+  const parsed = handoffStatus.safeParse(status);
+  if (!parsed.success || parsed.data.checksum !== checksum)
+    gaps.push('Current release status is unavailable. Reload before handoff.');
+  else {
+    if (!parsed.data.current)
+      gaps.push('This version is stale. Prepare and review a current version.');
+    gaps.push(...parsed.data.blockers);
+    for (const [key, label] of Object.entries({
+      pricing: 'Pricing approval',
+      compliance: 'Compliance review',
+      final: 'Final response approval',
+      submission: 'Submission authorization',
+    })) {
+      if (!parsed.data.approvals[key as keyof typeof parsed.data.approvals])
+        gaps.push(`${label} is missing or no longer current.`);
+    }
+  }
+  if (!externalComplete)
+    gaps.push(
+      'Confirm that price and representations are complete outside BidXchange in a new frozen version.',
+    );
+  if (!checklist.submitter.trim() || !checklist.portal.trim())
+    gaps.push('Name the submitter and submission destination.');
+  return { ready: gaps.length === 0, externalComplete, gaps: [...new Set(gaps)] };
+}
 /** Preparation checks only. Existing release RPCs remain the production authority. */
 export function handoffGaps(input: {
   signed: boolean;
