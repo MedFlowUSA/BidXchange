@@ -80,8 +80,8 @@ test('conversation context is bounded and client supplied raw history is rejecte
       secret,
       scope,
     );
-  expect(memory.turns).toHaveLength(4);
-  expect(memory.turns[0].question).toBe('Question 4');
+  expect(memory.turns).toHaveLength(8);
+  expect(memory.turns[0].question).toBe('Question 0');
   expect(
     sealConversation(
       memory,

@@ -25,10 +25,10 @@ function fixture() {
 test('only reviewed schema files enter an unlinked idempotent package', () => {
   const { root } = fixture();
   const result = preparePackage(root);
-  assert.equal(result.included.length, 32);
+  assert.equal(result.included.length, 33);
   assert.deepEqual(result.excluded, ['20260919000200_ges_onboarding.sql']);
   assert.deepEqual(preparePackage(root), result);
-  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 32);
+  assert.equal(readdirSync(path.join(result.destination, 'migrations')).length, 33);
   assert.deepEqual(readdirSync(result.destination).sort(), [
     'README.txt',
     'manifest.json',

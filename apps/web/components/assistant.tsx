@@ -15,6 +15,7 @@ import { createAssistantDocument } from '../app/assistant-document-actions';
 import { workspaceHref } from '../lib/routes';
 import type { TenantData } from '../lib/tenant-types';
 import AssistantTaskPlan from './assistant-task-plan';
+import AssistantSavedConversation from './assistant-saved-conversation';
 import {
   RequirementReviewSelection,
   RequirementReviewResult,
@@ -65,6 +66,11 @@ export default function Assistant({
     [status, setStatus] = useState(''),
     [error, setError] = useState(''),
     [feedback, setFeedback] = useState('');
+  const [savedBusy, setSavedBusy] = useState(false);
+  const [savedSession, setSavedSession] = useState(0);
+  useEffect(() => {
+    setSavedBusy(false);
+  }, [organizationId, context?.id, available]);
   const controller = useRef<AbortController | null>(null);
   const thread = useRef<{ mode: string; token: string } | null>(null);
   const access = useRef<string | null>(null);
@@ -105,6 +111,8 @@ export default function Assistant({
     const abort = new AbortController();
     const clear = () => {
       controller.current?.abort();
+      setSavedBusy(false);
+      setSavedSession((value) => value + 1);
       setConversations([]);
       setActive(null);
       setPrompt('');
@@ -148,6 +156,8 @@ export default function Assistant({
   useEffect(() => {
     const clear = () => {
       controller.current?.abort();
+      setSavedBusy(false);
+      setSavedSession((value) => value + 1);
       setConversations([]);
       setActive(null);
       setPrompt('');
@@ -187,7 +197,7 @@ export default function Assistant({
     setReviewChoices(items);
   }
   async function ask(question = prompt, retry = false, answerMode = mode, fresh = false) {
-    if (pending || actionLock.current || !question.trim() || !available) return;
+    if (pending || savedBusy || actionLock.current || !question.trim() || !available) return;
     if (!demo && answerMode === 'general' && responseCommand(question)) {
       setError(
         'Switch to Workspace records to create an outline from this bid. General questions do not access company records.',
@@ -477,7 +487,7 @@ export default function Assistant({
             <aside aria-label="Conversations">
               <button
                 className="button secondary"
-                disabled={pending}
+                disabled={pending || savedBusy}
                 onClick={() => {
                   setActive(null);
                   setConversations([]);
@@ -494,14 +504,63 @@ export default function Assistant({
                 New conversation
               </button>
               <p>
-                Private to this tab. Recent messages provide follow-up context for up to 30 minutes.
-                Reloading, changing company or starting a new conversation clears that context.
+                Up to eight recent exchanges provide follow-up context for 30 minutes. Unsaved
+                conversations clear when you leave or reload.{' '}
+                {context?.kind === 'pursuit'
+                  ? 'Save below to return later; saved copies remain private to your account.'
+                  : 'Open a bid in Pursuits to save and resume its conversation.'}
               </p>
+              {!demo && available && organizationId && context?.kind === 'pursuit' && (
+                <AssistantSavedConversation
+                  key={`${organizationId}:${context.id}:${savedSession}`}
+                  organizationId={organizationId}
+                  pursuitId={context.id}
+                  checkpoint={
+                    selected?.mode === 'workspace' ? selected.answer?.saveCheckpoint : undefined
+                  }
+                  disabled={pending || savedBusy}
+                  onBusy={setSavedBusy}
+                  onResume={(answer, turns) => {
+                    thread.current = answer.continuation
+                      ? { mode: 'workspace', token: answer.continuation }
+                      : null;
+                    const restored = turns.map((turn, i) => ({
+                      id: crypto.randomUUID(),
+                      question: turn.question,
+                      mode: 'workspace' as const,
+                      answer:
+                        i === turns.length - 1
+                          ? answer
+                          : {
+                              answer: [{ text: turn.answer, sources: [] }],
+                              risks: [],
+                              nextAction: '',
+                              citations: [],
+                              evidence: [],
+                              notice:
+                                'Earlier saved AI answer. Ask a new question to review current records.',
+                            },
+                    }));
+                    setConversations(restored);
+                    setActive(restored.at(-1)?.id ?? null);
+                    setMode('workspace');
+                    setSharingChoice(answer.sharedRequirement);
+                    setReviewChoices(answer.sharedRequirements ?? []);
+                    setSharingConfirmed(
+                      !!answer.sharedRequirement || !!answer.sharedRequirements?.length,
+                    );
+                    setPrompt('');
+                    setError('');
+                    setFeedback('');
+                    documentRequest.current = null;
+                  }}
+                />
+              )}
               {conversations.map((c, i) => (
                 <button
                   className={styles.conversation}
                   key={c.id}
-                  disabled={pending}
+                  disabled={pending || savedBusy}
                   aria-pressed={c.id === active}
                   onClick={() => {
                     setActive(c.id);
@@ -517,7 +576,7 @@ export default function Assistant({
               ))}
               <button
                 className="text-button"
-                disabled={pending}
+                disabled={pending || savedBusy}
                 onClick={() => {
                   setConversations([]);
                   thread.current = null;
@@ -556,7 +615,7 @@ export default function Assistant({
                         <button
                           type="button"
                           className="text-button"
-                          disabled={pending}
+                          disabled={pending || savedBusy}
                           onClick={() => {
                             setActive(c.id);
                             setMode(c.mode);
@@ -575,7 +634,7 @@ export default function Assistant({
                 {!demo && context?.kind === 'pursuit' && (
                   <button
                     className="button secondary"
-                    disabled={pending}
+                    disabled={pending || savedBusy}
                     onClick={() => setPrompt('Create a response outline for this solicitation')}
                   >
                     Create a response outline for this solicitation
@@ -585,7 +644,7 @@ export default function Assistant({
                   <button
                     key={q}
                     className="button secondary"
-                    disabled={pending}
+                    disabled={pending || savedBusy}
                     onClick={() => setPrompt(q)}
                   >
                     {q}
@@ -620,7 +679,7 @@ export default function Assistant({
                       </p>
                       <button
                         className="button secondary"
-                        disabled={pending || !available}
+                        disabled={pending || savedBusy || !available}
                         onClick={() => void ask(selected.question, false, 'workspace', true)}
                       >
                         Refresh from company records
@@ -742,12 +801,16 @@ export default function Assistant({
                     >
                       Copy answer
                     </button>
-                    <button className="button secondary" onClick={() => void rate('helpful')}>
-                      Helpful
-                    </button>
-                    <button className="button secondary" onClick={() => void rate('unhelpful')}>
-                      Not helpful
-                    </button>
+                    {(demo || selected.requestId) && (
+                      <>
+                        <button className="button secondary" onClick={() => void rate('helpful')}>
+                          Helpful
+                        </button>
+                        <button className="button secondary" onClick={() => void rate('unhelpful')}>
+                          Not helpful
+                        </button>
+                      </>
+                    )}
                   </div>
                   <p role="status">{feedback}</p>
                 </article>
@@ -764,7 +827,7 @@ export default function Assistant({
                     <select
                       aria-label="Answer mode"
                       value={mode}
-                      disabled={pending}
+                      disabled={pending || savedBusy}
                       onChange={(e) => {
                         thread.current = null;
                         if (sharingChoice || reviewChoices.length) changeSharing(undefined);
@@ -783,7 +846,7 @@ export default function Assistant({
                     }
                     selected={reviewChoices}
                     confirmed={sharingConfirmed}
-                    disabled={pending || !available}
+                    disabled={pending || savedBusy || !available}
                     onChange={changeReview}
                     onQuestion={() =>
                       setPrompt(
@@ -793,7 +856,10 @@ export default function Assistant({
                   />
                 )}
                 {canShare && mode === 'workspace' && (
-                  <fieldset className={styles.planCard} disabled={pending || !available}>
+                  <fieldset
+                    className={styles.planCard}
+                    disabled={pending || savedBusy || !available}
+                  >
                     <legend>Explain a requirement</legend>
                     <p>
                       Choose one requirement to explain in plain English. Only the previewed excerpt
@@ -878,13 +944,14 @@ export default function Assistant({
                   maxLength={3000}
                   rows={3}
                   required
-                  disabled={pending || !available}
+                  disabled={pending || savedBusy || !available}
                 />
                 <div className={styles.actions}>
                   <button
                     className="button primary"
                     disabled={
                       pending ||
+                      savedBusy ||
                       !available ||
                       !prompt.trim() ||
                       (mode === 'workspace' &&
@@ -913,7 +980,7 @@ export default function Assistant({
                   <p>{error}</p>
                   <button
                     className="button secondary"
-                    disabled={pending || !available}
+                    disabled={pending || savedBusy || !available}
                     onClick={() =>
                       void ask(selected?.question ?? prompt, true, selected?.mode ?? mode)
                     }

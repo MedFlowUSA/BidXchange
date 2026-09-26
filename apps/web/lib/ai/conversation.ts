@@ -34,7 +34,7 @@ export function readConversation(
     if (
       JSON.stringify(data.scope) !== JSON.stringify(scope) ||
       data.expires < now ||
-      data.turns.length > 4 ||
+      data.turns.length > 8 ||
       data.refs.length > 32
     )
       throw Error();
@@ -82,14 +82,22 @@ export function sealConversation(
   ]
     .filter(Boolean)
     .join('\n\n');
-  const turns = [...memory.turns, { question, answer: prose }].slice(-4);
+  const turns = [...memory.turns, { question, answer: prose }].slice(-8);
   while (JSON.stringify(turns).length > 24000 && turns.length > 1) turns.shift();
-  const value = JSON.stringify({
-    scope: memory.scope,
-    expires: Date.now() + 30 * 60_000,
-    turns,
-    refs: [...refs.values()],
-  });
+  return renewConversation(
+    {
+      scope: memory.scope,
+      expires: Date.now() + 30 * 60_000,
+      turns,
+      refs: [...refs.values()],
+    },
+    secret,
+  );
+}
+
+// Called only with server-authenticated memory after access and source revalidation.
+export function renewConversation(memory: ChatMemory, secret: string): string | undefined {
+  const value = JSON.stringify({ ...memory, expires: Date.now() + 30 * 60_000 });
   if (Buffer.byteLength(value, 'utf8') > 51000) return undefined;
   const iv = randomBytes(12),
     cipher = createCipheriv('aes-256-gcm', key(secret), iv);

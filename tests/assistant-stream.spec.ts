@@ -4,6 +4,93 @@ import path from 'node:path';
 let js = '',
   css = '';
 
+for (const width of [390, 1440])
+  test(`private bid conversation save, reload, resume, follow-up and delete at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    let saved = false;
+    const actions: string[] = [];
+    const requests: Record<string, unknown>[] = [];
+    const answer = {
+      answer: [{ text: 'Saved fictional bid advice', sources: [] }],
+      evidence: [],
+      citations: [],
+      risks: [],
+      nextAction: 'Review',
+      notice: 'AI suggestion',
+      continuation: 'new-continuation',
+      saveCheckpoint: 'sealed-checkpoint',
+    };
+    await page.route('**/api/assistant/conversations**', (r) => {
+      if (r.request().method() === 'GET')
+        return r.fulfill({
+          json: {
+            saved: saved
+              ? { saved_at: '2026-09-26T12:00:00Z', expires_at: '2026-10-26T12:00:00Z' }
+              : null,
+          },
+        });
+      const body = r.request().postDataJSON();
+      actions.push(body.action);
+      if (body.action === 'save') {
+        expect(body.checkpoint).toBe('sealed-checkpoint');
+        saved = true;
+        return r.fulfill({ json: { saved: true } });
+      }
+      if (body.action === 'delete') {
+        saved = false;
+        return r.fulfill({ json: { deleted: true } });
+      }
+      return r.fulfill({
+        json: {
+          answer: { ...answer, saveCheckpoint: undefined },
+          turns: [{ question: 'Help plan this bid', answer: 'Saved fictional bid advice' }],
+        },
+      });
+    });
+    await page.route('**/api/assistant', (r) => {
+      requests.push(r.request().postDataJSON());
+      return r.fulfill({
+        contentType: 'application/x-ndjson',
+        body: JSON.stringify({ type: 'answer', answer }) + '\n',
+      });
+    });
+    await mount(page);
+    await page.goto('/assistant-test?planning');
+    const savedPanel = page.getByRole('region', { name: 'Saved bid conversation' });
+    await expect(
+      savedPanel.getByRole('button', { name: 'Save conversation', exact: true }),
+    ).toBeDisabled();
+    await page.locator('#assistant-question').fill('Help plan this bid');
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+    await expect(
+      savedPanel.getByRole('button', { name: 'Save conversation', exact: true }),
+    ).toBeEnabled();
+    expect(actions).toEqual([]);
+    await savedPanel.getByRole('button', { name: 'Save conversation', exact: true }).click();
+    await expect(savedPanel).toContainText('Saved privately');
+    await page.reload();
+    await expect(page.getByRole('article')).toHaveCount(0);
+    await savedPanel
+      .getByRole('button', { name: 'Resume saved conversation', exact: true })
+      .click();
+    await expect(page.getByRole('article')).toContainText('Saved fictional bid advice');
+    await page.locator('#assistant-question').fill('Which task first?');
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+    await expect.poll(() => requests.length).toBe(2);
+    expect(requests[1].continuation).toBe('new-continuation');
+    await savedPanel
+      .getByRole('button', { name: 'Delete saved conversation', exact: true })
+      .click();
+    await expect(savedPanel).toContainText('Saved copy deleted');
+    expect(actions).toEqual(['save', 'resume', 'delete']);
+    expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true,
+    );
+  });
+
 test('general mode cannot create a saved company response through a document command', async ({
   page,
 }) => {

@@ -12,6 +12,7 @@ import { authorizeAi, requireSameOrigin } from '../../../lib/ai/server';
 import { EvidenceTools } from '../../../lib/ai/tools';
 import { runAssistant } from '../../../lib/ai/engine';
 import { readJsonBody } from '../../../lib/ai/read-body';
+import { sealSavedConversation } from '../../../lib/ai/saved-conversation';
 import {
   readSharedRequirement,
   readSharedRequirements,
@@ -226,6 +227,19 @@ export async function POST(request: Request) {
           if (setting.error || !setting.data?.enabled || !aiConfig())
             throw new AiError('unavailable', 503);
           if (body.mode === 'workspace') result.answer.recordsCheckedAt = new Date().toISOString();
+          if (
+            body.mode === 'workspace' &&
+            body.context?.kind === 'pursuit' &&
+            result.answer.continuation
+          ) {
+            result.answer.saveCheckpoint = sealSavedConversation(
+              readConversation(result.answer.continuation, config.key, scope),
+              result.answer,
+              body.context.id,
+              body.requestId,
+              config.key,
+            );
+          }
           emit({ type: 'answer', answer: result.answer });
           // Operational totals only. No prompt, tool payload, generated text, key or token logged.
           console.info(
