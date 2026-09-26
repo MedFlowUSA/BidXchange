@@ -2429,6 +2429,18 @@ a.nav-item {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
+[id^='requirement-'] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.amendment-comparison > * {
+  min-width: 0;
+}
+.amendment-comparison textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
 .amendment-text {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -2458,7 +2470,7 @@ a.nav-item {
 }
 @media (max-width: 760px) {
   .amendment-comparison {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 .document-library {
