@@ -11,7 +11,7 @@ export default function NotFound() {
         <Link className="button primary" href="/dashboard">
           Choose an authorized workspace
         </Link>
-        <Link className="text-button" href="/dashboard?workspace=demo">
+        <Link className="text-button" href="/pursuits/DEMO-001?workspace=demo">
           Open the fictional demo
         </Link>
       </section>

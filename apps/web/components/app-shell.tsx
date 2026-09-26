@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Bell,
   Building2,
@@ -11,7 +11,6 @@ import {
   Menu,
   Search,
   Settings,
-  ShieldCheck,
   Sparkles,
   Target,
   TrendingUp,
@@ -19,6 +18,8 @@ import {
 import { sections, workspaceHref, type OrganizationChoice, type SearchRecord } from '../lib/routes';
 import { signOut } from '../app/login/actions';
 import Dialog from './dialog';
+import Assistant from './assistant';
+import PublicDemoAssistant from './public-demo-assistant';
 
 const icons = {
   Assistant: Sparkles,
@@ -37,6 +38,8 @@ export default function AppShell({
   records = [],
   onHelp,
   onNotifications,
+  assistant,
+  badges,
   children,
 }: {
   page: string;
@@ -46,12 +49,44 @@ export default function AppShell({
   records?: SearchRecord[];
   onHelp?: () => void;
   onNotifications?: () => void;
+  assistant?: React.ReactNode;
+  badges?: { pursuit: number; passport: number };
   children: React.ReactNode;
 }) {
   const [mobile, setMobile] = useState(false);
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState('');
   const [switcher, setSwitcher] = useState(false);
+  const [buddyOpen, setBuddyOpen] = useState(page === 'Assistant');
+  const buddy =
+    assistant ??
+    (organization ? (
+      <Assistant organizationId={organization.id} name={organization.operating_name} expanded />
+    ) : (
+      <PublicDemoAssistant />
+    ));
+  useEffect(() => {
+    const reveal = () => {
+      if (location.hash === '#bid-assistant') setBuddyOpen(true);
+    };
+    reveal();
+    window.addEventListener('hashchange', reveal);
+    return () => window.removeEventListener('hashchange', reveal);
+  }, []);
+  const navigation = ['Pursuits', 'Company', 'Opportunities', 'Today'];
+  const displayLabel = (label: string) =>
+    label === 'Company'
+      ? 'Passport'
+      : label === 'Opportunities'
+        ? 'All bids'
+        : label === 'Pursuits' && !organization
+          ? 'This bid'
+          : label;
+  const navHref = (label: string) =>
+    workspaceHref(
+      label === 'Pursuits' && !organization ? '/pursuits/DEMO-001' : sections[label],
+      organization?.id,
+    ) + (label === 'Today' && !organization ? '&view=today' : '');
   const name = organization?.operating_name ?? 'Apex Energy Demo';
   const results = query.trim()
     ? records
@@ -100,19 +135,25 @@ export default function AppShell({
         </button>
         <div className="nav-label">WORKSPACE</div>
         <nav aria-label="Main navigation">
-          {['Today', 'Opportunities', 'Pursuits', 'Company', 'Assistant'].map((label) => {
-            const path = sections[label];
+          {navigation.map((label) => {
             const Icon = icons[label as keyof typeof icons];
+            const count =
+              label === 'Pursuits' ? badges?.pursuit : label === 'Company' ? badges?.passport : 0;
             return (
               <Link
-                href={workspaceHref(path, organization?.id)}
+                href={navHref(label)}
                 className={`nav-item ${page === label ? 'active' : ''}`}
                 aria-current={page === label ? 'page' : undefined}
                 onClick={() => setMobile(false)}
                 key={label}
               >
                 <Icon size={19} />
-                <span>{label === 'Assistant' ? 'BidBuddy' : label}</span>
+                <span>{displayLabel(label)}</span>
+                {!!count && (
+                  <span className="nav-count" aria-label={`${count} items need attention`}>
+                    {count}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -152,41 +193,36 @@ export default function AppShell({
             <BookOpen size={19} />
             <span>How-to guide (PDF)</span>
           </a>
-          <div className="desk-note">
-            <ShieldCheck size={23} />
-            <b>
-              Better decisions.
-              <br />
-              Stronger pursuits.
-            </b>
-            <p>The right facts. The right next step.</p>
-          </div>
           {onHelp && (
             <button className="nav-item help" onClick={onHelp}>
               <CircleHelp size={19} />
               Workspace guide
             </button>
           )}
-          <div className="profile">
-            <span className="profile-avatar">
-              {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'DM'}
-            </span>
-            <div>
-              <b>{userEmail ? 'Signed in' : 'Demo member'}</b>
-              <small>{organization?.role.replaceAll('_', ' ') ?? 'Preview access'}</small>
+          {userEmail && (
+            <div className="profile">
+              <span className="profile-avatar">
+                {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'DM'}
+              </span>
+              <div>
+                <b>{userEmail ? 'Signed in' : 'Demo member'}</b>
+                <small>{organization?.role.replaceAll('_', ' ') ?? 'Preview access'}</small>
+              </div>
             </div>
-          </div>
-          <details className="secondary-navigation" open={page === 'Settings'}>
-            <summary className="nav-item">Account and organization</summary>
-            <Link
-              className={`nav-item ${page === 'Settings' ? 'active' : ''}`}
-              href={workspaceHref('/settings', organization?.id)}
-              onClick={() => setMobile(false)}
-            >
-              <Settings size={19} />
-              Settings
-            </Link>
-          </details>
+          )}
+          {userEmail && (
+            <details className="secondary-navigation" open={page === 'Settings'}>
+              <summary className="nav-item">Account and organization</summary>
+              <Link
+                className={`nav-item ${page === 'Settings' ? 'active' : ''}`}
+                href={workspaceHref('/settings', organization?.id)}
+                onClick={() => setMobile(false)}
+              >
+                <Settings size={19} />
+                Settings
+              </Link>
+            </details>
+          )}
           {userEmail ? (
             <form action={signOut}>
               <button className="nav-item">Sign out</button>
@@ -210,9 +246,17 @@ export default function AppShell({
             </button>
             <span className="active-workspace">{name}</span>
             <ChevronRight size={14} />
-            <b>{page === 'Assistant' ? 'BidBuddy' : page}</b>
+            <b>{page === 'Assistant' ? 'BidBuddy' : displayLabel(page)}</b>
           </div>
           <div className="topbar-right">
+            <button
+              className="button buddy-trigger"
+              aria-haspopup="dialog"
+              onClick={() => setBuddyOpen(true)}
+            >
+              <Sparkles size={17} />
+              BidBuddy
+            </button>
             <button
               className="icon-button"
               aria-label="Global search"
@@ -220,10 +264,6 @@ export default function AppShell({
             >
               <Search size={19} />
             </button>
-            <span className="preview-badge">
-              <span />
-              {organization ? 'Onboarding' : 'Interactive preview'}
-            </span>
             {onNotifications && (
               <button
                 className="icon-button notification-button"
@@ -242,6 +282,37 @@ export default function AppShell({
         </p>
         {children}
       </div>
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+        {navigation.map((label) => {
+          const Icon = icons[label as keyof typeof icons];
+          const count =
+            label === 'Pursuits' ? badges?.pursuit : label === 'Company' ? badges?.passport : 0;
+          return (
+            <Link
+              key={label}
+              href={navHref(label)}
+              aria-current={page === label ? 'page' : undefined}
+            >
+              <Icon size={20} />
+              {displayLabel(label)}
+              {!!count && (
+                <span className="mobile-nav-count" aria-label={`${count} items need attention`}>
+                  {count}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+      <button className="buddy-fab" aria-label="Open BidBuddy" onClick={() => setBuddyOpen(true)}>
+        <Sparkles size={20} />
+        BidBuddy
+      </button>
+      {buddyOpen && (
+        <Dialog title="BidBuddy" close={() => setBuddyOpen(false)} drawer>
+          {buddy}
+        </Dialog>
+      )}
       {switcher && (
         <Dialog title="Switch workspace" close={() => setSwitcher(false)}>
           <div className="workspace-options">

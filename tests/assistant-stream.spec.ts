@@ -4,6 +4,22 @@ import path from 'node:path';
 let js = '',
   css = '';
 
+test('general mode cannot create a saved company response through a document command', async ({
+  page,
+}) => {
+  let requests = 0;
+  page.on('request', (r) => {
+    if (r.method() === 'POST') requests++;
+  });
+  await mount(page);
+  await page.goto('/assistant-test?planning');
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await page.locator('#assistant-question').fill('Create an RFP for this bid');
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Switch to Workspace records');
+  expect(requests).toBe(0);
+});
+
 test('selected requirement review previews consent, sends only identifiers and resets when selection or mode changes', async ({
   page,
 }) => {

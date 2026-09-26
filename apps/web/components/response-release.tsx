@@ -11,6 +11,8 @@ import {
 import { saveReleaseAction } from '../app/response-release-actions';
 import { readResponseDraft } from '../lib/response-package';
 import { responseProgress } from '../lib/response-progress';
+import PortalPlaybook from './portal-playbook';
+import { EXTERNAL_COMPLETION } from '../lib/submission-handoff';
 
 function ActionForm({
   build,
@@ -166,6 +168,8 @@ function Freeze({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
       <ActionForm
         label="Freeze response version"
         build={(f) => {
+          if (f.get('external_completion') !== 'on')
+            throw new Error('Confirm external completion.');
           const p = packages.find((p) => p.id === value(f, 'package'));
           return {
             action: 'freeze',
@@ -178,7 +182,14 @@ function Freeze({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
               ...Object.fromEntries(
                 Object.keys(checklistLabels).map((k) => [
                   k,
-                  { status: value(f, k), reference: value(f, k + '-reference') },
+                  {
+                    status: value(f, k),
+                    reference:
+                      value(f, k + '-reference') +
+                      (['pricing', 'signatures', 'certifications'].includes(k)
+                        ? `\n${EXTERNAL_COMPLETION}`
+                        : ''),
+                  },
                 ]),
               ),
               method: value(f, 'method'),
@@ -244,11 +255,16 @@ function Freeze({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
             <Field
               name={key + '-reference'}
               label={`${label}: confirmation reference or reason`}
+              maxLength={['pricing', 'signatures', 'certifications'].includes(key) ? 1900 : 2000}
               required={false}
             />
           </div>
         ))}
         <FileManifest />
+        <label className="checklist-row">
+          <input type="checkbox" required name="external_completion" />
+          Price and representations are complete outside BidXchange
+        </label>
       </ActionForm>
     </details>
   );
@@ -266,6 +282,11 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
     capture = ['organization_admin', 'executive_approver', 'capture_manager'].includes(role);
   const canSubmit = capture && v.snapshot.checklist.submitter === data.userId;
   const previous = workflow.submissions[0]?.id ?? null;
+  const externalComplete = ['pricing', 'signatures', 'certifications'].every((k) =>
+    v.snapshot.checklist[k as keyof typeof checklistLabels].reference.includes(EXTERNAL_COMPLETION),
+  );
+  const handoffReady =
+    externalComplete && v.status?.current === true && v.status.blockers.length === 0;
   return (
     <article className="panel" id={`release-${v.id}`}>
       <h3>
@@ -274,6 +295,15 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
       <p>
         <strong>{v.status?.state ?? 'Needs review'}</strong> · Frozen {v.created_at}
       </p>
+      <p>
+        <strong>{handoffReady ? 'Ready for human handoff' : 'Not ready for handoff'}</strong>
+      </p>
+      {!externalComplete && (
+        <p>
+          Prepare a new version with the explicit external price and representations confirmation.
+          Historical versions are preserved.
+        </p>
+      )}
       <p className="release-checksum">Checksum {v.checksum}</p>
       <p>
         Deadline: {v.snapshot.opportunity.deadline ?? 'Unknown'} ·{' '}
@@ -295,6 +325,10 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
         receipt. Draft exports remain drafts; independently verify the final files against this
         manifest.
       </p>
+      <PortalPlaybook
+        portal={`${v.snapshot.checklist.method} ${v.snapshot.checklist.portal}`}
+        destination={v.snapshot.checklist.portal}
+      />
       <details>
         <summary>Checklist and final files</summary>
         <dl>
@@ -617,7 +651,18 @@ export default function ResponseReleases({
   const findings = data.resolutions ?? [];
   return (
     <section className="panel response-releases" id="response-release">
-      <h2>Readiness, approvals and submission</h2>
+      <h2>Submission handoff</h2>
+      <PortalPlaybook
+        portal={source?.source_url ?? ''}
+        destination={source?.source_url ?? undefined}
+      />
+      {!saved && (
+        <p>
+          Start with the packet instructions here, then{' '}
+          <a href="#response-packages">create a response outline</a> before freezing a version for
+          approval.
+        </p>
+      )}
       <p>
         {source?.solicitation_number ?? 'Solicitation unknown'} · Source:{' '}
         {source?.source_url ?? source?.source_note ?? 'Not recorded'} · Deadline:{' '}

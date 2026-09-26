@@ -84,7 +84,7 @@ export default async function Home() {
                 <a href="#request-demo" className={styles.primary}>
                   Request a Bid Review <ArrowUpRight size={18} aria-hidden="true" />
                 </a>
-                <Link href="/dashboard?workspace=demo" className={styles.secondary}>
+                <Link href="/pursuits/DEMO-001?workspace=demo" className={styles.secondary}>
                   Explore the Demo <ArrowRight size={18} aria-hidden="true" />
                 </Link>
               </div>

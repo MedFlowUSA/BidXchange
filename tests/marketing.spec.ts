@@ -57,7 +57,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
-  ).toHaveAttribute('href', '/dashboard?workspace=demo');
+  ).toHaveAttribute('href', '/pursuits/DEMO-001?workspace=demo');
   for (const link of await page.getByRole('link', { name: 'Sign In', exact: true }).all())
     await expect(link).toHaveAttribute('href', '/login');
   await expect(page.getByRole('link', { name: 'Open Workspace', exact: true })).toHaveCount(0);
@@ -70,9 +70,9 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
   await page.getByRole('link', { name: 'Explore the Demo', exact: true }).first().click();
-  await expect(page).toHaveURL(/\/dashboard\?workspace=demo$/);
+  await expect(page).toHaveURL(/\/pursuits\/DEMO-001\?workspace=demo$/);
   await expect(
-    page.getByRole('heading', { name: 'A clear path to your next pursuit.' }),
+    page.getByRole('heading', { name: 'Municipal building energy retrofit' }),
   ).toBeVisible();
 });
 

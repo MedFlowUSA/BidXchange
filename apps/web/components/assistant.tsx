@@ -35,7 +35,6 @@ export default function Assistant({
   demo = false,
   demoEnabled = false,
   expanded = false,
-  hasOpportunities = false,
   planningData,
 }: {
   organizationId?: string;
@@ -98,12 +97,8 @@ export default function Assistant({
           : [
               `What work does ${name} perform, and which details still need human review?`,
               `What company information needs human review for ${name}?`,
-              hasOpportunities
-                ? 'Which saved opportunities are due in the next 14 days?'
-                : 'Which registrations and insurance records need review?',
-              hasOpportunities
-                ? 'What saved opportunities were added today?'
-                : 'Which company capabilities lack supporting evidence?',
+              'Which registrations and insurance records need review?',
+              'Which company capabilities lack supporting evidence?',
             ];
   useEffect(() => {
     if (demo) return;
@@ -193,6 +188,12 @@ export default function Assistant({
   }
   async function ask(question = prompt, retry = false, answerMode = mode, fresh = false) {
     if (pending || actionLock.current || !question.trim() || !available) return;
+    if (!demo && answerMode === 'general' && responseCommand(question)) {
+      setError(
+        'Switch to Workspace records to create an outline from this bid. General questions do not access company records.',
+      );
+      return;
+    }
     if (
       answerMode === 'workspace' &&
       (sharingChoice || reviewChoices.length > 0) &&
@@ -264,8 +265,7 @@ export default function Assistant({
           risks: [
             'This is a predefined fictional answer, not a model response or real company assessment. Demo scoring never authorizes a bid.',
           ],
-          nextAction:
-            'Open the fictional opportunities and review their deterministic eligibility checks.',
+          nextAction: 'Open the sample bid and review its requirements and evidence.',
           citations: [
             {
               key: 'demo',
@@ -447,9 +447,9 @@ export default function Assistant({
                   : 'Company records off for general questions'}
               </strong>
               <p>
-                Workspace answers read your latest saved, authorized company records on each
-                question. Save changes in Company first, then ask again or refresh an answer.
-                Earlier answers remain snapshots.
+                Workspace answers read your latest saved, authorized Passport and the selected bid
+                on each question. Save changes in Passport first, then ask again or refresh an
+                answer. Earlier answers remain snapshots.
               </p>
               <Link href={workspaceHref('/company', organizationId)}>Manage company records</Link>
             </div>
@@ -458,9 +458,9 @@ export default function Assistant({
             <details>
               <summary>Create a saved response outline</summary>
               <p>
-                Document commands use the open pursuit in either mode. Ask “Create a response
-                outline for this bid” to save a response outline with bid details and requirement
-                sections. Complete and review the answers before exporting.
+                In Workspace records mode, ask “Create a response outline for this bid” to save a
+                response outline with bid details and requirement sections. Complete and review the
+                answers before exporting.
               </p>
             </details>
           )}

@@ -17,7 +17,7 @@ const sections = [
   { id: 'edit', label: 'Edit profile', icon: Building2 },
   { id: 'review', label: 'Review queue', icon: ListChecks },
   { id: 'records', label: 'Saved records', icon: FileCheck2 },
-  { id: 'dates', label: 'Dates & reminders', icon: CalendarDays },
+  { id: 'dates', label: 'Radar', icon: CalendarDays },
   { id: 'requests', label: 'Requests', icon: ClipboardList },
   { id: 'decisions', label: 'Decision Log', icon: ClipboardList },
 ] as const;
@@ -64,7 +64,7 @@ export default function CompanyPortal({
               <Building2 size={28} />
             </span>
             <div>
-              <span className={styles.eyebrow}>COMPANY PROFILE</span>
+              <span className={styles.eyebrow}>COMPANY PASSPORT</span>
               <h1>{data.organization.operating_name}</h1>
               {data.organization.legal_name !== data.organization.operating_name && (
                 <p>{data.organization.legal_name}</p>

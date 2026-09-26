@@ -9,6 +9,7 @@ export const publicFactTypes = [
   'certification',
 ];
 export function discloseFact(role: Role, sensitivity: unknown, type: unknown) {
+  if (type === 'financial' && role !== 'organization_admin') return false;
   if (sensitivity === 'unknown' || !['workspace', 'restricted'].includes(String(sensitivity)))
     return false;
   if (['organization_admin', 'executive_approver', 'estimator'].includes(role)) return true;

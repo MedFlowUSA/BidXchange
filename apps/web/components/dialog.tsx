@@ -6,11 +6,13 @@ export default function Dialog({
   close,
   children,
   wide = false,
+  drawer = false,
 }: {
   title: string;
   close: () => void;
   children: React.ReactNode;
   wide?: boolean;
+  drawer?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -21,7 +23,7 @@ export default function Dialog({
   return (
     <dialog
       ref={ref}
-      className={wide ? 'dialog wide' : 'dialog'}
+      className={drawer ? 'dialog assistant-drawer' : wide ? 'dialog wide' : 'dialog'}
       aria-label={title}
       onKeyDown={(event) => {
         if (event.key !== 'Tab') return;

@@ -34,7 +34,7 @@ export default async function Login({
           </div>
         )}
         <LoginForm configured={configured} next={safeNext(params.next)} />
-        <Link className="text-button" href="/dashboard?workspace=demo">
+        <Link className="text-button" href="/pursuits/DEMO-001?workspace=demo">
           Explore Apex Energy Demo →
         </Link>
         <p className="auth-footnote">

@@ -103,7 +103,7 @@ test('assistant route replays authenticated history, rejects foreign scope befor
               {
                 config: `export const aiConfig=()=>({key:'synthetic-secret',model:'test',orgLimit:10,userLimit:10});`,
                 server: `export const requireSameOrigin=()=>{}; export async function authorizeAi(){return {user:{id:fixture.user},role:fixture.role,db:fixture.db};}`,
-                tools: `export class EvidenceTools { evidence=new Map(); async run(){if(fixture.planning)this.evidence.set(fixture.record.citation.key,fixture.record);} async source(type,id){const r=type==='requirement'?{citation:{...fixture.record.citation,type:'requirement',id,key:'requirement:'+id,updatedAt:fixture.requirement.updated_at},fields:{...fixture.record.fields,status:'needs_review'}}:fixture.record;this.evidence.set(r.citation.key,r);return r;} }`,
+                tools: `export class EvidenceTools { evidence=new Map(); async restrictToContext(){} async run(){if(fixture.planning)this.evidence.set(fixture.record.citation.key,fixture.record);} async source(type,id){const r=type==='requirement'?{citation:{...fixture.record.citation,type:'requirement',id,key:'requirement:'+id,updatedAt:fixture.requirement.updated_at},fields:{...fixture.record.fields,status:'needs_review'}}:fixture.record;this.evidence.set(r.citation.key,r);return r;} }`,
                 engine: `export async function runAssistant(a,b,c,d,e,f,g,authorize,mode,history,shared){
           await authorize(); fixture.histories.push(history);
           fixture.excerpts.push(shared);

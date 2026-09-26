@@ -14,6 +14,48 @@ const org = '11111111-1111-4111-8111-111111111111',
   other = '22222222-2222-4222-8222-222222222222',
   id = '33333333-3333-4333-8333-333333333333';
 const now = new Date('2026-09-19T12:00:00Z');
+
+test('financial Passport records are administrator-only even when classified for workspace use', () => {
+  for (const role of roles) {
+    expect(discloseFact(role, 'restricted', 'financial')).toBe(role === 'organization_admin');
+    expect(discloseFact(role, 'workspace', 'financial')).toBe(role === 'organization_admin');
+  }
+});
+
+test('drawer retrieval stays within the selected bid even for same-company record IDs', async () => {
+  const another = '44444444-4444-4444-8444-444444444444';
+  const tables = {
+    pursuits: [
+      { id, organization_id: org, opportunity_id: id },
+      { id: another, organization_id: org, opportunity_id: another },
+    ],
+    opportunities: [
+      { id, organization_id: org, title: 'Selected' },
+      { id: another, organization_id: org, title: 'Other bid' },
+    ],
+    pursuit_tasks: [
+      { id, organization_id: org, pursuit_id: id, title: 'Selected task' },
+      { id: another, organization_id: org, pursuit_id: another, title: 'Other task' },
+    ],
+  };
+  const tools = new EvidenceTools(fakeDb(tables).db, org, 'organization_admin', now);
+  await tools.restrictToContext({ kind: 'pursuit', id });
+  await expect(tools.run('get_opportunity', { id: another })).rejects.toMatchObject({
+    code: 'forbidden',
+  });
+  await expect(tools.source('task', another)).rejects.toMatchObject({ code: 'forbidden' });
+  const result = await tools.run('get_pursuit_tasks', { id: null, overdue_only: false });
+  expect(JSON.stringify(result)).toContain('Selected task');
+  expect(JSON.stringify(result)).not.toContain('Other task');
+  const companyOnly = new EvidenceTools(fakeDb(tables).db, org, 'organization_admin', now);
+  await companyOnly.restrictToContext(null);
+  expect(await companyOnly.run('search_opportunities', { query: '', added_today: false })).toEqual(
+    [],
+  );
+  await expect(companyOnly.restrictToContext({ kind: 'pursuit', id: other })).rejects.toMatchObject(
+    { code: 'forbidden' },
+  );
+});
 type Row = Record<string, unknown>;
 function fakeDb(
   tables: Record<string, Row[]>,

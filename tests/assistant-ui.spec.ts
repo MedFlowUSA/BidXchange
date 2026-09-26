@@ -1,38 +1,32 @@
 import { test, expect } from '@playwright/test';
-test('fictional assistant is interactive without paid requests or real tenant data', async ({
+test('demo drawer offers general questions without tenant API requests or workspace records', async ({
   page,
 }) => {
-  let paid = 0;
+  let tenantCalls = 0;
   page.on('request', (r) => {
-    if (r.url().endsWith('/api/assistant')) paid++;
+    if (r.url().endsWith('/api/assistant')) tenantCalls++;
+  });
+  await page.route('**/api/demo-assistant', (r) => {
+    if (r.request().method() === 'GET') return r.fulfill({ json: { available: true } });
+    expect(Object.keys(r.request().postDataJSON()).sort()).toEqual(['prompt', 'requestId']);
+    return r.fulfill({ json: { answer: 'General sample explanation.' } });
   });
   await page.goto('/assistant?workspace=demo');
-  await expect(
-    page.getByRole('heading', { name: 'BidBuddy', level: 1, exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole('button', {
-      name: 'What company information needs human review for Apex Energy Demo?',
-    })
-    .click();
-  await expect(page.getByLabel('Ask about Apex Energy Demo')).toHaveValue(/Apex Energy Demo/);
-  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
-  await expect(page.getByRole('article', { name: 'BidBuddy answer' })).toContainText(
-    'predefined fictional answer',
+  const drawer = page.getByRole('dialog', { name: 'BidBuddy', exact: true });
+  await expect(drawer).toBeVisible();
+  await drawer.getByRole('button', { name: 'Explain how a bid bond works.', exact: true }).click();
+  await drawer.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(drawer.getByRole('article', { name: 'AI answer' })).toContainText(
+    'General sample explanation.',
   );
-  await expect(
-    page.getByRole('link', { name: 'Apex Energy Demo opportunities', exact: true }),
-  ).toHaveAttribute('href', '/opportunities?workspace=demo');
-  await page.getByRole('button', { name: 'Helpful', exact: true }).click();
-  await expect(page.getByText('Fictional feedback selected; nothing was sent.')).toBeVisible();
-  expect(paid).toBe(0);
-  await expect(page.locator('main')).not.toContainText('GES');
+  await expect(drawer).toContainText('cannot access workspace data or live websites');
+  expect(tenantCalls).toBe(0);
+  await expect(drawer).not.toContainText('Green Energy Solutions');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.getByRole('button', { name: 'New conversation', exact: true }).focus();
-  await page.keyboard.press('Enter');
-  await expect(page.getByLabel('Ask about Apex Energy Demo')).toHaveValue('');
+  await drawer.getByRole('button', { name: 'Clear answer', exact: true }).click();
+  await expect(drawer.getByRole('article')).toHaveCount(0);
   await page.reload();
-  await expect(page.getByRole('article', { name: 'BidBuddy answer' })).toHaveCount(0);
+  await expect(drawer.getByRole('article')).toHaveCount(0);
 });
 test('assistant and citation routes reject anonymous access; API rejects forged organization and roles', async ({
   page,

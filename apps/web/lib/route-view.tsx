@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { z } from 'zod';
 import Workspace from '../components/workspace';
 import TenantWorkspace from '../components/tenant-workspace';
@@ -19,6 +19,7 @@ export async function renderWorkspace(
   if (query.workspace && query.workspace !== 'demo') notFound();
   if (query.workspace === 'demo') {
     if (query.organization) notFound();
+    if (page === 'Today' && query.view !== 'today') redirect('/pursuits/DEMO-001?workspace=demo');
     if (recordId && !/^DEMO-[a-zA-Z0-9-]{1,50}$/.test(recordId)) notFound();
     const account = await accountContext();
     return (
@@ -84,7 +85,7 @@ export async function renderWorkspace(
                 </Link>
               </p>
             )}
-            <Link href="/dashboard?workspace=demo">Explore the fictional demo →</Link>
+            <Link href="/pursuits/DEMO-001?workspace=demo">Explore the fictional demo →</Link>
           </section>
         </main>
       </AppShell>

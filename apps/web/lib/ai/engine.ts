@@ -104,6 +104,7 @@ export async function runAssistant(
         stream: true,
         instructions:
           SYSTEM_POLICY +
+          '\nThis drawer is limited to the current Passport and the explicitly selected bid, if any. Do not look up other bids or imply a company-wide opportunity search. Without a selected bid, answer from Passport records only; suggest opening a bid for its requirements and tasks.' +
           (review
             ? '\nFor this request, the explicitly selected review set replaces the single-excerpt scope described above. Selected requirement metadata is already loaded; use the shared excerpts, company record tools and existing task records.\n' +
               REVIEW_POLICY

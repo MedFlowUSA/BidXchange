@@ -1,6 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { AiError, FEED_NOTICE, LIMITS, type Evidence, type Role } from './contracts';
+import {
+  AiError,
+  FEED_NOTICE,
+  LIMITS,
+  type Evidence,
+  type Role,
+  type AssistantContext,
+} from './contracts';
 import {
   discloseFact,
   displayDate,
@@ -73,6 +80,7 @@ function provenance(r: Row) {
 export class EvidenceTools {
   readonly evidence = new Map<string, Evidence>();
   private remaining: number;
+  private selectedScope?: { pursuit?: string; opportunity?: string };
   constructor(
     private db: SupabaseClient,
     readonly org: string,
@@ -83,7 +91,47 @@ export class EvidenceTools {
     this.remaining = recordLimit;
   }
   private query(table: string, fields: string) {
-    return this.db.from(table).select(fields).eq('organization_id', this.org);
+    let query = this.db.from(table).select(fields).eq('organization_id', this.org);
+    if (this.selectedScope) {
+      const none = '00000000-0000-0000-0000-000000000000';
+      if (table === 'opportunities') query = query.eq('id', this.selectedScope.opportunity ?? none);
+      if (table === 'pursuits') query = query.eq('id', this.selectedScope.pursuit ?? none);
+      if (
+        [
+          'pursuit_requirements',
+          'pursuit_tasks',
+          'pursuit_decision_history',
+          'response_release_versions',
+        ].includes(table)
+      )
+        query = query.eq('pursuit_id', this.selectedScope.pursuit ?? none);
+      if (table === 'audit_events')
+        query = query.eq('entity_id', this.selectedScope.opportunity ?? none);
+    }
+    return query;
+  }
+  /** Drawer scope is a server-validated selection, never model-supplied navigation. */
+  async restrictToContext(context?: AssistantContext | null) {
+    this.selectedScope = {};
+    if (!context) return;
+    const table = context.kind === 'pursuit' ? 'pursuits' : 'opportunities';
+    const { data, error } = await this.db
+      .from(table)
+      .select(context.kind === 'pursuit' ? 'id,opportunity_id' : 'id')
+      .eq('organization_id', this.org)
+      .eq('id', context.id)
+      .limit(1);
+    if (error) throw new AiError('service_unavailable', 503);
+    const parsed = z
+      .object({ id: z.uuid(), opportunity_id: z.uuid().optional() })
+      .safeParse(data?.[0]);
+    if (!parsed.success || (context.kind === 'pursuit' && !parsed.data.opportunity_id))
+      throw new AiError('forbidden', 403);
+    const row = parsed.data;
+    this.selectedScope =
+      context.kind === 'pursuit'
+        ? { pursuit: context.id, opportunity: row.opportunity_id }
+        : { opportunity: context.id };
   }
   private async rows(query: PromiseLike<{ data: unknown; error: unknown }>) {
     const { data, error } = await query;
