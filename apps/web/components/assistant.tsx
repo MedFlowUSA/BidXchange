@@ -7,6 +7,8 @@ import { evidenceLabel, evidenceValue } from '../lib/ai/display';
 import { responseCommand } from '../lib/response-command';
 import { createAssistantDocument } from '../app/assistant-document-actions';
 import { workspaceHref } from '../lib/routes';
+import type { TenantData } from '../lib/tenant-types';
+import AssistantTaskPlan from './assistant-task-plan';
 type Conversation = {
   id: string;
   question: string;
@@ -24,6 +26,7 @@ export default function Assistant({
   demoEnabled = false,
   expanded = false,
   hasOpportunities = false,
+  planningData,
 }: {
   organizationId?: string;
   name: string;
@@ -32,6 +35,7 @@ export default function Assistant({
   demoEnabled?: boolean;
   expanded?: boolean;
   hasOpportunities?: boolean;
+  planningData?: TenantData;
 }) {
   const [open, setOpen] = useState(expanded),
     [available, setAvailable] = useState(demo && demoEnabled),
@@ -50,6 +54,14 @@ export default function Assistant({
   const actionLock = useRef(false);
   const documentRequest = useRef<{ question: string; id: string } | null>(null);
   const selected = conversations.find((c) => c.id === active);
+  useEffect(() => {
+    const reveal = () => {
+      if (location.hash === '#bid-assistant') setOpen(true);
+    };
+    reveal();
+    window.addEventListener('hashchange', reveal);
+    return () => window.removeEventListener('hashchange', reveal);
+  }, []);
   const questions =
     !demo && mode === 'general'
       ? [
@@ -59,7 +71,7 @@ export default function Assistant({
         ]
       : context?.kind === 'pursuit'
         ? [
-            'Summarize this pursuit.',
+            'Help me plan this bid. Explain what needs review and propose follow-up tasks.',
             'What tasks are overdue?',
             'Which response approvals are current, and what submissions have users recorded for this pursuit?',
           ]
@@ -315,7 +327,7 @@ export default function Assistant({
     }
   }
   return (
-    <section className={`panel ${styles.panel}`} aria-label="Ask BidXchange">
+    <section id="bid-assistant" className={`panel ${styles.panel}`} aria-label="Ask BidXchange">
       <div className={styles.heading}>
         <div>
           <div className="eyebrow">ASK BIDXCHANGE</div>
@@ -569,6 +581,18 @@ export default function Assistant({
                   </ul>
                   {selected.answer.nextAction && <h3>Recommended next action</h3>}
                   <p>{selected.answer.nextAction}</p>
+                  {!demo &&
+                    mode === 'workspace' &&
+                    selected.mode === 'workspace' &&
+                    context?.kind === 'pursuit' &&
+                    planningData && (
+                      <AssistantTaskPlan
+                        key={selected.id}
+                        answer={selected.answer}
+                        data={planningData}
+                        pursuitId={context.id}
+                      />
+                    )}
                   {selected.answer.citations.length > 0 && <h3>Sources</h3>}
                   <ul>
                     {selected.answer.citations.map((c) => (

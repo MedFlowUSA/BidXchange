@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { build } from 'esbuild';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { readConversation } from '../apps/web/lib/ai/conversation';
 
 test('assistant route replays authenticated history, rejects foreign scope before paid work and checks final access', async () => {
   const fixture = {
@@ -11,6 +12,23 @@ test('assistant route replays authenticated history, rejects foreign scope befor
     reservations: 0,
     revokeAfterModel: false,
     histories: [] as unknown[],
+    planning: false,
+    record: {
+      citation: {
+        key: 'pursuit:22222222-2222-4222-8222-222222222222',
+        id: '22222222-2222-4222-8222-222222222222',
+        type: 'pursuit',
+        title: 'Synthetic pursuit',
+        updatedAt: '2026-09-25',
+        sourceDate: null,
+        status: 'pending',
+        href: null,
+      },
+      fields: {
+        workspaceRoute:
+          '/pursuits/22222222-2222-4222-8222-222222222222?organization=11111111-1111-4111-8111-111111111111',
+      },
+    },
     db: {
       async rpc() {
         fixture.reservations++;
@@ -53,11 +71,11 @@ test('assistant route replays authenticated history, rejects foreign scope befor
               {
                 config: `export const aiConfig=()=>({key:'synthetic-secret',model:'test',orgLimit:10,userLimit:10});`,
                 server: `export const requireSameOrigin=()=>{}; export async function authorizeAi(){return {user:{id:fixture.user},role:fixture.role,db:fixture.db};}`,
-                tools: `export class EvidenceTools { evidence=new Map(); async run(){} }`,
+                tools: `export class EvidenceTools { evidence=new Map(); async run(){if(fixture.planning)this.evidence.set(fixture.record.citation.key,fixture.record);} async source(){return fixture.record;} }`,
                 engine: `export async function runAssistant(a,b,c,d,e,f,g,authorize,mode,history){
           await authorize(); fixture.histories.push(history);
           if(fixture.revokeAfterModel) fixture.user='revoked-user';
-          return {answer:{answer:[{text:'Useful suggested plan.',sources:[]}],risks:[],nextAction:'',citations:[],evidence:[],notice:'AI analysis'},inputTokens:1,outputTokens:1};
+          return {answer:{answer:[{text:'Useful suggested plan.',sources:[]}],risks:[],nextAction:'',citations:[],evidence:[],notice:'AI analysis',...(fixture.planning?{proposedTasks:[{title:'Review pursuit',explanation:'Review the saved record.',sources:[fixture.record.citation.key],requirementKey:null}]}:{})},inputTokens:1,outputTokens:1};
         }`,
                 openai: `export default class OpenAI { static RateLimitError=class extends Error{}; static APIConnectionTimeoutError=class extends Error{}; }`,
               } as Record<string, string>
@@ -83,7 +101,7 @@ test('assistant route replays authenticated history, rejects foreign scope befor
           organizationId: '11111111-1111-4111-8111-111111111111',
           requestId: crypto.randomUUID(),
           prompt: 'Help me plan',
-          context: null,
+          context: fixture.planning ? { kind: 'pursuit', id: fixture.record.citation.id } : null,
           mode: 'workspace',
           continuation,
         }),
@@ -110,4 +128,24 @@ test('assistant route replays authenticated history, rejects foreign scope befor
   const rejected = JSON.parse((await revoked.text()).trim());
   expect(rejected).toMatchObject({ type: 'error', code: 'forbidden' });
   expect(rejected.answer).toBeUndefined();
+  fixture.user = 'user-a';
+  fixture.revokeAfterModel = false;
+  fixture.planning = true;
+  const planned = JSON.parse((await (await post()).text()).trim());
+  expect(planned.type).toBe('answer');
+  const planScope = {
+    user: fixture.user,
+    organization: '11111111-1111-4111-8111-111111111111',
+    role: fixture.role,
+    mode: 'workspace',
+    context: 'task-plan:' + JSON.stringify({ kind: 'pursuit', id: fixture.record.citation.id }),
+  };
+  expect(
+    readConversation(planned.answer.actionToken, 'synthetic-secret', planScope).refs.map(
+      (r) => r.id,
+    ),
+  ).toEqual([fixture.record.citation.id]);
+  expect(() =>
+    readConversation(planned.answer.continuation, 'synthetic-secret', planScope),
+  ).toThrow();
 });

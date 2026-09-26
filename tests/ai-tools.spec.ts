@@ -199,6 +199,75 @@ const opportunity = {
   deadline_timezone: 'America/Los_Angeles',
   status: 'inbox',
 };
+
+test('pursuit planning retrieves only scoped requirement metadata and returns cited unsaved proposals', async () => {
+  const { db, queries } = fakeDb({
+    pursuits: [
+      {
+        id,
+        organization_id: org,
+        opportunity_id: id,
+        title: 'Fictional pursuit',
+        decision: 'pending',
+      },
+    ],
+    pursuit_requirements: [
+      {
+        id,
+        organization_id: org,
+        pursuit_id: id,
+        status: 'needs_review',
+        requirement: 'PRIVATE CLAUSE',
+        citation: 'PRIVATE SOURCE',
+      },
+      { id: other, organization_id: org, pursuit_id: other, status: 'blocked' },
+    ],
+  });
+  const output = {
+    answer: [
+      { text: 'A recorded requirement needs human review.', sources: [`requirement:${id}`] },
+    ],
+    risks: [],
+    nextAction: 'Review the proposed follow-up.',
+    proposedTasks: [
+      {
+        title: 'Review requirement with its source',
+        explanation:
+          'The saved status needs review; check the actual wording before deciding what evidence is needed.',
+        sources: [`requirement:${id}`],
+        requirementKey: `requirement:${id}`,
+      },
+    ],
+  };
+  const response = {
+    output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(output) }] }],
+    usage: { input_tokens: 10, output_tokens: 20 },
+  };
+  const tools = new EvidenceTools(db, org, 'organization_admin', now);
+  const result = await runAssistant(
+    model([call('get_pursuit_requirements', { id }), response]),
+    'configured-test-model',
+    'Plan the bid',
+    { kind: 'pursuit', id },
+    tools,
+    new AbortController().signal,
+    () => {},
+    async () => {},
+  );
+  expect(result.answer.proposedTasks).toEqual(output.proposedTasks);
+  expect(result.answer.citations.map((c) => c.key)).toContain(`requirement:${id}`);
+  expect(JSON.stringify([...tools.evidence.values()])).not.toContain('PRIVATE');
+  expect(
+    queries
+      .filter((q) => q.table === 'pursuit_requirements')
+      .every(
+        (q) =>
+          q.scope === org &&
+          !q.fields.split(',').includes('requirement') &&
+          !q.fields.split(',').includes('citation'),
+      ),
+  ).toBe(true);
+});
 test('request schemas reject browser roles, demo access and oversized prompts', () => {
   const base = { organizationId: org, requestId: id, prompt: 'Review', context: null };
   expect(requestSchema.safeParse(base).success).toBe(true);

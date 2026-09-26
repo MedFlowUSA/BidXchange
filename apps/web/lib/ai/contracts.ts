@@ -47,12 +47,26 @@ export const answerSchema = z
   })
   .strict();
 export type Answer = z.infer<typeof answerSchema> & {
+  proposedTasks?: ProposedTask[];
+  actionToken?: string;
   citations: Citation[];
   evidence: Evidence[];
   notice: string;
   recordsCheckedAt?: string;
   continuation?: string;
 };
+export const proposedTaskSchema = z
+  .object({
+    title: z.string().min(1).max(200),
+    explanation: z.string().min(1).max(600),
+    sources: z.array(z.string().min(1).max(100)).min(1).max(3),
+    requirementKey: z.string().max(100).nullable(),
+  })
+  .strict();
+export type ProposedTask = z.infer<typeof proposedTaskSchema>;
+export const planningAnswerSchema = answerSchema.extend({
+  proposedTasks: z.array(proposedTaskSchema).max(4),
+});
 export const NO_EVIDENCE =
   'I could not verify that from the records currently available to BidXchange.';
 export const FEED_NOTICE =

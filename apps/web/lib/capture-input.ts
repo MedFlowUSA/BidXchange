@@ -64,6 +64,7 @@ export const requirementInput = z
 export const taskInput = z
   .object({
     ...edit,
+    creation_id: z.uuid().optional(),
     pursuit_id: z.uuid(),
     assigned_user_id: blankUuid,
     status: z.enum(['todo', 'in_progress', 'complete']),

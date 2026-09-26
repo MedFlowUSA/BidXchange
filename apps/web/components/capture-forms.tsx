@@ -28,6 +28,7 @@ export function CaptureForm({
   fields,
   note,
   confirmSource = false,
+  confirmTask = false,
 }: {
   label: string;
   action: (state: MutationState, form: FormData) => Promise<MutationState>;
@@ -36,6 +37,7 @@ export function CaptureForm({
   fields: Field[];
   note: string;
   confirmSource?: boolean;
+  confirmTask?: boolean;
 }) {
   const [state, submit, pending] = useActionState(action, { message: '' } as MutationState);
   const [draft, setDraft] = useState(initial);
@@ -89,6 +91,13 @@ export function CaptureForm({
               <label>
                 <input type="checkbox" required /> I checked the quoted wording, its conditions and
                 citation against the original notice.
+              </label>
+            )}
+            {confirmTask && (
+              <label>
+                <input type="checkbox" name="review_confirmed" required /> I reviewed this
+                AI-proposed task, checked existing work, and chose its owner and date or left them
+                explicitly unassigned.
               </label>
             )}
             <button className="button primary" type="submit">
@@ -253,22 +262,32 @@ export function TaskForm({
   task,
   suggestedTitle,
   suggestedRequirementId,
+  suggestedNotes,
+  review,
+  action = savePursuitTask,
 }: {
   data: TenantData;
   pursuitId: string;
   task?: TenantData['tasks'][number];
   suggestedTitle?: string;
   suggestedRequirementId?: string;
+  suggestedNotes?: string;
+  review?: { token: string; creationId: string };
+  action?: (state: MutationState, form: FormData) => Promise<MutationState>;
 }) {
   return (
     <CaptureForm
-      label={task ? 'Edit task' : 'Add task'}
-      action={savePursuitTask}
+      label={review ? 'Review and save task' : task ? 'Edit task' : 'Add task'}
+      action={action}
+      confirmTask={!!review}
       hidden={{
         organization_id: data.organization.id,
         pursuit_id: pursuitId,
         record_id: task?.id ?? '',
         updated_at: task?.updated_at ?? '',
+        ...(review
+          ? { action_token: review.token, creation_id: review.creationId, status: 'todo' }
+          : {}),
       }}
       initial={{
         title: task?.title ?? suggestedTitle ?? '',
@@ -278,7 +297,7 @@ export function TaskForm({
         due_timezone: task?.due_timezone ?? data.organization.default_timezone,
         requirement_id: task?.requirement_id ?? suggestedRequirementId ?? '',
         priority: task?.priority ?? 'normal',
-        notes: task?.notes ?? '',
+        notes: task?.notes ?? suggestedNotes ?? '',
       }}
       note={`Assign a member and track the next action. ${deadlineNote}`}
       fields={[
@@ -337,7 +356,7 @@ export function TaskForm({
               },
             ]
           : []),
-      ]}
+      ].filter((field) => !review || field.name !== 'status')}
     />
   );
 }

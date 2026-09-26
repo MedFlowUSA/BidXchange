@@ -67,7 +67,14 @@ export function sealConversation(
   for (const e of records)
     refs.set(e.citation.key, { type: e.citation.type, id: e.citation.id, hash: evidenceHash(e) });
   if (refs.size > 16) return undefined;
-  const prose = [...answer.answer.map((a) => a.text), ...answer.risks, answer.nextAction]
+  const prose = [
+    ...answer.answer.map((a) => a.text),
+    ...answer.risks,
+    answer.nextAction,
+    ...(answer.proposedTasks ?? []).map(
+      (task) => `Unsaved task suggestion: ${task.title}. ${task.explanation}`,
+    ),
+  ]
     .filter(Boolean)
     .join('\n\n');
   const turns = [...memory.turns, { question, answer: prose }].slice(-4);

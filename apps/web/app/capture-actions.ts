@@ -184,7 +184,7 @@ export async function savePursuitTask(
   if (!parsed.success)
     return { message: parsed.error.issues[0]?.message ?? 'Check the task fields.' };
   try {
-    const { organization_id, record_id, updated_at, ...input } = parsed.data;
+    const { organization_id, record_id, updated_at, creation_id, ...input } = parsed.data;
     const db = await captureAccess(organization_id);
     const parent = await db
       .from('pursuits')
@@ -228,14 +228,30 @@ export async function savePursuitTask(
           .select('id')
       : await db
           .from('pursuit_tasks')
-          .insert({ ...values, organization_id })
+          .insert({ ...values, organization_id, ...(creation_id ? { id: creation_id } : {}) })
           .select('id');
+    if (result.error?.code === '23505' && creation_id && !record_id) {
+      const existing = await db
+        .from('pursuit_tasks')
+        .select('id')
+        .eq('organization_id', organization_id)
+        .eq('pursuit_id', input.pursuit_id)
+        .eq('id', creation_id)
+        .maybeSingle();
+      if (!existing.error && existing.data)
+        return {
+          success: true,
+          message: 'This task was already saved. Review it in the pursuit.',
+          href: `/pursuits/${input.pursuit_id}?organization=${organization_id}#task-${existing.data.id}`,
+        };
+    }
     if (result.error) return unavailable;
     if (!result.data?.length) return changed;
     revalidatePath('/', 'layout');
     return {
       success: true,
       message: 'Task saved. Task completion does not approve a bid or submit a proposal.',
+      href: `/pursuits/${input.pursuit_id}?organization=${organization_id}#task-${result.data[0].id}`,
     };
   } catch {
     return unavailable;
