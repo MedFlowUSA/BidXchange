@@ -5,7 +5,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
 }) => {
   await page.goto('/');
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toContainText(
-    'Bid review for contractors who do the work',
+    'Bring the bid notice, company records and review checklist together.',
   );
   await expect(page.locator('#capabilities')).toContainText('before committing estimating time');
   await expect(page.locator('#workflow')).toContainText('BidXchange does not submit bids for you.');
@@ -37,7 +37,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
   );
   await expect(page.locator('#questions')).toContainText('does not guarantee eligibility');
   await expect(page.locator('#request-demo')).toContainText(
-    'Bring one real notice. We will walk the review with you.',
+    'See how to review your first bid in BidXchange.',
   );
   await expect(page.locator('#request-demo')).toContainText('Do not email confidential records.');
   for (const href of ['#capabilities', '#workflow', '#questions', '#request-demo']) {
@@ -53,7 +53,7 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Review the requirements. Prepare your bid in one place.',
+    'See what the bid requires. Know what your company still needs.',
   );
   await expect(
     page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
@@ -63,7 +63,9 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.getByRole('link', { name: 'Open Workspace', exact: true })).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText('Green Energy Solutions');
   await expect(
-    page.getByRole('heading', { name: 'Put your bid effort where it counts.' }),
+    page.getByRole('heading', {
+      name: 'A requirement checklist, a task list and a response draft.',
+    }),
   ).toBeVisible();
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
