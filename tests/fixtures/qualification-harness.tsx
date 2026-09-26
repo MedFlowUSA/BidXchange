@@ -33,6 +33,10 @@ if (new URL(location.href).searchParams.has('deadlines')) {
     due_timezone: 'UTC',
   });
 }
+if (new URL(location.href).searchParams.has('calendar-empty')) {
+  data.tasks = [];
+  data.opportunities[0].official_deadline = null;
+}
 createRoot(document.getElementById('root')!).render(
   <>
     <ContractReadinessBrief data={qualificationData(role)} pursuitId={pursuit} />

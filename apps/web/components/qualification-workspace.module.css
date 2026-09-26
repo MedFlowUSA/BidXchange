@@ -82,6 +82,35 @@
 .actions p {
   margin: 5px 0;
 }
+.calendar {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border: 1px solid #d7e2f2;
+  border-radius: 10px;
+  background: #f6f9ff;
+}
+.calendar summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #173e9d;
+}
+.calendar p {
+  margin: 14px 0;
+  line-height: 1.65;
+  font-size: 13px;
+}
+.calendar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.calendar summary:focus-visible,
+.calendar button:focus-visible,
+.calendar input:focus-visible {
+  outline: 3px solid #3459cc;
+  outline-offset: 3px;
+}
 @media (max-width: 600px) {
   .metrics {
     grid-template-columns: 1fr;
