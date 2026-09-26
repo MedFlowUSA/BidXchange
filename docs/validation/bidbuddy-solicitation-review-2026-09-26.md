@@ -26,7 +26,21 @@ Each candidate opens the existing editable Requirements Register form. A person 
 - `git diff --check` — passed.
 - Desktop and mobile screenshots inspected. Source preview, consent, editable candidates and no automatic save verified in browser tests.
 
-Live provider acceptance and deployment identifiers will be recorded after rollout; these local results do not establish production acceptance.
+## Production acceptance
+
+PR [19](https://github.com/MedFlowUSA/BidXchange/pull/19) delivered the feature. Live acceptance then exposed a phone overflow in the existing register: long source hashes and amendment fields exceeded their containers. PR [20](https://github.com/MedFlowUSA/BidXchange/pull/20) corrected wrapping and grid minimum widths. Neither change required a migration.
+
+- Application commit tested: `3fb3a83`.
+- Vercel deployment: `dpl_CVSmNVvgKfW4CTayzxyJWxkFjSQc`, Ready, production; alias `https://bidxapp.vercel.app` confirmed.
+- `npx playwright test tests/amendment-preview.spec.ts tests/assistant-stream.spec.ts --project=desktop --reporter=line` — **24 passed** after the correction, including the new saved-citation/mobile regression. These overlap the earlier 75 tests and are not 99 distinct tests.
+- Typecheck, lint, build, secret scan (644 files) and diff check passed again after the CSS correction.
+- `node .tmp/solicitation-live.mjs` — **passed at 2026-09-26T22:06:26Z**, using the real production AI provider and an isolated fictional organization. This local acceptance script is intentionally untracked; no service credentials are persisted in it or its results.
+- Verified consent, literal quotations, source hash/line references, preserved prime/subcontractor responsibilities, cited expired insurance, mandatory job walk, rejection of an embedded instruction, no automatic requirement/task writes, and absence of continuation/checkpoint/action tokens.
+- Explicit human review saved one candidate through the actual register as `needs_review` with its source lineage. Full source was absent from browser storage and saved conversations. Guest review returned 401.
+- Desktop (1440px) and mobile (390px) production screenshots inspected; no horizontal page overflow after saving.
+- Fictional test organizations/AI were disabled and test logins blocked; audit history retained. No customer records changed.
+
+Earlier live runs identified two issues before final acceptance: the test originally expected a transient save message after the parent instead refreshed to “already in the register”; that assertion was corrected after confirming the successful database write. The subsequent mobile overflow was a real UI defect and was fixed in PR 20. The complete acceptance script then passed without skips.
 
 ## Manual acceptance
 
