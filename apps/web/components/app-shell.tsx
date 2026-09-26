@@ -112,7 +112,7 @@ export default function AppShell({
                 key={label}
               >
                 <Icon size={19} />
-                <span>{label}</span>
+                <span>{label === 'Assistant' ? 'BidBuddy' : label}</span>
               </Link>
             );
           })}
@@ -210,7 +210,7 @@ export default function AppShell({
             </button>
             <span className="active-workspace">{name}</span>
             <ChevronRight size={14} />
-            <b>{page}</b>
+            <b>{page === 'Assistant' ? 'BidBuddy' : page}</b>
           </div>
           <div className="topbar-right">
             <button

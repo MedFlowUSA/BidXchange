@@ -19,7 +19,7 @@ export default async function Page({ searchParams }: { searchParams: RouteQuery 
     return (
       <main>
         <h1>Choose an organization</h1>
-        <Link href="/assistant">Open company assistant</Link>
+        <Link href="/assistant">Open BidBuddy</Link>
       </main>
     );
   const available = await account

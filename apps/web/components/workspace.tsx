@@ -339,7 +339,13 @@ export default function Workspace({
         <div className="page-heading">
           <div>
             <div className="eyebrow">YOUR GOVERNMENT CONTRACTING WORKSPACE</div>
-            <h1>{page === 'Today' ? 'A clear path to your next pursuit.' : page}</h1>
+            <h1>
+              {page === 'Today'
+                ? 'A clear path to your next pursuit.'
+                : page === 'Assistant'
+                  ? 'BidBuddy'
+                  : page}
+            </h1>
             <p>
               {
                 (

@@ -353,7 +353,9 @@ export default function TenantWorkspace({
                   ? (pursuit?.title ?? opportunity?.title)
                   : page === 'Today'
                     ? 'Your workspace starts with the facts.'
-                    : page}
+                    : page === 'Assistant'
+                      ? 'BidBuddy'
+                      : page}
               </h1>
               <p>
                 {recordId
@@ -686,7 +688,7 @@ export default function TenantWorkspace({
                 with available records.
               </p>
               <Link className="button primary" href={`/assistant/research?organization=${org.id}`}>
-                Open Opportunity Research Assistant
+                Open BidBuddy opportunity research
               </Link>
             </section>
             <Assistant

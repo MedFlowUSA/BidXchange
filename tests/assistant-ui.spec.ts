@@ -7,13 +7,17 @@ test('fictional assistant is interactive without paid requests or real tenant da
     if (r.url().endsWith('/api/assistant')) paid++;
   });
   await page.goto('/assistant?workspace=demo');
-  await expect(page.getByRole('heading', { name: 'Assistant', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'BidBuddy', level: 1, exact: true }),
+  ).toBeVisible();
   await page
-    .getByRole('button', { name: 'What company information needs human review for Apex Energy Demo?' })
+    .getByRole('button', {
+      name: 'What company information needs human review for Apex Energy Demo?',
+    })
     .click();
   await expect(page.getByLabel('Ask about Apex Energy Demo')).toHaveValue(/Apex Energy Demo/);
-  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
-  await expect(page.getByRole('article', { name: 'Assistant answer' })).toContainText(
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(page.getByRole('article', { name: 'BidBuddy answer' })).toContainText(
     'predefined fictional answer',
   );
   await expect(
@@ -28,7 +32,7 @@ test('fictional assistant is interactive without paid requests or real tenant da
   await page.keyboard.press('Enter');
   await expect(page.getByLabel('Ask about Apex Energy Demo')).toHaveValue('');
   await page.reload();
-  await expect(page.getByRole('article', { name: 'Assistant answer' })).toHaveCount(0);
+  await expect(page.getByRole('article', { name: 'BidBuddy answer' })).toHaveCount(0);
 });
 test('assistant and citation routes reject anonymous access; API rejects forged organization and roles', async ({
   page,

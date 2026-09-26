@@ -117,7 +117,7 @@ export default function OpportunityResearch({
   return (
     <div className={styles.workspace}>
       <section className="panel">
-        <div className="eyebrow">Opportunity research · {name}</div>
+        <div className="eyebrow">BidBuddy opportunity research · {name}</div>
         <h1>Find the next opportunity worth reviewing.</h1>
         <p>
           Ask a question, then refine the filters in a follow-up. Results come from saved workspace
@@ -125,7 +125,7 @@ export default function OpportunityResearch({
           current human-attested evidence visible to your role.
         </p>
         <nav className={styles.links}>
-          <Link href={`/assistant?organization=${org}`}>General and company assistant</Link>
+          <Link href={`/assistant?organization=${org}`}>Ask BidBuddy about your company</Link>
           <Link href={`/opportunities/registry?organization=${org}`}>
             Portals and connection status
           </Link>
