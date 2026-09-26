@@ -33,7 +33,7 @@ This audit combines scoped code review, automated browser/unit tests, isolated d
 
 ## Verification
 
-Live deployment evidence is recorded after release acceptance completes.
+Application change `ceca5c2` merged through PR #23 as `83acbff`. Production deployment `dpl_cbqT3iQBAHddsWKdQ8iomVLg9bJJ` was Ready and serving `https://bidxapp.vercel.app/` during acceptance. The follow-up commit changes only this report and a staging test selector, not application behavior.
 
 Already completed:
 
@@ -50,6 +50,19 @@ Already completed:
 - `npm run test:staging` — 5 tests passed, including migration inventory/checksum and isolated schema rehearsal. This is not a new production migration.
 - Initial full Playwright run: 330 passed, two old submission fixtures failed because they supplied an ISO string to the new native picker. Those fixtures were corrected; final run follows below.
 - One targeted run had a local test-server startup timeout; starting the same test server explicitly resolved startup. No app behavior was inferred from the timeout.
+
+Live acceptance: `node .tmp/app-audit-live.mjs` — final run passed at **2026-09-26T23:07:25.587Z**. Real authenticated Server Actions and persisted Supabase records confirmed:
+
+- A nonexistent Pacific daylight-saving clock time blocks saving.
+- A Pacific deadline saves at the correct UTC instant from a browser configured for Tokyo.
+- Editing the buyer leaves the saved deadline unchanged.
+- Choosing the second occurrence of a repeated hour persists the intended instant, task owner, urgent priority and notes.
+- Task instructions remain readable at 390px without horizontal overflow; the phone screenshot was visually reviewed.
+- A separate viewer account can read instructions and the company profile but receives no task-edit controls.
+- An unauthenticated export request returns no workspace data.
+- Fictional workspace suspended, AI disabled and both test logins blocked after completion.
+
+Earlier acceptance attempts selected hidden template forms or matched instructions both in the visible paragraph and hidden editor. Selectors were narrowed to the visible Tasks section and paragraph; the staging helper received the same correction (`node --check scripts/staging/capture-hosted.mjs` passed). An attempted fixture role change was correctly rejected by the last-administrator guard; final acceptance used a separate fictional viewer instead. These attempts required no production application or permission changes. This pass did not run the separate hosted staging script or make an external buyer submission.
 
 ## Remaining limitations and next implementation
 

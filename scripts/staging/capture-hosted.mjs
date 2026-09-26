@@ -85,8 +85,11 @@ try {
   ]);
   const page = await context.newPage();
   const open = async (page, label) => {
-    await page.locator(`details[aria-label="${label}"] > summary`).first().click();
-    return page.locator(`form[aria-label="${label}"]`).first();
+    const editor = page
+      .locator(`${label === 'Add task' ? '#pursuit-tasks > ' : ''}details[aria-label="${label}"]`)
+      .first();
+    await editor.locator('summary').first().click();
+    return editor.locator(`form[aria-label="${label}"]`).first();
   };
   const save = async (form, label, message) => {
     await form.getByRole('button', { name: label, exact: true }).click();
