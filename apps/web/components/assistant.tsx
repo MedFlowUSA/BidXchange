@@ -16,6 +16,7 @@ import { workspaceHref } from '../lib/routes';
 import type { TenantData } from '../lib/tenant-types';
 import AssistantTaskPlan from './assistant-task-plan';
 import AssistantSavedConversation from './assistant-saved-conversation';
+import AssistantSolicitationReview from './assistant-solicitation-review';
 import {
   RequirementReviewSelection,
   RequirementReviewResult,
@@ -483,6 +484,19 @@ export default function Assistant({
                 : 'AI is unavailable for this workspace. An operator must configure the model, credentials, usage limits and organization activation.'}
             </p>
           ) : null}
+          {canShare &&
+            available &&
+            planningData &&
+            context?.kind === 'pursuit' &&
+            mode === 'workspace' && (
+              <AssistantSolicitationReview
+                key={`source:${organizationId}:${context.id}:${savedSession}`}
+                data={planningData}
+                pursuitId={context.id}
+                disabled={pending || savedBusy}
+                onBusy={setSavedBusy}
+              />
+            )}
           <div className={styles.layout}>
             <aside aria-label="Conversations">
               <button

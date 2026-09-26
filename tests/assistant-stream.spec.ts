@@ -5,6 +5,108 @@ let js = '',
   css = '';
 
 for (const width of [390, 1440])
+  test(`solicitation text review requires sharing and a human save at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    let requests = 0;
+    const quote = 'The prime must collect current DIR records from all subcontractors.';
+    await page.route('**/api/assistant', (r) => {
+      const body = r.request().postDataJSON();
+      requests++;
+      expect(body.solicitation.consent).toBe(true);
+      expect(body.solicitation.text).toContain(quote);
+      expect(body.continuation).toBeUndefined();
+      expect(body.sharedRequirements).toBeUndefined();
+      return r.fulfill({
+        contentType: 'application/x-ndjson',
+        body:
+          JSON.stringify({
+            type: 'answer',
+            answer: {
+              answer: [],
+              risks: [],
+              nextAction: '',
+              evidence: [],
+              citations: [],
+              notice: 'AI',
+              solicitationReview: {
+                title: 'Fictional notice v1',
+                url: 'https://example.com/notice',
+                sourceHash: 'synthetic',
+                characters: 100,
+                lines: 2,
+                limitations: ['Attachments not reviewed.'],
+                candidates: [
+                  {
+                    category: 'Registration',
+                    quote,
+                    meaning: 'The prime collects current subcontractor records.',
+                    assessment: 'needs_evidence',
+                    comparison: 'No supporting records retrieved.',
+                    companySources: [],
+                    nextStep: 'Request current records.',
+                    lineStart: 2,
+                    lineEnd: 2,
+                    occurrences: 1,
+                    citation: 'Fictional notice v1; pasted line 2; AI candidate; ' + quote,
+                  },
+                ],
+              },
+            },
+          }) + '\n',
+      });
+    });
+    await mount(page);
+    await page.goto('/assistant-test?planning');
+    const panel = page
+      .locator('details')
+      .filter({
+        has: page.locator(':scope > summary').filter({ hasText: 'Review solicitation text' }),
+      })
+      .first();
+    await panel.locator(':scope > summary').click();
+    await panel.getByLabel('Notice title and version', { exact: true }).fill('Fictional notice v1');
+    await panel.getByLabel('Solicitation text', { exact: true }).fill('Fictional notice\n' + quote);
+    const review = panel.getByRole('button', { name: 'Review solicitation', exact: true });
+    await expect(review).toBeDisabled();
+    expect(requests).toBe(0);
+    await panel.getByRole('checkbox', { name: /authorized to share it with AI/ }).check();
+    await review.click();
+    const results = panel.getByRole('region', { name: 'Solicitation review results' });
+    await expect(results).toContainText('pasted lines 2');
+    await expect(results).toContainText('Attachments not reviewed');
+    const candidate = results.getByRole('article');
+    await candidate.locator('details > summary').click();
+    await expect(candidate.getByLabel('Requirement text', { exact: true })).toHaveValue(quote);
+    await expect(candidate.getByLabel('Follow-up status', { exact: true })).toHaveValue(
+      'needs_review',
+    );
+    await candidate
+      .getByRole('button', { name: 'Review and add requirement', exact: true })
+      .click();
+    await expect(candidate).not.toContainText('Requirement saved:');
+    await candidate.getByRole('checkbox', { name: /checked the quoted wording/ }).check();
+    await candidate
+      .getByRole('button', { name: 'Review and add requirement', exact: true })
+      .click();
+    await expect(candidate).toContainText('Requirement saved: Fictional notice v1');
+    expect(requests).toBe(1);
+    expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true,
+    );
+    await page.screenshot({ path: `.tmp/solicitation-review-${width}.png`, fullPage: true });
+    await panel
+      .getByRole('button', { name: 'Edit text and discard unsaved review', exact: true })
+      .click();
+    await expect(results).toHaveCount(0);
+    await expect(review).toBeDisabled();
+    await page.goto('/assistant-test?planning&viewer');
+    await expect(page.getByText('Review solicitation text', { exact: true })).toHaveCount(0);
+  });
+
+for (const width of [390, 1440])
   test(`private bid conversation save, reload, resume, follow-up and delete at ${width}px`, async ({
     page,
   }) => {

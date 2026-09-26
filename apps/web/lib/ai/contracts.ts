@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { solicitationInputSchema, type SolicitationReview } from './solicitation-contracts';
 export const roles = [
   'organization_admin',
   'executive_approver',
@@ -38,11 +39,22 @@ export const requestSchema = z
     continuation: z.string().max(70000).optional(),
     sharedRequirement: sharedRequirementSchema.optional(),
     sharedRequirements: reviewSelectionSchema.optional(),
+    solicitation: solicitationInputSchema.optional(),
   })
   .strict()
   .refine(
     (value) => !(value.sharedRequirement && value.sharedRequirements),
     'Choose one sharing mode.',
+  )
+  .refine(
+    (value) =>
+      !value.solicitation ||
+      (value.mode === 'workspace' &&
+        value.context?.kind === 'pursuit' &&
+        !value.sharedRequirement &&
+        !value.sharedRequirements &&
+        !value.continuation),
+    'Solicitation reviews need a selected bid and a fresh review.',
   );
 export type AssistantContext = z.infer<typeof contextSchema>;
 export type Citation = {
@@ -81,6 +93,7 @@ export type Answer = z.infer<typeof answerSchema> & {
   recordsCheckedAt?: string;
   continuation?: string;
   saveCheckpoint?: string;
+  solicitationReview?: SolicitationReview;
 };
 export const proposedTaskSchema = z
   .object({
@@ -123,7 +136,7 @@ export const LIMITS = {
   records: 40,
   outputTokens: 3000,
   timeoutMs: 45000,
-  bodyBytes: 80000,
+  bodyBytes: 200000,
 };
 export class AiError extends Error {
   constructor(
