@@ -80,6 +80,7 @@ export type Answer = z.infer<typeof answerSchema> & {
   notice: string;
   recordsCheckedAt?: string;
   continuation?: string;
+  saveCheckpoint?: string;
 };
 export const proposedTaskSchema = z
   .object({

@@ -166,7 +166,12 @@
       "file": "20260926003300_financial_passport_access.sql",
       "sha256": "9494919d02b32a0ca75f769585568eb743edae2bdd6dc736666da098eb97d6f9",
       "action": "include-schema"
+    },
+    {
+      "file": "20260926003400_private_bid_conversations.sql",
+      "sha256": "8464c4ab3934627d80ad85706f44068be191a67194acf74c0a14e68778536f37",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 21
+  "packageRevision": 22
 }
