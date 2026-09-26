@@ -11,7 +11,8 @@ async function navigate(page: Page, name: string) {
     await expect(page.locator('main h1')).toHaveText('Pursuits');
     return;
   }
-  const label = name === 'Company' ? 'Passport' : name === 'Opportunities' ? 'All bids' : name;
+  const label =
+    name === 'Company' ? 'Company profile' : name === 'Opportunities' ? 'All bids' : name;
   await expect(page.locator('main h1')).toBeVisible();
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
   if (await menu.isVisible()) await menu.click();

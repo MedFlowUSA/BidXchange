@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 test('direct demo routes survive refresh and browser history', async ({ page }) => {
   await page.goto('/company?workspace=demo');
-  await expect(page.getByRole('heading', { name: 'Passport', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Company profile', exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Passport', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Company profile', exact: true })).toBeVisible();
   const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
   if (await menu.isVisible()) await menu.click();
   await page
