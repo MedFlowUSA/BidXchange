@@ -801,12 +801,16 @@ export default function Assistant({
                     >
                       Copy answer
                     </button>
-                    <button className="button secondary" onClick={() => void rate('helpful')}>
-                      Helpful
-                    </button>
-                    <button className="button secondary" onClick={() => void rate('unhelpful')}>
-                      Not helpful
-                    </button>
+                    {(demo || selected.requestId) && (
+                      <>
+                        <button className="button secondary" onClick={() => void rate('helpful')}>
+                          Helpful
+                        </button>
+                        <button className="button secondary" onClick={() => void rate('unhelpful')}>
+                          Not helpful
+                        </button>
+                      </>
+                    )}
                   </div>
                   <p role="status">{feedback}</p>
                 </article>
