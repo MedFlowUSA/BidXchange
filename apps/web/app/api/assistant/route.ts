@@ -17,6 +17,7 @@ import {
   readSharedRequirement,
   readSharedRequirements,
   sharingContext,
+  canShareRequirement,
 } from '../../../lib/ai/requirement-sharing';
 import {
   readConversation,
@@ -34,9 +35,11 @@ export async function POST(request: Request) {
     if (!parsed.success) throw new AiError('invalid_request');
     const body = parsed.data;
     const account = await authorizeAi(body.organizationId);
+    if (body.solicitation && !canShareRequirement(account.role))
+      throw new AiError('forbidden', 403);
     const config = aiConfig();
     if (!config) throw new AiError('unavailable', 503);
-    const recordLimit = body.sharedRequirements ? 80 : LIMITS.records;
+    const recordLimit = body.sharedRequirements || body.solicitation ? 80 : LIMITS.records;
     const evidence = new EvidenceTools(
       account.db,
       body.organizationId,
@@ -90,7 +93,9 @@ export async function POST(request: Request) {
           '|' +
           body.mode +
           '|' +
-          (body.continuation ?? ''),
+          (body.continuation ?? '') +
+          '|' +
+          JSON.stringify(body.solicitation ?? null),
       )
       .digest('hex');
     const { data: reservation, error } = await account.db.rpc('reserve_ai_request', {
@@ -141,6 +146,7 @@ export async function POST(request: Request) {
             body.mode,
             memory.turns,
             shared,
+            body.solicitation,
           );
           // Recheck citations against current RLS/classification before releasing any evidence.
           const current = new EvidenceTools(
@@ -189,15 +195,12 @@ export async function POST(request: Request) {
             (item) => records.find((r) => r.citation.key === item.citation.key) ?? item,
           );
           result.answer.citations = result.answer.evidence.map((item) => item.citation);
-          result.answer.continuation = sealConversation(
-            memory,
-            config.key,
-            body.prompt,
-            result.answer,
-            records,
-          );
+          result.answer.continuation = body.solicitation
+            ? undefined
+            : sealConversation(memory, config.key, body.prompt, result.answer, records);
           if (
             body.mode === 'workspace' &&
+            !body.solicitation &&
             body.context?.kind === 'pursuit' &&
             result.answer.proposedTasks?.length
           ) {

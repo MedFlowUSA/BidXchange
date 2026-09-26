@@ -126,7 +126,7 @@ test('assistant route replays authenticated history, rejects foreign scope befor
     createRequire(path.resolve('package.json')),
     fixture,
   );
-  const post = (continuation?: string) =>
+  const post = (continuation?: string, extra: Record<string, unknown> = {}) =>
     compiled.exports.POST(
       new Request('https://bidxapp.vercel.app/api/assistant', {
         method: 'POST',
@@ -158,6 +158,7 @@ test('assistant route replays authenticated history, rejects foreign scope befor
                 ],
               }
             : {}),
+          ...extra,
         }),
       }),
     );
@@ -248,4 +249,23 @@ test('assistant route replays authenticated history, rejects foreign scope befor
   const staleBatch = JSON.parse((await (await post()).text()).trim());
   expect(staleBatch).toMatchObject({ type: 'error', code: 'conversation_changed' });
   expect(staleBatch.answer).toBeUndefined();
+  fixture.batch = false;
+  fixture.shared = false;
+  fixture.changeSharedAfterModel = false;
+  fixture.role = 'viewer';
+  const solicitation = {
+    title: 'Fictional notice',
+    url: '',
+    text: 'The bidder must provide a current license.',
+    consent: true,
+  };
+  const beforeSource = fixture.reservations;
+  expect((await post(undefined, { solicitation })).status).toBe(403);
+  expect(fixture.reservations).toBe(beforeSource);
+  fixture.role = 'organization_admin';
+  const sourceAnswer = JSON.parse((await (await post(undefined, { solicitation })).text()).trim());
+  expect(sourceAnswer.type).toBe('answer');
+  expect(sourceAnswer.answer.continuation).toBeUndefined();
+  expect(sourceAnswer.answer.saveCheckpoint).toBeUndefined();
+  expect(sourceAnswer.answer.actionToken).toBeUndefined();
 });
