@@ -64,7 +64,7 @@ export default function CompanyPortal({
               <Building2 size={28} />
             </span>
             <div>
-              <span className={styles.eyebrow}>COMPANY PASSPORT</span>
+              <span className={styles.eyebrow}>COMPANY PROFILE</span>
               <h1>{data.organization.operating_name}</h1>
               {data.organization.legal_name !== data.organization.operating_name && (
                 <p>{data.organization.legal_name}</p>
@@ -72,9 +72,19 @@ export default function CompanyPortal({
             </div>
           </div>
           <p className={styles.intro}>
-            Maintain the company information your team needs for its next bid.
+            Your company details, services and contracting records. Keep the Passport evidence
+            current for each bid.
           </p>
           <div className={styles.quickLinks}>
+            <a href="#company-edit" className={styles.profileAction}>
+              <Building2 size={20} aria-hidden="true" />
+              <span>
+                {data.organization.role === 'organization_admin'
+                  ? 'Edit company profile'
+                  : 'View profile fields'}
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
             <a href="#company-review">
               <strong>{reviewCount}</strong>
               <span>Records to review</span>

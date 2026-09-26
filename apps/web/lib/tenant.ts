@@ -106,6 +106,13 @@ export async function loadTenant(
       .eq('organization_id', id)
       .limit(500)
       .overrideTypes<TenantData['tasks'], { merge: false }>(),
+    /^\/company(\?|$)/.test(next)
+      ? db
+          .from('company_profiles')
+          .select('id,summary,updated_at')
+          .eq('organization_id', id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
   if (results.some((r) => r.error))
     throw new Error(
@@ -129,6 +136,7 @@ export async function loadTenant(
     members: results[7].data,
     audit: results[8].data,
     tasks: results[9].data,
+    companyProfile: results[10].data,
   } as TenantData;
   if (choice.role === 'organization_admin' && /^\/(company|dashboard)(\?|$)/.test(next)) {
     const owners = await db.rpc('information_request_owners', { org: id });

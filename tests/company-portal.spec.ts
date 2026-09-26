@@ -56,6 +56,18 @@ for (const width of [1440, 390])
     await nav.getByRole('link', { name: 'Overview', exact: true }).click();
     await expect(page.getByLabel('Company draft')).not.toBeVisible();
     await expect(page.getByRole('heading', { name: 'Your company details' })).toBeVisible();
+    await expect(
+      page.getByText(
+        'Saved website overview: fictional contractor provides energy services and customer assistance.',
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'https://example.com/ (external)' }),
+    ).toHaveAttribute('rel', 'noopener noreferrer');
+    await expect(
+      page.getByRole('link', { name: 'Edit company profile', exact: true }),
+    ).toBeVisible();
     await expect(page.getByText('Evidence: needs review', { exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Review company evidence' })).not.toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
@@ -104,11 +116,25 @@ for (const width of [1440, 390])
     });
     const snapshot = page.getByRole('region', { name: 'Your company details' });
     await expect(snapshot.getByRole('link', { name: 'View profile', exact: true })).toBeVisible();
-    await expect(snapshot.getByRole('link', { name: 'Open profile section' })).toHaveCount(3);
+    await expect(snapshot.getByRole('link', { name: 'Open profile section' })).toHaveCount(5);
     await expect(snapshot.getByRole('link', { name: 'Website service claim' })).toHaveCount(0);
     await expect(
       page.getByText('Your view may exclude restricted records.', { exact: false }),
     ).toBeVisible();
     await snapshot.getByRole('link', { name: 'Open profile section' }).first().click();
     await expect(page.getByLabel('Company draft')).toBeVisible();
+    await page.goto('/company-layout-test?many#company-overview');
+    await page.addStyleTag({
+      content: bundle.outputFiles.find((f) => f.path.endsWith('.css'))!.text,
+    });
+    await page.addScriptTag({
+      content: bundle.outputFiles.find((f) => f.path.endsWith('.js'))!.text,
+    });
+    const services = page
+      .locator('article')
+      .filter({ has: page.getByRole('heading', { name: 'Work performed', exact: true }) });
+    await expect(services.getByRole('link').first()).toHaveText('Service 5');
+    await expect(services.getByRole('link', { name: 'Service 1', exact: true })).not.toBeVisible();
+    await services.locator('summary').click();
+    await expect(services.getByRole('link', { name: 'Service 1', exact: true })).toBeVisible();
   });

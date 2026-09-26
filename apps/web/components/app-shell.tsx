@@ -76,7 +76,9 @@ export default function AppShell({
   const navigation = ['Pursuits', 'Company', 'Opportunities', 'Today'];
   const displayLabel = (label: string) =>
     label === 'Company'
-      ? 'Passport'
+      ? organization
+        ? 'Company profile'
+        : 'Passport'
       : label === 'Opportunities'
         ? 'All bids'
         : label === 'Pursuits' && !organization
