@@ -12,6 +12,7 @@ import { authorizeAi, requireSameOrigin } from '../../../lib/ai/server';
 import { EvidenceTools } from '../../../lib/ai/tools';
 import { runAssistant } from '../../../lib/ai/engine';
 import { readJsonBody } from '../../../lib/ai/read-body';
+import { readSharedRequirement, sharingContext } from '../../../lib/ai/requirement-sharing';
 import {
   readConversation,
   checkConversation,
@@ -31,12 +32,20 @@ export async function POST(request: Request) {
     const config = aiConfig();
     if (!config) throw new AiError('unavailable', 503);
     const evidence = new EvidenceTools(account.db, body.organizationId, account.role);
+    const shared = await readSharedRequirement(
+      account.db,
+      body.organizationId,
+      account.role,
+      body.context,
+      body.mode,
+      body.sharedRequirement,
+    );
     const scope = {
       user: account.user.id,
       organization: body.organizationId,
       role: account.role,
       mode: body.mode,
-      context: JSON.stringify(body.context),
+      context: sharingContext(body.context, body.sharedRequirement),
     };
     const memory = readConversation(body.continuation, config.key, scope);
     await checkConversation(memory, (type, id) => evidence.source(type, id));
@@ -45,6 +54,7 @@ export async function POST(request: Request) {
       await evidence.run(body.context.kind === 'opportunity' ? 'get_opportunity' : 'get_pursuit', {
         id: body.context.id,
       });
+    if (shared) await evidence.source('requirement', shared.id);
     const digest = createHmac('sha256', config.key)
       .update(
         account.user.id +
@@ -53,7 +63,7 @@ export async function POST(request: Request) {
           '|' +
           body.prompt +
           '|' +
-          JSON.stringify(body.context) +
+          scope.context +
           '|' +
           body.mode +
           '|' +
@@ -107,10 +117,23 @@ export async function POST(request: Request) {
             },
             body.mode,
             memory.turns,
+            shared,
           );
           // Recheck citations against current RLS/classification before releasing any evidence.
           const current = new EvidenceTools(account.db, body.organizationId, account.role);
           const records: Evidence[] = [];
+          if (shared) {
+            const freshExcerpt = await readSharedRequirement(
+              account.db,
+              body.organizationId,
+              account.role,
+              body.context,
+              body.mode,
+              body.sharedRequirement,
+            );
+            if (freshExcerpt?.text !== shared.text) throw new AiError('conversation_changed', 409);
+            result.answer.sharedRequirement = shared;
+          }
           for (const item of evidence.evidence.values()) {
             if (item.citation.type === 'workspace') continue;
             const fresh = await current.source(item.citation.type, item.citation.id);
@@ -139,6 +162,7 @@ export async function POST(request: Request) {
           ) {
             const keys = new Set([
               `pursuit:${body.context.id}`,
+              ...(shared ? [`requirement:${shared.id}`] : []),
               ...result.answer.proposedTasks.flatMap((p) => p.sources),
             ]);
             const planScope = { ...scope, context: 'task-plan:' + JSON.stringify(body.context) };

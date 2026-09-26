@@ -1,7 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { FEED_NOTICE, type Answer, type AssistantContext } from '../lib/ai/contracts';
+import {
+  FEED_NOTICE,
+  type Answer,
+  type AssistantContext,
+  type RequirementExcerpt,
+} from '../lib/ai/contracts';
+import { canShareRequirement, requirementExcerptLimit } from '../lib/ai/requirement-sharing';
 import styles from './assistant.module.css';
 import { evidenceLabel, evidenceValue } from '../lib/ai/display';
 import { responseCommand } from '../lib/response-command';
@@ -44,6 +50,13 @@ export default function Assistant({
     [conversations, setConversations] = useState<Conversation[]>([]),
     [active, setActive] = useState<string | null>(null);
   const [mode, setMode] = useState<'general' | 'workspace'>('workspace');
+  const [sharingChoice, setSharingChoice] = useState<RequirementExcerpt>();
+  const [sharingConfirmed, setSharingConfirmed] = useState(false);
+  const canShare =
+    !demo &&
+    context?.kind === 'pursuit' &&
+    planningData &&
+    canShareRequirement(planningData.organization.role);
   const [pending, setPending] = useState(false),
     [status, setStatus] = useState(''),
     [error, setError] = useState(''),
@@ -97,6 +110,8 @@ export default function Assistant({
       setPrompt('');
       documentRequest.current = null;
       thread.current = null;
+      setSharingChoice(undefined);
+      setSharingConfirmed(false);
     };
     const check = () =>
       fetch(`/api/assistant/status?organization=${encodeURIComponent(organizationId ?? '')}`, {
@@ -137,6 +152,8 @@ export default function Assistant({
       setPrompt('');
       documentRequest.current = null;
       thread.current = null;
+      setSharingChoice(undefined);
+      setSharingConfirmed(false);
     };
     window.addEventListener('pagehide', clear);
     return () => window.removeEventListener('pagehide', clear);
@@ -148,8 +165,25 @@ export default function Assistant({
     setActive(null);
     setPrompt('');
   }, [organizationId, context?.kind, context?.id]);
+  function changeSharing(choice: RequirementExcerpt | undefined, confirmed = false) {
+    controller.current?.abort();
+    thread.current = null;
+    setConversations([]);
+    setActive(null);
+    setError('');
+    setSharingChoice(choice);
+    setSharingConfirmed(confirmed);
+  }
+  useEffect(() => {
+    setSharingChoice(undefined);
+    setSharingConfirmed(false);
+  }, [organizationId, context?.kind, context?.id]);
   async function ask(question = prompt, retry = false, answerMode = mode, fresh = false) {
     if (pending || actionLock.current || !question.trim() || !available) return;
+    if (answerMode === 'workspace' && sharingChoice && !sharingConfirmed) {
+      setError('Review the excerpt and confirm sharing, or choose no requirement.');
+      return;
+    }
     actionLock.current = true;
     setError('');
     setFeedback('');
@@ -242,6 +276,15 @@ export default function Assistant({
           prompt: question,
           context: answerMode === 'general' ? null : context,
           mode: answerMode,
+          ...(answerMode === 'workspace' && canShare && sharingConfirmed && sharingChoice
+            ? {
+                sharedRequirement: {
+                  id: sharingChoice.id,
+                  updatedAt: sharingChoice.updatedAt,
+                  consent: true,
+                },
+              }
+            : {}),
           ...(continuation ? { continuation } : {}),
         }),
         signal: abort.signal,
@@ -252,6 +295,12 @@ export default function Assistant({
           thread.current = null;
           setConversations([]);
           setActive(null);
+          setSharingChoice(undefined);
+          setSharingConfirmed(false);
+          if (sharingChoice)
+            throw new Error(
+              'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
+            );
         }
         throw new Error(failure.message ?? 'Assistant unavailable.');
       }
@@ -276,6 +325,12 @@ export default function Assistant({
               thread.current = null;
               setConversations([]);
               setActive(null);
+              setSharingChoice(undefined);
+              setSharingConfirmed(false);
+              if (sharingChoice)
+                throw new Error(
+                  'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
+                );
             }
             throw new Error(event.message);
           }
@@ -402,6 +457,8 @@ export default function Assistant({
                   documentRequest.current = null;
                   setError('');
                   setFeedback('');
+                  setSharingChoice(undefined);
+                  setSharingConfirmed(false);
                 }}
               >
                 New conversation
@@ -439,6 +496,8 @@ export default function Assistant({
                   documentRequest.current = null;
                   setError('');
                   setFeedback('');
+                  setSharingChoice(undefined);
+                  setSharingConfirmed(false);
                 }}
               >
                 Clear conversations
@@ -581,6 +640,18 @@ export default function Assistant({
                   </ul>
                   {selected.answer.nextAction && <h3>Recommended next action</h3>}
                   <p>{selected.answer.nextAction}</p>
+                  {selected.answer.sharedRequirement && (
+                    <details className={styles.planCard}>
+                      <summary>Requirement excerpt used for this answer</summary>
+                      <blockquote>{selected.answer.sharedRequirement.text}</blockquote>
+                      <p>
+                        AI explanation — human review required.{' '}
+                        {selected.answer.sharedRequirement.truncated
+                          ? 'This is a partial excerpt. Review the complete requirement before relying on the explanation.'
+                          : 'Compare the explanation with the original notice.'}
+                      </p>
+                    </details>
+                  )}
                   {!demo &&
                     mode === 'workspace' &&
                     selected.mode === 'workspace' &&
@@ -655,6 +726,7 @@ export default function Assistant({
                       disabled={pending}
                       onChange={(e) => {
                         thread.current = null;
+                        if (sharingChoice) changeSharing(undefined);
                         setMode(e.target.value as 'general' | 'workspace');
                       }}
                     >
@@ -662,6 +734,82 @@ export default function Assistant({
                       <option value="workspace">Workspace records</option>
                     </select>
                   </label>
+                )}
+                {canShare && mode === 'workspace' && (
+                  <fieldset className={styles.planCard} disabled={pending || !available}>
+                    <legend>Explain a requirement</legend>
+                    <p>
+                      Choose one requirement to explain in plain English. Only the previewed excerpt
+                      is sent to AI with this conversation. Other clause text stays private.
+                    </p>
+                    <label htmlFor="assistant-requirement">Requirement to explain</label>
+                    <select
+                      id="assistant-requirement"
+                      value={sharingChoice?.id ?? ''}
+                      onChange={(event) => {
+                        const requirement = planningData?.requirements?.find(
+                          (r) => r.id === event.target.value && r.pursuit_id === context?.id,
+                        );
+                        changeSharing(
+                          requirement
+                            ? {
+                                id: requirement.id,
+                                updatedAt: requirement.updated_at,
+                                consent: true,
+                                text: requirement.requirement.slice(0, requirementExcerptLimit),
+                                truncated: requirement.requirement.length > requirementExcerptLimit,
+                              }
+                            : undefined,
+                        );
+                      }}
+                    >
+                      <option value="">No requirement text shared</option>
+                      {planningData?.requirements
+                        ?.filter((r) => r.pursuit_id === context?.id)
+                        .map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.requirement.slice(0, 100)}
+                          </option>
+                        ))}
+                    </select>
+                    {sharingChoice && (
+                      <>
+                        <blockquote>{sharingChoice.text}</blockquote>
+                        {sharingChoice.truncated && (
+                          <p>
+                            Preview limited to the first {requirementExcerptLimit.toLocaleString()}{' '}
+                            characters. The explanation may miss later conditions.
+                          </p>
+                        )}
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={sharingConfirmed}
+                            onChange={(event) => changeSharing(sharingChoice, event.target.checked)}
+                          />{' '}
+                          I reviewed this excerpt and am authorized to share it with AI for this
+                          conversation.
+                        </label>
+                        <p>
+                          Do not share confidential or restricted source material. Changing the
+                          selection starts a new conversation; it does not undo text already sent.
+                          No requirement status changes.
+                        </p>
+                        <button
+                          type="button"
+                          className="button secondary"
+                          disabled={!sharingConfirmed}
+                          onClick={() =>
+                            setPrompt(
+                              'Explain this selected requirement in plain English: what does it ask us to do, who is responsible, what is unclear, and what follow-up task should we consider? Cite the requirement.',
+                            )
+                          }
+                        >
+                          Use explanation question
+                        </button>
+                      </>
+                    )}
+                  </fieldset>
                 )}
                 <label htmlFor="assistant-question">
                   {!demo && mode === 'general' ? 'Ask a question' : `Ask about ${name}`}
@@ -678,7 +826,12 @@ export default function Assistant({
                 <div className={styles.actions}>
                   <button
                     className="button primary"
-                    disabled={pending || !available || !prompt.trim()}
+                    disabled={
+                      pending ||
+                      !available ||
+                      !prompt.trim() ||
+                      (mode === 'workspace' && !!sharingChoice && !sharingConfirmed)
+                    }
                   >
                     Ask BidXchange
                   </button>
