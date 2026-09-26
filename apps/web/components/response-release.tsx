@@ -12,7 +12,7 @@ import { saveReleaseAction } from '../app/response-release-actions';
 import { readResponseDraft } from '../lib/response-package';
 import { responseProgress } from '../lib/response-progress';
 import PortalPlaybook from './portal-playbook';
-import { EXTERNAL_COMPLETION } from '../lib/submission-handoff';
+import { EXTERNAL_COMPLETION, releaseHandoff } from '../lib/submission-handoff';
 
 function ActionForm({
   build,
@@ -282,11 +282,9 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
     capture = ['organization_admin', 'executive_approver', 'capture_manager'].includes(role);
   const canSubmit = capture && v.snapshot.checklist.submitter === data.userId;
   const previous = workflow.submissions[0]?.id ?? null;
-  const externalComplete = ['pricing', 'signatures', 'certifications'].every((k) =>
-    v.snapshot.checklist[k as keyof typeof checklistLabels].reference.includes(EXTERNAL_COMPLETION),
-  );
-  const handoffReady =
-    externalComplete && v.status?.current === true && v.status.blockers.length === 0;
+  const handoff = releaseHandoff(v.snapshot.checklist, v.checksum, v.status);
+  const externalComplete = handoff.externalComplete;
+  const handoffReady = handoff.ready;
   return (
     <article className="panel" id={`release-${v.id}`}>
       <h3>
@@ -311,10 +309,16 @@ function Version({ data, release: v }: { data: TenantData; release: ResponseRele
         {v.snapshot.checklist.submitter === data.userId ? 'You' : v.snapshot.checklist.submitter}.
       </p>
       <ul>
-        {v.status?.blockers.map((b, i) => (
+        {handoff.gaps.map((b, i) => (
           <li key={i}>{b}</li>
         ))}
       </ul>
+      <a
+        className="button primary"
+        href={`/api/response-releases/handoff?organization=${org}&release=${v.id}&checksum=${v.checksum}&format=pdf`}
+      >
+        Download handoff checklist (PDF)
+      </a>{' '}
       <a
         href={`/api/response-releases/handoff?organization=${org}&release=${v.id}&checksum=${v.checksum}`}
       >

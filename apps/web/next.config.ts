@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   turbopack: { root: path.resolve(__dirname, '../..') },
   outputFileTracingIncludes: {
     '/api/response-packages/export': ['./public/fonts/*', './public/brand/bidxchange-logo.png'],
+    '/api/response-releases/handoff': ['./public/fonts/*', './public/brand/bidxchange-logo.png'],
   },
   async redirects() {
     return [
