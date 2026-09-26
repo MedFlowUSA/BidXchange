@@ -7,6 +7,13 @@ import { qualificationData } from './qualification-data';
 import '../../apps/web/app/globals.css';
 const data = qualificationData();
 const params = new URLSearchParams(location.search);
+data.companyProfile = {
+  id: 'profile',
+  summary:
+    'Saved website overview: fictional contractor provides energy services and customer assistance.',
+  updated_at: '2026-09-25T12:00:00Z',
+};
+data.organization.website = 'https://example.com/';
 if (params.has('viewer')) data.organization.role = 'viewer';
 data.facts = [
   {
@@ -21,6 +28,15 @@ data.facts = [
   },
 ];
 if (params.has('empty')) data.facts = [];
+if (params.has('many')) {
+  data.facts = [1, 2, 3, 4, 5].map((i) => ({
+    ...data.facts[0],
+    id: `service-${i}`,
+    label: `Service ${i}`,
+    value: `Saved capability ${i}`,
+    updated_at: `2026-09-${20 + i}T12:00:00Z`,
+  }));
+}
 createRoot(document.getElementById('root')!).render(
   <main style={{ padding: 20, maxWidth: 1100, margin: 'auto' }}>
     <CompanyPortal data={data} reviewCount={data.facts.length}>

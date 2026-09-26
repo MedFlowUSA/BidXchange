@@ -51,8 +51,33 @@
 }
 .quickLinks {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+.quickLinks .profileAction {
+  background: #173567;
+  color: #fff;
+}
+.quickLinks .profileAction:hover {
+  background: #244d86;
+}
+.savedProfile {
+  padding: 18px 20px;
+  border: 1px solid #dce4f1;
+  border-radius: 12px;
+  background: #f7faff;
+  margin: 16px 0;
+}
+.savedProfile p {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.savedProfile h3 {
+  margin-top: 20px;
+  font-size: 16px;
+}
+.profileSummary {
+  white-space: pre-line;
 }
 .quickLinks a {
   display: flex;
@@ -232,7 +257,7 @@
 }
 .snapshotGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 .snapshotCard {
@@ -272,10 +297,6 @@
   font-size: 13px;
 }
 .recordValue {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   overflow-wrap: anywhere;
   margin: 6px 0 10px;
 }
@@ -358,11 +379,12 @@
     padding: 20px;
   }
   .quickLinks {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
   .quickLinks a {
     padding: 12px;
+    flex-wrap: wrap;
   }
   .navigation a {
     flex: 1 1 40%;

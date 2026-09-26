@@ -50,6 +50,7 @@ export type LivePursuit = {
   status: string;
 };
 export type TenantData = {
+  companyProfile?: { id: string; summary: string | null; updated_at: string } | null;
   amendmentComparisons?: import('./amendment-comparison').ComparisonWorkspace;
   decisionMemory?: import('./decision-memory').DecisionMemory;
   decisionMemoryEnabled?: boolean;
