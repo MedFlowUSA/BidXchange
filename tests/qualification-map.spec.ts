@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { build } from 'esbuild';
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { qualificationMap } from '../apps/web/lib/qualification-map';
 import { passportRecords } from '../apps/web/lib/passport-records';
 import { qualificationData } from './fixtures/qualification-data';
@@ -268,4 +269,42 @@ test('delivery checks create explicit owner-assigned follow-up without implying 
   await delivery.getByRole('button', { name: 'Add task', exact: true }).click();
   await expect(delivery.getByRole('status')).toContainText('Task saved: Delivery review:');
   await expect(delivery).toContainText('Task completion is not delivery approval');
+});
+
+test('calendar download uses the selected pursuit and selection, with mobile and empty-state support', async ({
+  page,
+}) => {
+  await mount(page, true);
+  await page.goto('/qualification-test?role=viewer&deadlines=1');
+  const control = page.getByRole('region', { name: 'Bid control: decision, work and dates' });
+  await control.getByText('Take these dates to your calendar', { exact: true }).click();
+  await expect(control).toContainText('12 dates available · 1 excluded');
+  await control.getByLabel('Focus on work needing attention').selectOption('dates');
+  // The download is independent of the timeline's display filter.
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const event = page.waitForEvent('download');
+    await control.getByRole('button', { name: 'Download calendar (.ics)' }).click();
+    const download = await event;
+    expect(download.suggestedFilename()).toBe('bidxchange-pursuit-dates.ics');
+    const contents = (await readFile((await download.path())!, 'utf8')).replace(/\r\n /g, '');
+    expect(contents.match(/BEGIN:VEVENT/g)).toHaveLength(12);
+    expect(contents).toContain('Old follow-up 0');
+    expect(contents).not.toContain('Confirm job walk date');
+    await expect(control).toContainText('No calendar was connected.');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await control.screenshot({ path: `.tmp/pursuit-calendar-${width}.png` });
+  }
+  await control.getByLabel('Include open task deadlines').uncheck();
+  await expect(control).toContainText('1 date available · 0 excluded');
+  const event = page.waitForEvent('download');
+  await control.getByRole('button', { name: 'Download calendar (.ics)' }).click();
+  const contents = await readFile((await (await event).path())!, 'utf8');
+  expect(contents.match(/BEGIN:VEVENT/g)).toHaveLength(1);
+  await page.goto('/qualification-test?calendar-empty=1');
+  await control.getByText('Take these dates to your calendar', { exact: true }).click();
+  await expect(control.getByRole('button', { name: 'Download calendar (.ics)' })).toBeDisabled();
+  await expect(control).toContainText('0 dates available · 1 excluded');
 });

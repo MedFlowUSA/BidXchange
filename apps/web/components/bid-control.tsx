@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { TenantData } from '../lib/tenant-types';
 import { bidControl } from '../lib/bid-control';
 import styles from './qualification-workspace.module.css';
+import PursuitCalendar from './pursuit-calendar';
 
 export default function BidControl({ data, pursuitId }: { data: TenantData; pursuitId: string }) {
   const control = bidControl(data, pursuitId);
@@ -76,6 +77,7 @@ export default function BidControl({ data, pursuitId }: { data: TenantData; purs
         )}
         <Link href={base}>Review opportunity and submission details</Link>
       </div>
+      <PursuitCalendar data={data} pursuitId={pursuitId} />
       <h3>Recorded dates and follow-ups</h3>
       <p>
         Submission deadline and open task dates only. Record job walks, questions deadlines and bond
