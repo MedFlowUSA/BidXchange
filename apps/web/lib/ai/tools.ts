@@ -72,13 +72,16 @@ function provenance(r: Row) {
 }
 export class EvidenceTools {
   readonly evidence = new Map<string, Evidence>();
-  private remaining = LIMITS.records;
+  private remaining: number;
   constructor(
     private db: SupabaseClient,
     readonly org: string,
     readonly role: Role,
     private now = new Date(),
-  ) {}
+    recordLimit = LIMITS.records,
+  ) {
+    this.remaining = recordLimit;
+  }
   private query(table: string, fields: string) {
     return this.db.from(table).select(fields).eq('organization_id', this.org);
   }

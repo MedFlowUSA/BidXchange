@@ -12,7 +12,11 @@ import { authorizeAi, requireSameOrigin } from '../../../lib/ai/server';
 import { EvidenceTools } from '../../../lib/ai/tools';
 import { runAssistant } from '../../../lib/ai/engine';
 import { readJsonBody } from '../../../lib/ai/read-body';
-import { readSharedRequirement, sharingContext } from '../../../lib/ai/requirement-sharing';
+import {
+  readSharedRequirement,
+  readSharedRequirements,
+  sharingContext,
+} from '../../../lib/ai/requirement-sharing';
 import {
   readConversation,
   checkConversation,
@@ -31,21 +35,37 @@ export async function POST(request: Request) {
     const account = await authorizeAi(body.organizationId);
     const config = aiConfig();
     if (!config) throw new AiError('unavailable', 503);
-    const evidence = new EvidenceTools(account.db, body.organizationId, account.role);
-    const shared = await readSharedRequirement(
+    const recordLimit = body.sharedRequirements ? 80 : LIMITS.records;
+    const evidence = new EvidenceTools(
       account.db,
       body.organizationId,
       account.role,
-      body.context,
-      body.mode,
-      body.sharedRequirement,
+      new Date(),
+      recordLimit,
     );
+    const shared = body.sharedRequirements
+      ? await readSharedRequirements(
+          account.db,
+          body.organizationId,
+          account.role,
+          body.context,
+          body.mode,
+          body.sharedRequirements,
+        )
+      : await readSharedRequirement(
+          account.db,
+          body.organizationId,
+          account.role,
+          body.context,
+          body.mode,
+          body.sharedRequirement,
+        );
     const scope = {
       user: account.user.id,
       organization: body.organizationId,
       role: account.role,
       mode: body.mode,
-      context: sharingContext(body.context, body.sharedRequirement),
+      context: sharingContext(body.context, body.sharedRequirements ?? body.sharedRequirement),
     };
     const memory = readConversation(body.continuation, config.key, scope);
     await checkConversation(memory, (type, id) => evidence.source(type, id));
@@ -54,7 +74,8 @@ export async function POST(request: Request) {
       await evidence.run(body.context.kind === 'opportunity' ? 'get_opportunity' : 'get_pursuit', {
         id: body.context.id,
       });
-    if (shared) await evidence.source('requirement', shared.id);
+    const excerpts = Array.isArray(shared) ? shared : shared ? [shared] : [];
+    for (const item of excerpts) await evidence.source('requirement', item.id);
     const digest = createHmac('sha256', config.key)
       .update(
         account.user.id +
@@ -120,19 +141,36 @@ export async function POST(request: Request) {
             shared,
           );
           // Recheck citations against current RLS/classification before releasing any evidence.
-          const current = new EvidenceTools(account.db, body.organizationId, account.role);
+          const current = new EvidenceTools(
+            account.db,
+            body.organizationId,
+            account.role,
+            new Date(),
+            recordLimit,
+          );
           const records: Evidence[] = [];
           if (shared) {
-            const freshExcerpt = await readSharedRequirement(
-              account.db,
-              body.organizationId,
-              account.role,
-              body.context,
-              body.mode,
-              body.sharedRequirement,
-            );
-            if (freshExcerpt?.text !== shared.text) throw new AiError('conversation_changed', 409);
-            result.answer.sharedRequirement = shared;
+            const freshExcerpt = body.sharedRequirements
+              ? await readSharedRequirements(
+                  account.db,
+                  body.organizationId,
+                  account.role,
+                  body.context,
+                  body.mode,
+                  body.sharedRequirements,
+                )
+              : await readSharedRequirement(
+                  account.db,
+                  body.organizationId,
+                  account.role,
+                  body.context,
+                  body.mode,
+                  body.sharedRequirement,
+                );
+            if (JSON.stringify(freshExcerpt) !== JSON.stringify(shared))
+              throw new AiError('conversation_changed', 409);
+            if (Array.isArray(shared)) result.answer.sharedRequirements = shared;
+            else result.answer.sharedRequirement = shared;
           }
           for (const item of evidence.evidence.values()) {
             if (item.citation.type === 'workspace') continue;
@@ -162,7 +200,7 @@ export async function POST(request: Request) {
           ) {
             const keys = new Set([
               `pursuit:${body.context.id}`,
-              ...(shared ? [`requirement:${shared.id}`] : []),
+              ...excerpts.map((item) => `requirement:${item.id}`),
               ...result.answer.proposedTasks.flatMap((p) => p.sources),
             ]);
             const planScope = { ...scope, context: 'task-plan:' + JSON.stringify(body.context) };
