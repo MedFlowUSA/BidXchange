@@ -802,6 +802,10 @@ test('cancel aborts generation and exposes retry without saving partial output',
   await expect(page.getByRole('alert')).toContainText('Generation cancelled.');
   await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
   await expect(page.getByRole('article')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Retry', exact: true })).toHaveAttribute(
+    'type',
+    'button',
+  );
 });
 for (const [label, status, body] of [
   ['rate limit', 429, JSON.stringify({ message: 'The assistant usage limit has been reached.' })],

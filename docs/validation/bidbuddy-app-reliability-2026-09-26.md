@@ -38,7 +38,24 @@ No schema, model, provider, quota, role or environment-variable changes. Existin
 - Final `npx playwright test --reporter=line`: **323 passed (2.7 minutes)** across desktop/mobile projects. Includes company profile, registration/evidence handling, requirements, decision gates, tasks, exports, conversation/privacy, tenant/access and public/demo regressions.
 - Final `npm run typecheck`, `npm run lint`, and `npm run build` — passed; 33 pages generated.
 - Final `npm run test:secrets` — passed across 648 tracked/unignored source files. `git diff --check` passed.
-- Live acceptance is recorded after release below.
+- Composer feedback refinement: `npx playwright test tests/assistant-stream.spec.ts --reporter=line` — **48 passed** across desktop/mobile after moving progress/retry beside the question box. Retry is explicitly a non-submit button.
+
+## Production acceptance
+
+PR [21](https://github.com/MedFlowUSA/BidXchange/pull/21) merged as `f571847`. Deployment `dpl_GbocSosRBD82EA6o7bbDWGFDQiVw` was Ready and confirmed at `https://bidxapp.vercel.app`.
+
+`node .tmp/bidbuddy-reliability-live.mjs` passed at **2026-09-26T22:23:38Z**. It used an isolated fictional organization with two real provider requests (source review and ordinary chat). A separately intercepted request tested closing an in-flight review without a paid call. Verified:
+
+- Consent before source sharing; collapse/reopen releases the busy lock.
+- Exact source quotations, hash and pasted-line references; subcontractor responsibilities, expired insurance citation and mandatory job walk.
+- Embedded instructions ignored; no automatic requirements/tasks or source-review continuation tokens.
+- One explicitly reviewed candidate saved as needs-review with source lineage.
+- Real ordinary chat rendered a current pursuit citation and supported explicit encrypted conversation saving.
+- Phone layout contained; question controls precede history; interior drawer padding does not dismiss the conversation.
+- Raw source absent from browser storage and saved conversations before explicit chat saving; guest source review denied.
+- Fictional workspace/AI disabled and test login blocked; no customer records changed.
+
+Production screenshots were inspected. The final progress/retry placement is a subsequent presentation-only refinement covered by the 48 browser tests above; it does not change the verified transport, provider calls, persistence or authorization.
 
 ## Remaining limits
 
