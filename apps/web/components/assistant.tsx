@@ -302,7 +302,7 @@ export default function Assistant({
               'The requirement or conversation changed. Refresh the pursuit and review the current excerpt before sharing again.',
             );
         }
-        throw new Error(failure.message ?? 'Assistant unavailable.');
+        throw new Error(failure.message ?? 'BidBuddy is unavailable.');
       }
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response received.');
@@ -354,7 +354,7 @@ export default function Assistant({
           ? 'Generation cancelled.'
           : error instanceof Error
             ? error.message
-            : 'Assistant unavailable.',
+            : 'BidBuddy is unavailable.',
       );
     } finally {
       actionLock.current = false;
@@ -382,11 +382,12 @@ export default function Assistant({
     }
   }
   return (
-    <section id="bid-assistant" className={`panel ${styles.panel}`} aria-label="Ask BidXchange">
+    <section id="bid-assistant" className={`panel ${styles.panel}`} aria-label="Ask BidBuddy">
       <div className={styles.heading}>
         <div>
-          <div className="eyebrow">ASK BIDXCHANGE</div>
-          <h2>Think it through. Build your next step.</h2>
+          <div className="eyebrow">BY BIDXCHANGE</div>
+          <h2>BidBuddy</h2>
+          <p>Your AI assistant for understanding requirements and planning your next move.</p>
           <p>
             {name} ·{' '}
             {demo
@@ -395,7 +396,7 @@ export default function Assistant({
           </p>
         </div>
         <button className="button secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {open ? 'Collapse assistant' : 'Open assistant'}
+          {open ? 'Collapse BidBuddy' : 'Open BidBuddy'}
         </button>
       </div>
       {open && (
@@ -562,7 +563,7 @@ export default function Assistant({
                 ))}
               </div>
               {selected?.document && (
-                <article aria-label="Assistant document">
+                <article aria-label="BidBuddy document">
                   <h3>Response draft</h3>
                   <p>{selected.document.message}</p>
                   {selected.document.href && (
@@ -576,8 +577,8 @@ export default function Assistant({
                 </article>
               )}
               {selected?.answer && (
-                <article aria-label="Assistant answer">
-                  <h3>{demo ? 'Fictional answer' : 'Assistant response'}</h3>
+                <article aria-label="BidBuddy answer">
+                  <h3>{demo ? 'Fictional answer' : 'BidBuddy response'}</h3>
                   <p>{selected.answer.notice}</p>
                   {!demo && selected.mode === 'workspace' && (
                     <div>
@@ -833,7 +834,7 @@ export default function Assistant({
                       (mode === 'workspace' && !!sharingChoice && !sharingConfirmed)
                     }
                   >
-                    Ask BidXchange
+                    Ask BidBuddy
                   </button>
                   {pending && !responseCommand(selected?.question ?? '') && (
                     <button

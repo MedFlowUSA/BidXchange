@@ -20,7 +20,7 @@ export default function AssistantUsage({ organizationId }: { organizationId: str
   }
   return (
     <section className="panel">
-      <h2>Assistant usage</h2>
+      <h2>BidBuddy usage</h2>
       <p>Organization administrator view. No prompts or answers are stored.</p>
       <button className="button secondary" onClick={() => void refresh()}>
         Refresh usage

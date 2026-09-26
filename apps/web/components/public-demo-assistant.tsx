@@ -43,7 +43,7 @@ export default function PublicDemoAssistant() {
           ? 'Generation cancelled.'
           : e instanceof Error
             ? e.message
-            : 'The assistant is unavailable.',
+            : 'BidBuddy is unavailable.',
       );
     } finally {
       setPending(false);
@@ -51,7 +51,7 @@ export default function PublicDemoAssistant() {
   }
   return (
     <section className="panel" aria-label="Live demo AI">
-      <h2>Ask BidXchange</h2>
+      <h2>Ask BidBuddy</h2>
       <p>
         Live AI for general questions, explanations and drafting. Demo company records are
         fictional; this assistant cannot access workspace data or live websites.
@@ -101,7 +101,7 @@ export default function PublicDemoAssistant() {
           />
         </label>
         <button className="button primary" disabled={!available || pending || !prompt.trim()}>
-          {pending ? 'Thinking…' : 'Ask BidXchange'}
+          {pending ? 'Thinking…' : 'Ask BidBuddy'}
         </button>
         {pending && (
           <button className="button" type="button" onClick={() => controller.current?.abort()}>

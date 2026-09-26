@@ -33,7 +33,7 @@ test('requirement excerpts require explicit sharing and reset across conversatio
   await expect(select).toBeEnabled();
   await select.selectOption('55555555-5555-4555-8555-555555555555');
   await page.locator('#assistant-question').fill('Explain this clause');
-  const ask = page.getByRole('button', { name: 'Ask BidXchange', exact: true });
+  const ask = page.getByRole('button', { name: 'Ask BidBuddy', exact: true });
   await expect(ask).toBeDisabled();
   expect(requests).toHaveLength(0);
   await page.getByRole('checkbox', { name: /authorized to share it with AI/ }).check();
@@ -132,7 +132,7 @@ test('bid plan stays unsaved until a human reviews and saves; viewer and general
   await page.goto('/assistant-test?planning');
   const ask = async () => {
     await page.locator('#assistant-question').fill('Help me plan this bid');
-    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
     await expect(page.getByRole('region', { name: 'AI-proposed bid plan' })).toBeVisible();
   };
   await ask();
@@ -174,7 +174,7 @@ test('bid plan stays unsaved until a human reviews and saves; viewer and general
   await expect(plan.getByRole('button', { name: 'Review and save task' })).toHaveCount(0);
   await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
   await page.locator('#assistant-question').fill('Give general advice');
-  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
   await expect(page.getByRole('region', { name: 'AI-proposed bid plan' })).toHaveCount(0);
 });
 
@@ -207,7 +207,7 @@ test('follow-ups send opaque continuation and new chat or mode changes reset it'
     await page.locator('#assistant-question').fill(text);
     if (requests.length === 0)
       await page.screenshot({ path: test.info().outputPath('before-send.png'), fullPage: true });
-    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
     await expect(page.getByRole('article')).toContainText('Helpful answer ' + expected);
   };
   await ask('Suggest a plan');
@@ -300,7 +300,7 @@ test('general mode sends no record context and displays uncited helpful prose', 
   await mount(page);
   await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
   await page.getByLabel('Ask a question', { exact: true }).fill('Draft an email');
-  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Here is a draft email');
   await expect(
     page.getByRole('article').getByRole('heading', { name: 'Sources', exact: true }),
@@ -344,7 +344,7 @@ test('company connection and refresh use a new workspace request even after swit
     '/company?organization=11111111-1111-4111-8111-111111111111',
   );
   await page.getByLabel('Ask about Synthetic Test Company').fill('What is our business email?');
-  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Previous saved email');
   await expect(page.getByRole('article')).toContainText('Records checked:');
   await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
@@ -387,7 +387,7 @@ test('verified streamed event renders citations and copy/feedback controls', asy
   );
   await mount(page);
   await page.getByLabel('Ask about Synthetic Test Company').fill('Review opportunities');
-  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Synthetic opportunity — unverified');
   await expect(
     page.getByRole('link', { name: 'Synthetic opportunity', exact: true }),
@@ -408,7 +408,7 @@ test('cancel aborts generation and exposes retry without saving partial output',
   });
   await mount(page);
   await page.getByLabel('Ask about Synthetic Test Company').fill('Review');
-  await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel generation' }).click();
   release();
   await expect(page.getByRole('alert')).toContainText('Generation cancelled.');
@@ -431,7 +431,7 @@ for (const [label, status, body] of [
     );
     await mount(page);
     await page.getByLabel('Ask about Synthetic Test Company').fill('Review');
-    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
     await expect(page.getByRole('alert')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeEnabled();
   });
@@ -439,7 +439,7 @@ for (const [label, status, body] of [
 test('unconfigured assistant remains safely unavailable', async ({ page }) => {
   await mount(page, false);
   await expect(page.getByText(/AI is unavailable for this workspace/)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Ask BidXchange', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Ask BidBuddy', exact: true })).toBeDisabled();
 });
 
 for (const change of ['revoked', 'role', 'pagehide'] as const) {
@@ -463,7 +463,7 @@ for (const change of ['revoked', 'role', 'pagehide'] as const) {
     );
     await mount(page);
     await page.getByLabel('Ask about Synthetic Test Company').fill('Synthetic private question');
-    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
     await expect(page.getByRole('article')).toContainText('SYNTHETIC PRIVATE ANSWER');
     if (change === 'pagehide') {
       await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
@@ -485,7 +485,7 @@ for (const change of ['revoked', 'role', 'pagehide'] as const) {
     await expect(page.getByLabel('Ask about Synthetic Test Company')).toHaveValue('');
     if (change === 'revoked')
       await expect(
-        page.getByRole('button', { name: 'Ask BidXchange', exact: true }),
+        page.getByRole('button', { name: 'Ask BidBuddy', exact: true }),
       ).toBeDisabled();
     expect(
       await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),

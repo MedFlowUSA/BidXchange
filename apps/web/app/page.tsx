@@ -277,16 +277,16 @@ export default async function Home() {
         </section>
         <section id="ai-assistance" className={clean.passport} aria-labelledby="ai-title">
           <div>
-            <span className={styles.eyebrow}>ASK ABOUT THE WORK IN FRONT OF YOU</span>
-            <h2 id="ai-title">Ask the next question that moves the bid.</h2>
+            <span className={styles.eyebrow}>MEET BIDBUDDY BY BIDXCHANGE</span>
+            <h2 id="ai-title">Meet BidBuddy, your bidding AI assistant.</h2>
             <p>
-              Answers use authorized BidXchange records in workspace mode. The assistant cannot
+              Answers use authorized BidXchange records in workspace mode. BidBuddy cannot
               approve pricing, verify legal qualifications, authorize submission, or submit a bid.
               An unanswered question stays a question.
             </p>
           </div>
           <div>
-            <h3>Questions to bring to the assistant</h3>
+            <h3>Questions to ask BidBuddy</h3>
             <ul className={clean.recordList}>
               <li>Why might this opportunity fit our company?</li>
               <li>Which bid requirements still need our review?</li>

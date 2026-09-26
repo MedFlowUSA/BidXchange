@@ -34,7 +34,7 @@ for (const width of [1440, 390])
     await page.addStyleTag({ content: css });
     await page.addScriptTag({ content: js });
     await page.getByLabel('Ask a question').fill('Explain a bid bond.');
-    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
     await expect(page.getByRole('article', { name: 'AI answer' })).toContainText(
       'A synthetic model answer.',
     );
@@ -51,6 +51,6 @@ for (const width of [1440, 390])
       }),
     );
     await page.getByLabel('Ask a question').fill('Another question');
-    await page.getByRole('button', { name: 'Ask BidXchange', exact: true }).click();
+    await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('Please wait one minute');
   });
