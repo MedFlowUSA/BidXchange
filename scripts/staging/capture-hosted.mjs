@@ -101,9 +101,8 @@ try {
   await form.getByLabel('Opportunity title', { exact: true }).fill(label);
   await form.getByLabel('Buyer', { exact: true }).fill('Synthetic buyer');
   await form.getByLabel('Source URL', { exact: true }).fill('https://example.invalid/notice');
-  await form
-    .getByLabel('Official deadline with offset', { exact: true })
-    .fill('2026-10-15T14:00:00-07:00');
+  await form.getByLabel('Deadline time zone', { exact: true }).fill('America/Los_Angeles');
+  await form.getByLabel('Official deadline', { exact: true }).fill('2026-10-15T14:00');
   await save(form, 'Add opportunity', 'Opportunity saved');
   const getOpportunity = async () =>
     (
@@ -150,9 +149,8 @@ try {
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await form.getByLabel('Task title', { exact: true }).fill(label);
   await form.getByLabel('Task owner', { exact: true }).selectOption(user);
-  await form
-    .getByLabel('Task deadline with offset', { exact: true })
-    .fill('2026-10-10T12:00:00-07:00');
+  await form.getByLabel('Task time zone', { exact: true }).fill('America/Los_Angeles');
+  await form.getByLabel('Task deadline', { exact: true }).fill('2026-10-10T12:00');
   await save(form, 'Add task', 'Task saved');
   const getTask = async () =>
     (

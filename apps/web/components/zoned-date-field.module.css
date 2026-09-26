@@ -1,0 +1,17 @@
+.field {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.field input,
+.field select {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.field p {
+  margin: 0;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}

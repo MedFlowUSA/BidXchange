@@ -1,0 +1,7 @@
+.context {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.notes {
+  white-space: pre-wrap;
+}

@@ -74,11 +74,11 @@ export function SourceOpportunityForm({
           return await saveNormalizedOpportunity(state, form);
         } catch {
           return {
-            message: 'Check the source dates and URLs. Use explicit UTC offsets for timestamps.',
+            message: 'Check the source dates, time zone and URLs before saving.',
           };
         }
       }}
-      note="Manually reviewed intake. All workspace members can read these fields. Enter only authorized business details. Dates require an explicit UTC offset, for example 2026-10-15T14:00:00-07:00. Leave unknown fields blank. No links or attachments are fetched. Verify the actual submission destination against the buyer’s instructions."
+      note="Manually reviewed intake. All workspace members can read these fields. Enter only authorized business details. All dates below use the selected notice time zone; changing it keeps the entered clock times. Check each saved-time preview and leave unknown fields blank. No links or attachments are fetched. Verify the submission destination against the buyer’s instructions."
       fields={[
         { name: 'title', label: 'Opportunity title', required: true, max: 200 },
         { name: 'buyer', label: 'Buying agency', required: true, max: 200 },
@@ -92,12 +92,16 @@ export function SourceOpportunityForm({
           max: 2000,
         },
         { name: 'summary', label: 'Scope summary', multiline: true, max: 6000 },
-        { name: 'official_deadline', label: 'Submission deadline with offset', max: 40 },
         {
           name: 'deadline_timezone',
-          label: 'Submission display time zone',
+          label: 'Notice time zone',
           required: true,
           max: 100,
+        },
+        {
+          name: 'official_deadline',
+          label: 'Submission deadline',
+          dateTimeZone: { field: 'deadline_timezone' },
         },
         { name: 'estimated_value', label: 'Estimated value (USD; blank if unknown)', max: 16 },
         ...Object.entries(detailFields).map(([name, label]) => ({
@@ -111,7 +115,7 @@ export function SourceOpportunityForm({
           ['questionDeadline', 'Question deadline'],
           ['siteVisit', 'Site visit'],
           ['preBidMeeting', 'Pre-bid meeting'],
-        ].map(([name, label]) => ({ name, label: label + ' with offset', max: 40 })),
+        ].map(([name, label]) => ({ name, label, dateTimeZone: { field: 'deadline_timezone' } })),
         { name: 'submissionUrl', label: 'Buyer-designated submission URL', max: 2000 },
         {
           name: 'confirmed',

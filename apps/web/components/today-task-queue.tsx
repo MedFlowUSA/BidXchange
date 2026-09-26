@@ -42,6 +42,7 @@ export default function TodayTaskQueue({ data }: { data: TenantData }) {
               <p>
                 {data.pursuits.find((p) => p.id === task.pursuit_id)?.title ?? 'Pursuit task'} ·{' '}
                 {task.status.replaceAll('_', ' ')}
+                {task.priority && ` · Priority: ${task.priority}`}
               </p>
               <p>
                 {overdue ? 'Overdue · ' : ''}

@@ -35,7 +35,7 @@ try {
   }
   org = (
     await db.query(
-      "insert into public.organizations(legal_name,operating_name,slug,status) values('Synthetic Release Validation','Synthetic Release Validation',$1,'active') returning id",
+      "insert into public.organizations(legal_name,operating_name,slug,status,default_timezone) values('Synthetic Release Validation','Synthetic Release Validation',$1,'active','UTC') returning id",
       [`staging-release-${randomUUID()}`],
     )
   ).rows[0].id;
@@ -137,8 +137,8 @@ try {
     .getByLabel('Official source / amendment version reviewed', { exact: true })
     .fill('Training amendment 1');
   await page
-    .getByLabel('Source reviewed at (ISO timestamp', { exact: false })
-    .fill(new Date(Date.now() - 1000).toISOString());
+    .getByLabel('Source reviewed at', { exact: true })
+    .fill(new Date(Date.now() - 1000).toISOString().slice(0, -1));
   await page
     .getByLabel('Required submission method', { exact: true })
     .fill('Synthetic training portal');
@@ -206,8 +206,8 @@ try {
   assert.equal(packet.release.snapshot.checklist.files.length, 1);
   await page.getByText('Record an actual human submission', { exact: true }).click();
   await page
-    .getByLabel('Actual submission time (ISO timestamp with timezone)', { exact: true })
-    .fill(new Date().toISOString());
+    .getByLabel('Actual submission time', { exact: true })
+    .fill(new Date().toISOString().slice(0, -1));
   await page
     .getByLabel('Receipt reference (text only)', { exact: true })
     .fill('Synthetic validation receipt. No actual buyer delivery.');

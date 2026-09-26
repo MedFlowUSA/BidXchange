@@ -24,7 +24,7 @@ export function PepmaIntake({ data }: { data: TenantData }) {
         action={savePepmaOpportunity}
         hidden={{ organization_id: data.organization.id }}
         initial={{ source_url: pepmaHome, buyer: '', bid_category: '', confirmed: '' }}
-        note="All workspace members can read these details. Do not paste credentials or confidential source documents. Enter dates with an explicit offset (for example 2026-10-15T14:00:00-07:00); display uses America/Los_Angeles. Leave unknown dates blank. Source details are saved as an editable, audited source note."
+        note="All workspace members can read these details. Do not paste credentials or confidential source documents. Choose the dates and local times in America/Los_Angeles (Pacific time), then check each saved-time preview against the invitation. Leave unknown dates blank. Source details are saved as an editable, audited source note."
         fields={[
           { name: 'title', label: 'PEPMA bid name', required: true, max: 200 },
           { name: 'solicitation_number', label: 'PEPMA bid number', required: true, max: 200 },
@@ -62,8 +62,16 @@ export function PepmaIntake({ data }: { data: TenantData }) {
             multiline: true,
           },
           { name: 'summary', label: 'Program scope summary', max: 6000, multiline: true },
-          { name: 'question_deadline', label: 'Questions deadline with offset', max: 40 },
-          { name: 'official_deadline', label: 'Proposal deadline with offset', max: 40 },
+          {
+            name: 'question_deadline',
+            label: 'Questions deadline',
+            dateTimeZone: { fixed: 'America/Los_Angeles' },
+          },
+          {
+            name: 'official_deadline',
+            label: 'Proposal deadline',
+            dateTimeZone: { fixed: 'America/Los_Angeles' },
+          },
           { name: 'latest_update', label: 'Latest addendum / Q&A reference', max: 200 },
           {
             name: 'confirmed',

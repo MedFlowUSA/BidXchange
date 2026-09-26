@@ -534,7 +534,7 @@ test('bid plan stays unsaved until a human reviews and saves; viewer and general
     .getByLabel('Task title', { exact: true })
     .fill('Confirm license question with reviewer');
   await expect(plan.getByLabel('Task owner', { exact: true })).toHaveValue('');
-  await expect(plan.getByLabel('Task deadline with offset', { exact: true })).toHaveValue('');
+  await expect(plan.getByLabel('Task deadline', { exact: true })).toHaveValue('');
   await plan.getByRole('button', { name: 'Review and save task', exact: true }).click();
   expect(saves).toHaveLength(0);
   await plan.getByRole('checkbox').check();

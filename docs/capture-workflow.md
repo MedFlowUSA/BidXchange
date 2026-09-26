@@ -12,7 +12,7 @@ Within a pursuit, permitted users can add tasks and edit their title, owner, dea
 - All tenant mutations use the user's Supabase session and existing RLS, composite organization/parent foreign keys, immutable-tenant triggers and audit triggers. No service credentials are used in app mutations.
 - Opportunity and task corrections compare organization, record ID and the originally loaded update timestamp. Task edits also compare the pursuit ID. A stale or unavailable record is not overwritten; entered text remains available.
 - Creation and editing only write an explicit field list. Browser-supplied bid decisions, pricing and submission fields are discarded. Pursuit creation sets pending/in-review server-side. Existing database decision and submission guards remain enforced.
-- Timestamps require an explicit offset; the separately validated time zone controls display. Unknown dates stay blank. The UI explains that the offset fixes the instant.
+- Date/time pickers use the selected notice or task time zone and show the instant that will be saved. The browser's own time zone is irrelevant. Nonexistent daylight-saving times are blocked; repeated times require an explicit occurrence. Changing the selected zone keeps the entered clock time, as stated in the form. Unknown dates stay blank. The server still requires an explicit-offset timestamp; editing another field preserves the exact original instant and precision.
 - A successful form is disabled until the user continues with freshly loaded saved records, avoiding accidental repeated clicks. There is no claim of exactly-once request processing.
 
 ## Validation and release
