@@ -67,7 +67,7 @@ export default function ProductPreview() {
       <div className={styles.decision}>
         <div>
           <span>THE DECISION STAYS WITH YOUR TEAM</span>
-          <p>Evidence first. Then pursue—or pass.</p>
+          <p>Record whether to bid and why.</p>
         </div>
         <ArrowUpRight size={22} aria-hidden="true" />
       </div>

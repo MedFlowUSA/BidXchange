@@ -70,16 +70,15 @@ export default async function Home() {
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
               <div className={styles.heroEyebrow}>
-                <span /> CALIFORNIA PUBLIC WORKS, SCHOOL, MUNICIPAL, AND UTILITY CONTRACTS
+                <span /> BID PREPARATION FOR CALIFORNIA FIELD CONTRACTORS
               </div>
               <h1 id="hero-title">
-                Review the requirements.{' '}
-                <span>Prepare your bid in one place.</span>
+                See what the bid requires. <span>Know what your company still needs.</span>
               </h1>
               <p className={styles.heroDescription}>
-                  Compare each contract’s requirements with your company’s licenses, insurance,
-                  bonding and past projects. Identify missing information, assign tasks and prepare
-                  a response for your team to review.
+                Compare a bid’s license, insurance and bonding requirements with your company
+                records. Assign someone to resolve each gap, track deadlines and prepare a PDF or
+                Word response draft for your team to review.
               </p>
               <div className={styles.heroActions}>
                 <a href="#request-demo" className={styles.primary}>
@@ -90,8 +89,8 @@ export default async function Home() {
                 </Link>
               </div>
               <p className={clean.heroNote}>
-                Built for California electrical, energy-efficiency, and other field contractors
-                bidding public works, school facilities, municipal, and utility projects.
+                For electrical, energy-efficiency and construction teams bidding on public works,
+                school facilities, municipal improvements and utility projects.
               </p>
             </div>
             <div className={`${styles.heroVisual} ${clean.visual}`}>
@@ -101,64 +100,61 @@ export default async function Home() {
         </section>
         <section id="who-we-are" className={clean.orientation} aria-label="What BidXchange is">
           <div>
-            <span className={styles.eyebrow}>WHO WE ARE</span>
-            <h2>
-              Bid review for contractors who do the work — not a department that only writes
-              proposals.
-            </h2>
+            <span className={styles.eyebrow}>WHAT BIDXCHANGE DOES</span>
+            <h2>Bring the bid notice, company records and review checklist together.</h2>
             <p>
-              Most public-works teams do not have a capture office. They have a license book, a
-              surety contact, a shared drive, and a deadline. BidXchange is the record between the
-              notice and the submission: what the owner asked for, what the company can show, what
-              is still missing, and who owns the next step. Your people still price, sign, and
-              submit through the official channel.
+              Add a notice from PEPMA, a school district, a city or another procurement portal.
+              Review its requirements alongside your company’s license details, insurance dates,
+              bonding information and past projects. Keep the unanswered questions and assigned
+              follow-ups with that bid.
             </p>
             <p className={clean.scopeNote}>
-              Not a bid board. Not an eligibility engine. Not an auto-bidder. Not a guarantee of
-              award.
+              Your team decides whether to bid, sets the price, signs the documents and submits
+              through the buyer’s required channel.
             </p>
           </div>
           <div className={clean.purpose}>
             <div>
-              <h3>Mission</h3>
+              <h3>For the owner deciding whether to bid</h3>
               <p>
-                Help contractors pursue work they can perform, and walk away from work they cannot,
-                with the evidence in one place and the decision still in their hands.
+                Review missing records and unresolved requirements before committing estimating
+                time. Save the bid/no-bid decision and the reasons behind it.
               </p>
             </div>
             <div>
-              <h3>Vision</h3>
+              <h3>For the team preparing the response</h3>
               <p>
-                Every notice a contractor opens should already stand next to their licenses,
-                bonding, registrations, and past performance — so “can we do this?” is a recorded
-                review, not a week of reconstruction.
+                See who is requesting the bond, attending the job walk and collecting forms. Keep
+                those tasks, due dates and draft versions with the bid.
               </p>
             </div>
           </div>
         </section>
         <section id="bid-cost" className={clean.pain} aria-labelledby="bid-cost-title">
-          <h2 id="bid-cost-title">The costly bid is the one you never should have estimated.</h2>
+          <h2 id="bid-cost-title">Check these details before you spend hours estimating.</h2>
           <ul>
             <li>
-              A missing license class, registration, bond capacity, or mandatory walk can kill a job
-              after takeoff is done.
+              Does the notice call for a license classification or DIR registration your team still
+              needs to check?
             </li>
             <li>
-              The same insurance certificates, project list, and key-person information get rebuilt
-              because they live in inboxes and shared drives.
+              Has your surety confirmed the required bond, and do your insurance records need an
+              update?
             </li>
-            <li>“We should have passed” has no record when the next similar notice appears.</li>
+            <li>Who will attend the mandatory job walk, and when are questions and bids due?</li>
           </ul>
         </section>
         <section id="capabilities" className={clean.workspace} aria-labelledby="capabilities-title">
           <div className={clean.sectionIntro}>
             <div>
-              <span className={styles.eyebrow}>HOW IT HELPS YOU COMPETE</span>
-              <h2 id="capabilities-title">Put your bid effort where it counts.</h2>
+              <span className={styles.eyebrow}>WHAT YOUR TEAM WORKS WITH</span>
+              <h2 id="capabilities-title">
+                A requirement checklist, a task list and a response draft.
+              </h2>
             </div>
             <p>
-              Owners, estimators and bid coordinators can see what needs checking, who is handling
-              it and when it is due.
+              Each bid keeps its source requirements, supporting company records and outstanding
+              work together.
             </p>
           </div>
           <div className={clean.features}>
@@ -166,20 +162,20 @@ export default async function Home() {
               {
                 icon: FolderCheck,
                 number: '01',
-                title: 'Pass early, on evidence',
-                text: 'Review license, DIR registration, insurance and bonding requirements against your company records before committing estimating time.',
+                title: 'Review each requirement',
+                text: 'Link a requirement to a company record. Mark what needs evidence, clarification or human review before committing estimating time.',
               },
               {
                 icon: FileSearch,
                 number: '02',
-                title: 'Draft from what you already proved',
-                text: 'Reuse reviewed license details and past-project records, assign missing information, and draft a response to the bid requirements.',
+                title: 'Assign the missing information',
+                text: 'Give the bond request, insurance update or job-walk confirmation an owner and a due date. Keep follow-up notes with the bid.',
               },
               {
                 icon: ListChecks,
                 number: '03',
-                title: 'Close the file when you submit',
-                text: 'Track assigned tasks, draft versions, approvals and who will submit. Your team submits through the agency or utility’s required channel, then records the confirmation.',
+                title: 'Prepare a draft for review',
+                text: 'Create a response outline using reviewed company details. Add your technical answers and pricing, then export a PDF or Word draft for review and approval.',
               },
             ].map((feature) => (
               <article key={feature.number}>
@@ -196,11 +192,14 @@ export default async function Home() {
         <section id="company-passport" className={clean.passport} aria-labelledby="passport-title">
           <div>
             <span className={styles.eyebrow}>COMPANY PASSPORT</span>
-            <h2 id="passport-title">Start the next bid with the company you already are.</h2>
+            <h2 id="passport-title">
+              Keep license, insurance and project details ready for the next bid.
+            </h2>
             <p>
-              The Company Passport is the reusable file: licenses and registrations, insurance and
-              bonding, territories, past performance, capacity. Sources and renewal dates stay with
-              the record. Each new notice is a review against that file — not a scavenger hunt.
+              Your Company Passport is the company profile your team reuses across bids. Record
+              license numbers, registration status, insurance expiration dates, bonding capacity and
+              past projects. Keep the source and last-checked date with each supporting record so
+              reviewers can see what needs updating.
             </p>
           </div>
           <div>
@@ -231,7 +230,7 @@ export default async function Home() {
           <div className={clean.sectionIntro}>
             <div>
               <span className={styles.eyebrow}>THE WORKFLOW</span>
-              <h2 id="workflow-title">What a pursuit looks like in BidXchange</h2>
+              <h2 id="workflow-title">From adding a bid notice to recording your submission.</h2>
             </div>
           </div>
           <ol className={clean.steps}>
@@ -241,24 +240,24 @@ export default async function Home() {
                 'Keep licenses, insurance, bonding and past projects ready for review.',
               ],
               [
-                'Bring an opportunity worth investigating',
-                'Capture the notice, source, scope and official deadline from the buyer’s portal.',
+                'Add the bid notice',
+                'Paste the notice text and record its official link, scope, deadline and time zone.',
               ],
               [
                 'Make the bid/no-bid decision',
                 'Review and sign off the requirements, then record your bid/no-bid decision and reasons.',
               ],
               [
-                'Assign the work that makes the bid possible',
+                'Assign tasks and due dates',
                 'Assign estimating tasks, job walks, forms and document requests to a person with a due date.',
               ],
               [
-                'Build and review the response',
+                'Create and edit a response draft',
                 'Reuse reviewed records, add your technical answers and export a PDF or Word draft.',
               ],
               [
-                'Approve, submit and record the result',
-                'Approve a version, submit through the buyer’s channel and record the receipt.',
+                'Record your team’s submission',
+                'Approve a specific draft version. Your team submits externally, then records the date and confirmation number in BidXchange.',
               ],
             ].map(([heading, text], i) => (
               <li key={heading}>
@@ -271,28 +270,30 @@ export default async function Home() {
             ))}
           </ol>
           <p className={clean.scopeNote}>
-            Some intake and portal steps are still assisted or manual. BidXchange does not submit
+            You add the notice and check the official portal for updates. BidXchange does not submit
             bids for you. <a href="#current-scope">Current scope</a>
           </p>
         </section>
         <section id="ai-assistance" className={clean.passport} aria-labelledby="ai-title">
           <div>
             <span className={styles.eyebrow}>MEET BIDBUDDY BY BIDXCHANGE</span>
-            <h2 id="ai-title">Meet BidBuddy, your bidding AI assistant.</h2>
+            <h2 id="ai-title">Ask BidBuddy what needs attention on this bid.</h2>
             <p>
-              Answers use authorized BidXchange records in workspace mode. BidBuddy cannot
-              approve pricing, verify legal qualifications, authorize submission, or submit a bid.
-              An unanswered question stays a question.
+              Ask follow-up questions about your saved company records, unresolved requirements and
+              assigned tasks. BidBuddy can suggest next steps and help draft a response outline. In
+              workspace mode, company-specific answers use records your role allows it to access.
+            </p>
+            <p>
+              Review AI suggestions against the original notice. BidBuddy cannot approve pricing,
+              verify legal qualifications, authorize submission, or submit a bid.
             </p>
           </div>
           <div>
             <h3>Questions to ask BidBuddy</h3>
             <ul className={clean.recordList}>
-              <li>Why might this opportunity fit our company?</li>
-              <li>Which bid requirements still need our review?</li>
               <li>Which requirements still lack reviewed evidence?</li>
-              <li>What tasks are overdue?</li>
-              <li>Summarize the requirements recorded for this bid.</li>
+              <li>What company records do we have for this license requirement?</li>
+              <li>What tasks are overdue for this bid?</li>
               <li>Create a response outline for this solicitation.</li>
             </ul>
             <p>
@@ -304,12 +305,12 @@ export default async function Home() {
         </section>
         <section id="questions" className={clean.questions} aria-labelledby="questions-title">
           <div>
-            <span className={styles.eyebrow}>BUILT FOR CALIFORNIA FIELD CONTRACTORS</span>
-            <h2 id="questions-title">For the team balancing bids with work in the field.</h2>
+            <span className={styles.eyebrow}>BEFORE YOU GET STARTED</span>
+            <h2 id="questions-title">What to know before adding your first bid.</h2>
             <p>
               For contractor owners, estimators, bid coordinators and project managers handling
-              public-works and utility bids alongside day-to-day operations. Start with one
-              opportunity and the records your team already maintains.
+              public-works and utility bids. Start with a public notice, your company profile and
+              the person responsible for the bid review.
             </p>
           </div>
           <div className={clean.faq}>
@@ -317,7 +318,8 @@ export default async function Home() {
               <summary>Is BidXchange a bid board?</summary>
               <p>
                 No. It helps you review and prepare bids for work you already found or added.
-                Research searches available records; portal shortcuts open official external sites.
+                Research searches records available in BidXchange. Portal shortcuts open official
+                external sites; they do not import every bid posted there.
               </p>
             </details>
             <details>
@@ -388,7 +390,7 @@ export default async function Home() {
                 alt="BidXchange"
               />
             </Link>
-            <p>From a promising opportunity to a reviewed response.</p>
+            <p>Company records, bid requirements and response drafts in one workspace.</p>
           </div>
           <nav aria-label="Footer access links">
             <Link href="/login">Sign In</Link>
