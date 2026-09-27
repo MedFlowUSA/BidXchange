@@ -8,8 +8,8 @@ Browser testing also found native form reset reverting a controlled select after
 
 ## Database release
 
-- Additive migration `20260926003500_task_progress.sql`; no table/data transformation or new role.
-- Migration manifest revision 23: 34 schema migrations and the separately excluded original company seed.
+- Additive migration `20260926003500_task_progress.sql`; no table/data transformation or new role. Follow-up `20260926003600_task_progress_conflict_response.sql` preserves the boundary and replaces the stale-input error code with P0001.
+- Migration manifest revision 24: 35 schema migrations and the separately excluded original company seed.
 - Staging and production both had migration 034 before this release. Migration 035 was applied in a transaction, recorded in the existing migration ledger, and PostgREST was notified.
 - Anonymous execution is denied; authenticated execution remains subject to the RPC's current membership, organization, assignment and version checks.
 - Hosted staging tests use temporary fictional records in a rolled-back transaction. TLS verification remained enabled using the existing trusted Supabase CA.
@@ -23,6 +23,14 @@ Browser testing also found native form reset reverting a controlled select after
 - `npm run typecheck`, `npm run lint`, `npm run test:secrets`, `git diff --check`: passed.
 - `npx playwright test --reporter=line`: all 334 tests passed.
 - `npm run build`: passed; production Next.js build completed.
+
+## Live conflict-response correction
+
+Initial production desktop save, phone completion and reopening succeeded. Stale-input acceptance exposed a hosted REST problem: the 40001 error used by migration 035 caused a request to exceed a 20-second direct-API timeout even though direct SQL tests passed. Migration 036 returns the application's P0001 validation error instead; a real fictional-user REST call then returned HTTP 400 with the expected stale-version message in 140 ms. Both staging and production migrations were applied transactionally without changing any customer task data or permission rules.
+
+The Server Action also bounds its RPC to 15 seconds. A confirmed stale response asks the user to refresh; a transport failure says the save could not be confirmed and asks them to inspect the saved task before retrying. This avoids claiming a timed-out write definitely failed.
+
+Follow-up checks: local and hosted staging task database tests passed with an explicit P0001 assertion; migration/bootstrap tests passed (5); `npx playwright test tests/task-progress-actions.spec.ts tests/deadline-ui.spec.ts --reporter=line` passed (9); typecheck, lint and production build passed. The earlier full run passed 334 tests; the added Server Action test separately covers allowed RPC parameters, transport uncertainty, stale feedback and viewer/foreign-workspace/input rejection.
 
 ## Use and limits
 

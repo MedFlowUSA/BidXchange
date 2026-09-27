@@ -176,7 +176,12 @@
       "file": "20260926003500_task_progress.sql",
       "sha256": "23410e2ac3cb3633b1e6270938f0ab47ecf2b9d79411db5fef68ad64d2f16846",
       "action": "include-schema"
+    },
+    {
+      "file": "20260926003600_task_progress_conflict_response.sql",
+      "sha256": "d89ed4ce53e1ccdc056610393f09e3317e966b423373d527b079361db6b54a1d",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 23
+  "packageRevision": 24
 }
