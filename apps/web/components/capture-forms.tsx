@@ -51,7 +51,14 @@ export function CaptureForm({
         {label}
       </summary>
       {
-        <form action={submit} className="opportunity-form admin-form" aria-label={label}>
+        <form
+          action={submit}
+          className="opportunity-form admin-form"
+          aria-label={label}
+          // React requests a native reset after an action returns, including a handled error.
+          // Keep controlled drafts (especially select elements) intact for retry/review.
+          onReset={(event) => event.preventDefault()}
+        >
           {Object.entries(draftIdentity).map(([name, value]) => (
             <input key={name} type="hidden" name={name} value={value} />
           ))}

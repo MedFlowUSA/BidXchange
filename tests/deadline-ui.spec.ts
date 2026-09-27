@@ -32,6 +32,7 @@ test.beforeEach(async ({ page }) => {
                   : [
                       'saveOpportunity',
                       'savePursuitTask',
+                      'saveTaskProgress',
                       'startPursuit',
                       'saveRequirement',
                       'savePepmaOpportunity',
@@ -41,7 +42,7 @@ test.beforeEach(async ({ page }) => {
                     ]
                       .map(
                         (name) =>
-                          `export async function ${name}(_state,form){window.__saved=Object.fromEntries(form);return {message:'Synthetic saved'};}`,
+                          `export async function ${name}(_state,form){window.__saved=Object.fromEntries(form);${name === 'saveTaskProgress' ? "await new Promise(r=>setTimeout(r,300));return window.__fail?{message:'Synthetic save failed; selection retained'}:{success:true,message:'Synthetic progress saved'};" : "return {message:'Synthetic saved'};"}}`,
                       )
                       .join('\n'),
           }));
@@ -63,6 +64,54 @@ test.beforeEach(async ({ page }) => {
     content: bundle.outputFiles.find((f) => f.path.endsWith('.js'))!.text,
   });
 });
+
+for (const width of [390, 1440])
+  test(`assigned progress preserves authority and failed selections at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    for (const role of ['viewer', 'organization_admin', 'capture_manager', 'unassigned'])
+      await expect(
+        page.getByRole('region', { name: `Progress for ${role}`, exact: true }).locator('summary'),
+      ).toHaveCount(0);
+    for (const role of ['contributor', 'estimator', 'executive_approver']) {
+      const region = page.getByRole('region', { name: `Progress for ${role}`, exact: true });
+      await region.locator('summary').click();
+      await expect(region.getByLabel('Task progress', { exact: true })).toBeVisible();
+      await expect(region.getByLabel('Task owner', { exact: true })).toHaveCount(0);
+    }
+    const region = page.getByRole('region', { name: 'Progress for estimator', exact: true });
+    const select = region.getByLabel('Task progress', { exact: true });
+    const button = region.getByRole('button', { name: 'Update my task progress', exact: true });
+    await page.evaluate(() => {
+      (window as unknown as { __fail: boolean }).__fail = true;
+    });
+    await select.selectOption('complete');
+    await button.click();
+    await expect(select).toBeDisabled();
+    await expect(region.getByRole('status')).toContainText('Synthetic save failed');
+    await expect(select).toHaveValue('complete');
+    await expect(select).toBeEnabled();
+    expect(
+      await page.evaluate(() => (window as unknown as { __saved: Record<string, string> }).__saved),
+    ).toEqual({
+      organization_id: '11111111-1111-4111-8111-111111111111',
+      pursuit_id: '22222222-2222-4222-8222-222222222222',
+      record_id: '55555555-5555-4555-8555-555555555555',
+      updated_at: '2026-09-26T12:00:00.123456Z',
+      status: 'complete',
+    });
+    await page.evaluate(() => {
+      (window as unknown as { __fail: boolean }).__fail = false;
+    });
+    await button.click();
+    await expect(region.getByRole('status')).toContainText('Synthetic progress saved');
+    await expect(select).toBeDisabled();
+    await expect(region.getByRole('button', { name: 'Continue with saved records' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  });
 
 for (const width of [390, 1440])
   test(`opportunity and task dates submit explicit instants at ${width}px`, async ({ page }) => {

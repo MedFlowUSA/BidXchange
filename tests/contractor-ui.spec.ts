@@ -45,6 +45,7 @@ for (const width of [390, 1440])
                         'savePursuit',
                         'startPursuit',
                         'savePursuitTask',
+                        'saveTaskProgress',
                       ]
                         .map(
                           (name) =>
@@ -100,7 +101,10 @@ for (const width of [390, 1440])
     await expect(
       page.getByRole('link', { name: 'Official source · external site' }),
     ).toHaveAttribute('rel', 'noopener noreferrer');
-    await page.locator('summary').filter({ hasText: /^Record human amendment review$/ }).click();
+    await page
+      .locator('summary')
+      .filter({ hasText: /^Record human amendment review$/ })
+      .click();
     await page.getByLabel('Type reviewed after reading the official change').fill('reviewed');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
