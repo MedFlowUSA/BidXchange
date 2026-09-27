@@ -123,7 +123,15 @@ test('assigned task progress is narrow, versioned, audited and tenant isolated',
         (k) => !['status', 'updated_at', 'completed_at'].includes(k),
       ))
         assert.deepEqual(started[key], original[key], key);
-      await assert.rejects(as(users[role], sql, args(original, 'complete')), /Task changed/);
+      await assert.rejects(as(users[role], sql, args(original, 'complete')), (error) => {
+        assert.equal(
+          error.code,
+          'P0001',
+          'Stale human input must not trigger serialization retries',
+        );
+        assert.match(error.message, /Task changed/);
+        return true;
+      });
       await as(users[role], sql, args(started, 'complete'));
       const complete = await row(original.id);
       assert(complete.completed_at);
