@@ -171,7 +171,12 @@
       "file": "20260926003400_private_bid_conversations.sql",
       "sha256": "8464c4ab3934627d80ad85706f44068be191a67194acf74c0a14e68778536f37",
       "action": "include-schema"
+    },
+    {
+      "file": "20260926003500_task_progress.sql",
+      "sha256": "23410e2ac3cb3633b1e6270938f0ab47ecf2b9d79411db5fef68ad64d2f16846",
+      "action": "include-schema"
     }
   ],
-  "packageRevision": 22
+  "packageRevision": 23
 }

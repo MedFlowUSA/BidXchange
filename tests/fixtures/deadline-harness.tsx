@@ -58,6 +58,35 @@ createRoot(document.getElementById('root')!).render(
         }}
       />
     </section>
+    {[
+      'contributor',
+      'estimator',
+      'executive_approver',
+      'viewer',
+      'organization_admin',
+      'capture_manager',
+      'unassigned',
+    ].map((role) => (
+      <section aria-label={`Progress for ${role}`} key={role}>
+        <TaskContext
+          data={{
+            ...data,
+            organization: {
+              ...data.organization,
+              role: role === 'unassigned' ? 'contributor' : role,
+            },
+          }}
+          task={{
+            id: '55555555-5555-4555-8555-555555555555',
+            pursuit_id: pursuit,
+            title: 'Fictional assigned follow-up',
+            status: 'todo',
+            updated_at: '2026-09-26T12:00:00.123456Z',
+            assigned_user_id: role === 'unassigned' ? null : data.userId,
+          }}
+        />
+      </section>
+    ))}
     <CaptureForm
       label="Retry test"
       action={async (_state, form) => ({ message: 'Synthetic save failed: ' + form.get('date') })}

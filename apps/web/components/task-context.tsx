@@ -1,5 +1,7 @@
 import type { TenantData } from '../lib/tenant-types';
 import styles from './task-context.module.css';
+import TaskProgressForm from './task-progress-form';
+import { canReportTaskProgress } from '../lib/task-progress';
 
 // Task notes are already workspace-visible records. Do not fetch private Passport facts here.
 export default function TaskContext({
@@ -41,7 +43,9 @@ export default function TaskContext({
           register before relying on this task.
         </p>
       ) : null}
+      <TaskProgressForm data={data} task={task} />
       {task.status !== 'complete' &&
+        !canReportTaskProgress(data, task) &&
         !['organization_admin', 'capture_manager'].includes(data.organization.role) && (
           <p>A bid lead or company administrator can update this task after you report progress.</p>
         )}
