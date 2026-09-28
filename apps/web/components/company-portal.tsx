@@ -1,5 +1,6 @@
 'use client';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import Link from 'next/link';
 import {
   Building2,
   FileCheck2,
@@ -9,7 +10,8 @@ import {
   ListChecks,
 } from 'lucide-react';
 import type { TenantData } from '../lib/tenant-types';
-import { informationRequestQueue } from '../lib/information-requests';
+import { companyNextActions } from '../lib/company-next-actions';
+import { workspaceHref } from '../lib/routes';
 import styles from './company-portal.module.css';
 
 const sections = [
@@ -23,9 +25,9 @@ const sections = [
 ] as const;
 type Section = (typeof sections)[number]['id'];
 const ActiveSection = createContext<Section>('overview');
-export function companySection(hash: string): Section {
+export function companySection(hash: string, decisionsEnabled = true): Section {
   if (hash === '#company-review') return 'review';
-  if (hash === '#company-decisions') return 'decisions';
+  if (hash === '#company-decisions') return decisionsEnabled ? 'decisions' : 'overview';
   if (hash.startsWith('#passport-') || hash === '#company-edit') return 'edit';
   if (hash.startsWith('#fact-') || hash === '#company-readiness' || hash === '#company-records')
     return 'records';
@@ -48,16 +50,45 @@ export default function CompanyPortal({
   reviewCount: number;
 }) {
   const [active, setActive] = useState<Section>('overview');
+  const [fragment, setFragment] = useState('');
+  const portal = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const sync = () => setActive(companySection(location.hash));
+    const sync = () => {
+      setActive(companySection(location.hash, !!data.decisionMemoryEnabled));
+      setFragment(location.hash);
+    };
     sync();
     window.addEventListener('hashchange', sync);
     return () => window.removeEventListener('hashchange', sync);
-  }, []);
-  const requests = informationRequestQueue(data).filter((r) => r.status !== 'complete');
+  }, [data.decisionMemoryEnabled]);
+  useEffect(() => {
+    if (!fragment) return;
+    // The fragment target was hidden when native anchor navigation ran. Wait for panels,
+    // Passport questions and fact disclosures to render before moving focus and scrolling.
+    const frame = requestAnimationFrame(() => {
+      let id: string;
+      try {
+        id = decodeURIComponent(fragment.slice(1));
+      } catch {
+        id = `company-${active}`;
+      }
+      const destination = document.getElementById(id);
+      const target =
+        destination && portal.current?.contains(destination) && destination.getClientRects().length
+          ? destination
+          : document.getElementById(`company-${active}`);
+      if (!target || !portal.current?.contains(target)) return;
+      target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+      target.scrollIntoView({ block: 'start', behavior: 'instant' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [active, fragment]);
+  const { requests, progress, renewalCount } = companyNextActions(data);
+  const admin = data.organization.role === 'organization_admin';
   return (
     <ActiveSection.Provider value={active}>
-      <div className={styles.portal}>
+      <div className={styles.portal} ref={portal}>
         <header className={styles.hero}>
           <div className={styles.identity}>
             <span className={styles.avatar} aria-hidden="true">
@@ -75,6 +106,34 @@ export default function CompanyPortal({
             Your company details, services and contracting records. Keep the Passport evidence
             current for each bid.
           </p>
+          <div className={styles.setupProgress}>
+            <div>
+              <strong>{progress.percent}%</strong>
+              <span> of {admin ? 'profile' : 'visible profile'} fields recorded</span>
+              <p>
+                {progress.completed} of {progress.total} Level-1 fields. Evidence review is
+                separate.
+              </p>
+            </div>
+            <div>
+              <progress
+                aria-label="Company profile fields recorded"
+                max={progress.total}
+                value={progress.completed}
+              />
+              <a href="#profile-completion-title">See missing fields →</a>
+            </div>
+          </div>
+          {!admin && (
+            <p className={styles.scopeNote}>
+              Your role may hide records. These counts describe your visible records only.
+            </p>
+          )}
+          {data.facts.length >= 500 && (
+            <p className={styles.scopeNote}>
+              This view is limited to 500 records; additional saved evidence may be omitted.
+            </p>
+          )}
           <div className={styles.quickLinks}>
             <a href="#company-edit" className={styles.profileAction}>
               <Building2 size={20} aria-hidden="true" />
@@ -96,7 +155,7 @@ export default function CompanyPortal({
               <span aria-hidden="true">→</span>
             </a>
             <a href="#company-dates">
-              <CalendarDays size={20} aria-hidden="true" />
+              <strong>{renewalCount}</strong>
               <span>Check dates & renewals</span>
               <span aria-hidden="true">→</span>
             </a>
@@ -115,6 +174,53 @@ export default function CompanyPortal({
         {children}
       </div>
     </ActiveSection.Provider>
+  );
+}
+export function CompanyNextActions({ data }: { data: TenantData }) {
+  const { actions } = companyNextActions(data);
+  const capture = ['organization_admin', 'capture_manager'].includes(data.organization.role);
+  return (
+    <section className={styles.nextActions} aria-labelledby="company-next-actions-title">
+      <div className={styles.sectionHeading}>
+        <div>
+          <span className={styles.eyebrow}>START HERE</span>
+          <h2 id="company-next-actions-title">Your next actions</h2>
+        </div>
+        <a href="#company-review">Open the review queue →</a>
+      </div>
+      <p>Follow up on dates and requests first, then complete and review your company records.</p>
+      {actions.length ? (
+        <ol className={styles.actionList}>
+          {actions.map((action) => (
+            <li key={action.id}>
+              <span className={styles.actionLabel}>{action.label}</span>
+              <a href={action.href}>
+                {action.title} <span aria-hidden="true">→</span>
+              </a>
+              <p>{action.detail}</p>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p>
+          No follow-ups are flagged in the visible records. Check the requirements of your next bid
+          before reusing evidence.
+        </p>
+      )}
+      <div className={styles.bidLinks}>
+        <div>
+          <strong>Ready to work on a bid?</strong>
+          <p>
+            Open an existing pursuit or bring in the buyer’s notice. Profile completion is not a
+            gate to starting a review.
+          </p>
+        </div>
+        <Link href={workspaceHref('/pursuits', data.organization.id)}>Open pursuits →</Link>
+        <Link href={workspaceHref('/opportunities', data.organization.id)}>
+          {capture ? 'Add or review a notice →' : 'View opportunities →'}
+        </Link>
+      </div>
+    </section>
   );
 }
 export function CompanyPanel({ name, children }: { name: Section; children: ReactNode }) {

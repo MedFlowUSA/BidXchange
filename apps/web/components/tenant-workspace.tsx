@@ -9,7 +9,7 @@ import ProfileCompletion from './profile-completion';
 import CompanyReview from './company-review';
 import CompanySnapshot from './company-snapshot';
 import InformationRequests from './information-requests';
-import CompanyPortal, { CompanyPanel } from './company-portal';
+import CompanyPortal, { CompanyPanel, CompanyNextActions } from './company-portal';
 import DecisionMemoryPanel from './decision-memory';
 import Dialog from './dialog';
 import { GuideContent, GettingStarted, NextActions } from './workspace-guide';
@@ -713,9 +713,9 @@ export default function TenantWorkspace({
                 </CompanyPanel>
               )}
               <CompanyPanel name="overview">
+                <CompanyNextActions data={data} />
                 <CompanySnapshot data={data} />
                 <ProfileCompletion data={data} />
-                <EvidenceRenewals key={org.id + '-overview-radar'} data={data} />
               </CompanyPanel>
               <CompanyPanel name="review">
                 <CompanyReview key={org.id + '-review'} data={data} />

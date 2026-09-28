@@ -53,6 +53,12 @@ export function pursuitNextStep(data: TenantData, pursuitId: string) {
       href: '#bid-decision',
       reason: 'No-bid is recorded. Further response work requires a new human decision.',
     };
+  if (!data.responsePackages?.length)
+    return {
+      title: 'Create response outline',
+      href: '#response-packages',
+      reason: 'Build from reviewed evidence and leave missing content for a person.',
+    };
   const release = data.releaseWorkflow?.versions[0];
   if (
     !release ||
@@ -64,12 +70,6 @@ export function pursuitNextStep(data: TenantData, pursuitId: string) {
       href: '#response-release',
       reason:
         'Review the packet, destination, named submitter and external completion confirmation.',
-    };
-  if (!data.responsePackages?.length)
-    return {
-      title: 'Create response outline',
-      href: '#response-packages',
-      reason: 'Build from reviewed evidence and leave missing content for a person.',
     };
   return {
     title: 'Record submission',
