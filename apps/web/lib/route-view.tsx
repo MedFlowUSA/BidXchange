@@ -8,6 +8,8 @@ import { accountContext, loadTenant } from './tenant';
 import { sections, workspaceHref } from './routes';
 import { loadDecisionMemory } from './decision-memory-records';
 import { loadComparisons } from './amendment-comparison-records';
+import { parseTaskInboxFilters } from './task-inbox';
+import { loadTaskInbox } from './task-inbox-records';
 export type RouteQuery = Promise<Record<string, string | string[] | undefined>>;
 export async function renderWorkspace(
   page: string,
@@ -90,6 +92,16 @@ export async function renderWorkspace(
         </main>
       </AppShell>
     );
+  if (page === 'Today' && account.supabase && account.user) {
+    const filters = parseTaskInboxFilters(query, data.organization.role);
+    if (!filters.success) notFound();
+    data.taskInbox = await loadTaskInbox(
+      account.supabase,
+      data.organization.id,
+      account.user.id,
+      filters.data,
+    );
+  }
   data.decisionMemoryEnabled = process.env.BIDXCHANGE_DECISION_MEMORY_ENABLED === 'true';
   if (data.decisionMemoryEnabled && account.supabase && (page === 'Company' || recordId)) {
     const opportunityId =

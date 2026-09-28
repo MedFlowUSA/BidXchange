@@ -159,6 +159,7 @@ export type TenantData = {
     before_target: { requirement: string; citation: string | null } | null;
   }[];
   reviewAsOf: string;
+  taskInbox?: import('./task-inbox').TaskInbox;
   organization: Organization;
   choices: OrganizationChoice[];
   userEmail: string;

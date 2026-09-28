@@ -1,0 +1,132 @@
+.inbox {
+  min-width: 0;
+  scroll-margin-top: 6rem;
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.heading h2 {
+  margin-bottom: 0.5rem;
+}
+.heading button {
+  flex-shrink: 0;
+}
+.filters {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin: 1.25rem 0;
+  padding: 1rem;
+  background: #f6f8fc;
+  border-radius: 12px;
+}
+.filters label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem;
+  border: 1px solid #ccd5e5;
+  border-radius: 8px;
+  color: #11203f;
+  background: white;
+  font: inherit;
+}
+.caption {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #536078;
+}
+.tasks {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+}
+.task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 230px);
+  gap: 1rem;
+  padding: 1.3rem 0;
+  border-top: 1px solid #dce3ef;
+  overflow-wrap: anywhere;
+}
+.task h3 {
+  margin: 0.4rem 0 0.65rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.task p {
+  margin: 0.35rem 0;
+}
+.pursuit {
+  font-size: 0.8rem;
+  color: #536078;
+}
+.deadline {
+  align-self: center;
+}
+.deadline a {
+  margin-top: 0.5rem;
+}
+.overdue,
+.dateLabel {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+}
+.overdue {
+  color: #8e241c;
+  background: #fff0ed;
+}
+.dateLabel {
+  color: #31415d;
+  background: #eef2f8;
+}
+.pages {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  border-top: 1px solid #dce3ef;
+  padding-top: 1rem;
+}
+.pages span {
+  margin-right: auto;
+}
+.empty {
+  padding: 1rem;
+  background: #f6f8fc;
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+@media (max-width: 600px) {
+  .heading {
+    flex-direction: column;
+  }
+  .task {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .filters {
+    padding: 0.8rem;
+  }
+  .filters label {
+    flex-basis: 100%;
+  }
+  .pages {
+    align-items: stretch;
+  }
+  .pages span {
+    flex-basis: 100%;
+  }
+}
