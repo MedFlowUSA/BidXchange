@@ -1,5 +1,9 @@
 # Per-bid PDF report
 
+In **Company profile → Bid reports**, find a saved pursuit by title, buyer or solicitation, select it, then choose **Generate bid report PDF**. The server assembles current company and bid records and automatically includes the newest supported saved answer draft for that pursuit. If no answer draft exists, unanswered requirements remain explicit. A direct link opens the pursuit for editing or choosing a particular draft. Save changes before generating again; downloaded PDFs do not update themselves.
+
+No existing pursuit? Add the notice through Opportunities and choose Start pursuit. Reports created outside the application are not automatically imported as pursuit records. This authenticated feature does not scrape or infer details from an uploaded report, invent answers, schedule background exports, or change approval/submission status. Restricted facts remain an explicit, role-controlled export choice.
+
 In an authenticated bid/pursuit workspace, use **Bid report** near the top of the page. Select a saved response draft for its answers, or choose no draft to export the current review. Choose **Download bid report PDF**. Save response edits before exporting.
 
 The report combines:
@@ -20,6 +24,8 @@ By default, the same workspace-safe company disclosure rule used for shared info
 The route validates organization/pursuit/draft version, checks the exact tenant record, and reauthorizes user/role after rendering. It then reloads the same source selection and refuses the download if its rendered content changed. Private/no-store headers prevent response caching. It fails visibly for unsupported PDF characters, oversized/incomplete source sets or missing draft versions rather than silently dropping text. Existing limits include 100 active requirements, fewer than 500 loaded company facts/tasks, fewer than 100 amendments and 180,000 report-text characters. The 20 most recent supported drafts are offered; older drafts can be opened and saved through the response workflow. Historical audit trails and previous release versions are not represented as a complete history.
 
 ## Validation — September 28, 2026
+
+Company portal extension: `npx playwright test tests/bid-report.spec.ts tests/bid-report-route.spec.ts tests/bid-report-ui.spec.ts tests/company-bid-reports.spec.ts tests/company-portal.spec.ts --project=desktop` — 13 passed, including 1440px/390px browser coverage, empty/search states, bid-selection reset, automatic latest draft, concurrent new draft rejection and existing authorization regression checks.
 
 - `npx playwright test tests/bid-report.spec.ts tests/bid-report-route.spec.ts tests/bid-report-ui.spec.ts tests/response-package.spec.ts tests/handoff-export.spec.ts tests/handoff-route.spec.ts --reporter=line`: 17 passed.
 - `npx playwright test tests/bid-report.spec.ts --reporter=line`: 5 passed after checking the existing `complete` task status in the open-work count.

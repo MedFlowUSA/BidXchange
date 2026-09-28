@@ -19,6 +19,7 @@ const sections = [
   { id: 'edit', label: 'Edit profile', icon: Building2 },
   { id: 'review', label: 'Review queue', icon: ListChecks },
   { id: 'records', label: 'Saved records', icon: FileCheck2 },
+  { id: 'reports', label: 'Bid reports', icon: FileCheck2 },
   { id: 'dates', label: 'Radar', icon: CalendarDays },
   { id: 'requests', label: 'Requests', icon: ClipboardList },
   { id: 'decisions', label: 'Decision Log', icon: ClipboardList },
@@ -27,6 +28,7 @@ type Section = (typeof sections)[number]['id'];
 const ActiveSection = createContext<Section>('overview');
 export function companySection(hash: string, decisionsEnabled = true): Section {
   if (hash === '#company-review') return 'review';
+  if (hash === '#company-reports') return 'reports';
   if (hash === '#company-decisions') return decisionsEnabled ? 'decisions' : 'overview';
   if (hash.startsWith('#passport-') || hash === '#company-edit') return 'edit';
   if (hash.startsWith('#fact-') || hash === '#company-readiness' || hash === '#company-records')
@@ -216,6 +218,7 @@ export function CompanyNextActions({ data }: { data: TenantData }) {
           </p>
         </div>
         <Link href={workspaceHref('/pursuits', data.organization.id)}>Open pursuits →</Link>
+        <a href="#company-reports">Generate a bid report →</a>
         <Link href={workspaceHref('/opportunities', data.organization.id)}>
           {capture ? 'Add or review a notice →' : 'View opportunities →'}
         </Link>

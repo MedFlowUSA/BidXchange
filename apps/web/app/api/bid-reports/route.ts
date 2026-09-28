@@ -14,9 +14,11 @@ const input = z
     package: z.uuid().optional(),
     version: z.iso.datetime({ offset: true }).optional(),
     restricted: z.enum(['true', 'false']).default('false'),
+    answers: z.enum(['selected', 'latest']).default('selected'),
   })
   .strict()
-  .refine((v) => !!v.package === !!v.version);
+  .refine((v) => !!v.package === !!v.version)
+  .refine((v) => v.answers !== 'latest' || !v.package);
 async function asset(file: string) {
   try {
     return await readFile(path.join(process.cwd(), 'apps/web/public', file));
@@ -88,6 +90,7 @@ export async function GET(request: Request) {
       packageId: v.package,
       version: v.version,
       restricted: v.restricted === 'true',
+      latestDraft: v.answers === 'latest',
     };
     const now = new Date(),
       document = bidReport(data, v.pursuit, selection, now);

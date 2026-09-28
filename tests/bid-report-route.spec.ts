@@ -33,6 +33,13 @@ test('report endpoint enforces tenant, role, saved version, rate, and source cha
         if (this.change === 'fact') copy.facts[0].value = 'Changed fact';
         if (this.change === 'answer') copy.responsePackages![0].content = '{}';
         if (this.change === 'review') copy.resolutions![0].review_current = false;
+        if (this.change === 'new-draft')
+          copy.responsePackages!.unshift({
+            ...copy.responsePackages![0],
+            id: '99999999-9999-4999-8999-999999999999',
+            title: 'BID response: Newly saved answer',
+            updated_at: '2099-01-01T00:00:00Z',
+          });
       }
       return { data: copy };
     },
@@ -139,6 +146,18 @@ test('report endpoint enforces tenant, role, saved version, rate, and source cha
   expect(success.headers.get('cache-control')).toBe('private, no-store');
   expect(await success.text()).toBe('%PDF');
   fixture.role = 'organization_admin';
+  expect((await get({ answers: 'latest' })).status).toBe(200);
+  expect(
+    (
+      await get({
+        answers: 'latest',
+        package: data.responsePackages![0].id,
+        version: data.responsePackages![0].updated_at,
+      })
+    ).status,
+  ).toBe(400);
+  fixture.change = 'new-draft';
+  expect((await get({ answers: 'latest' })).status).toBe(409);
   for (const change of ['role', 'revoke', 'fact', 'answer', 'review', 'profile']) {
     fixture.change = change;
     const response = await get({
