@@ -26,7 +26,7 @@ Desktop and phone screenshots were reviewed. Search fields fit 390px, have visib
 
 No official SAM request has been verified. Production has no configured `SAM_GOV_API_KEY`; the new search activation flag defaults off. The app can prepare filters but must not claim real results until the key is configured privately, activation is enabled and a narrow official request passes acceptance.
 
-A direct local AI planner smoke check using an older ignored environment file failed with `401 invalid_api_key`. The current production secret cannot be exported by Vercel (sensitive values are placeholders). This does not establish a production AI outage; production filter preparation must be checked through the deployed route with an isolated fictional account. No customer credential/configuration was changed to work around it.
+A direct local AI planner smoke check using an older ignored environment file failed with `401 invalid_api_key`. Inspection confirmed that its key was Vercel's `[SENSITIVE]` placeholder, not an actual credential. The current production secret likewise cannot be exported by Vercel. This does not establish a production AI outage; production filter preparation must be checked through the deployed route with an isolated fictional account. No customer credential/configuration was changed to work around it.
 
 ## Manual activation acceptance
 
