@@ -31,6 +31,7 @@ import OpportunityAmendments from './opportunity-amendments';
 import BidReview from './bid-review';
 import NoticeExcerptReview from './notice-excerpt-review';
 import ResponsePackages from './response-package';
+import BidReportDownload from './bid-report';
 import EvidenceStressTest from './evidence-stress-test';
 import PursuitDecision from './pursuit-decision';
 import RequirementResolution from './requirement-resolution';
@@ -451,6 +452,13 @@ export default function TenantWorkspace({
           recordType === 'pursuit' ? (
             <>
               {pursuit && <PursuitNextStep data={data} pursuitId={pursuit.id} />}
+              {pursuit && (
+                <BidReportDownload
+                  key={`report:${org.id}:${pursuit.id}:${org.role}`}
+                  data={data}
+                  pursuitId={pursuit.id}
+                />
+              )}
               <details className="panel">
                 <summary>More on this bid</summary>
                 {data.decisionMemory && <DecisionMemoryPanel data={data} />}

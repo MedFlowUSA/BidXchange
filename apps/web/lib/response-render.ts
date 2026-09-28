@@ -18,9 +18,10 @@ type Assets = { regular: Uint8Array; bold: Uint8Array; logo: Uint8Array };
 export async function renderResponsePdf(
   input: ResponseDocument,
   assets: Assets,
-  purpose: 'response' | 'handoff' = 'response',
+  purpose: 'response' | 'handoff' | 'report' = 'response',
 ) {
   const handoff = purpose === 'handoff';
+  const report = purpose === 'report';
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const regular = await pdf.embedFont(assets.regular, { subset: true });
@@ -29,9 +30,11 @@ export async function renderResponsePdf(
   pdf.setTitle(input.title);
   pdf.setAuthor(input.company);
   pdf.setSubject(
-    handoff
-      ? 'Internal submission handoff — not a buyer submission'
-      : `Draft ${input.kind ?? 'RFI'} response — internal review`,
+    report
+      ? 'Confidential internal bid report — saved records, not a submission'
+      : handoff
+        ? 'Internal submission handoff — not a buyer submission'
+        : `Draft ${input.kind ?? 'RFI'} response — internal review`,
   );
   pdf.setCreator('BidXchange');
   const navy = rgb(0.05, 0.1, 0.2),
@@ -50,9 +53,11 @@ export async function renderResponsePdf(
   ]) {
     if ([...clean(text)].some((c) => c !== '\n' && !supported.has(c.codePointAt(0)!)))
       throw new ResponseRenderError(
-        handoff
-          ? 'Some characters are not supported by the PDF font. Download the JSON packet to preserve the complete text.'
-          : 'Some characters are not supported by the PDF font. Download the editable Word file to preserve the complete text.',
+        report
+          ? 'This report contains characters not supported by the PDF font. Review those characters in the workspace before retrying; no text was silently removed.'
+          : handoff
+            ? 'Some characters are not supported by the PDF font. Download the JSON packet to preserve the complete text.'
+            : 'Some characters are not supported by the PDF font. Download the editable Word file to preserve the complete text.',
       );
   }
   let page: PDFPage,
@@ -63,9 +68,11 @@ export async function renderResponsePdf(
     page = pdf.addPage([612, 792]);
     y = 718;
     page.drawText(
-      handoff
-        ? 'BIDXCHANGE  /  SUBMISSION HANDOFF'
-        : `BIDXCHANGE  /  ${input.kind ?? 'RFI'} RESPONSE`,
+      report
+        ? 'BIDXCHANGE  /  BID REPORT'
+        : handoff
+          ? 'BIDXCHANGE  /  SUBMISSION HANDOFF'
+          : `BIDXCHANGE  /  ${input.kind ?? 'RFI'} RESPONSE`,
       {
         x: 48,
         y: 752,
@@ -115,32 +122,41 @@ export async function renderResponsePdf(
   addPage();
   page!.drawImage(logo, { x: 48, y: 637, width: 240, height: (240 * logo.height) / logo.width });
   y = 606;
-  write(handoff ? 'INTERNAL HANDOFF' : 'DRAFT', bold, 15, gold);
+  write(
+    report ? 'CONFIDENTIAL INTERNAL REPORT' : handoff ? 'INTERNAL HANDOFF' : 'DRAFT',
+    bold,
+    15,
+    gold,
+  );
   write(input.title, bold, 24);
   write(input.draftName, regular, 12, gray);
   write(input.company, bold, 16);
   write(
-    `${handoff ? 'Buyer' : 'Prepared for'}: ${input.buyer}\nSolicitation: ${input.solicitation}`,
+    `${handoff || report ? 'Buyer' : 'Prepared for'}: ${input.buyer}\nSolicitation: ${input.solicitation}`,
     regular,
     11,
   );
   write(
-    `${handoff ? 'Frozen version' : 'Saved draft'}: ${input.version}\nGenerated: ${input.generatedAt}`,
+    `${report ? 'Report sources' : handoff ? 'Frozen version' : 'Saved draft'}: ${input.version}\nGenerated: ${input.generatedAt}`,
     regular,
     9,
     gray,
   );
   write(
-    handoff
-      ? (input.blocks[0]?.text ?? 'Review handoff status')
-      : 'Internal working copy. Not approved for submission.',
+    report
+      ? 'Saved answers and human findings — review before sharing.'
+      : handoff
+        ? (input.blocks[0]?.text ?? 'Review handoff status')
+        : 'Internal working copy. Not approved for submission.',
     bold,
     12,
   );
   write(
-    handoff
-      ? 'For your submission team. Not a buyer submission or proof of receipt. Recheck live status before use; this copy does not update after export.'
-      : 'Includes an internal review checklist. Verify the notice, responses and supporting evidence before sharing with the buyer.',
+    report
+      ? 'Company records, bid details, requirements and open work at export time. This report does not certify eligibility, approve a response or submit a bid.'
+      : handoff
+        ? 'For your submission team. Not a buyer submission or proof of receipt. Recheck live status before use; this copy does not update after export.'
+        : 'Includes an internal review checklist. Verify the notice, responses and supporting evidence before sharing with the buyer.',
     regular,
     11,
     gray,
@@ -159,7 +175,11 @@ export async function renderResponsePdf(
   pages.forEach((p, i) => {
     p.drawLine({ start: { x: 48, y: 48 }, end: { x: 564, y: 48 }, color: gold, thickness: 1 });
     p.drawText(
-      handoff ? 'INTERNAL HANDOFF — NOT A BUYER SUBMISSION' : 'DRAFT — NOT APPROVED FOR SUBMISSION',
+      report
+        ? 'CONFIDENTIAL BID REPORT — NOT A BUYER SUBMISSION'
+        : handoff
+          ? 'INTERNAL HANDOFF — NOT A BUYER SUBMISSION'
+          : 'DRAFT — NOT APPROVED FOR SUBMISSION',
       {
         x: 48,
         y: 31,
