@@ -11,6 +11,7 @@ const links = [
   ['How it works', '#sample-review'],
   ['Company profile', '#company-passport'],
   ['BidBuddy', '#ai-assistance'],
+  ['FAQ', '#questions'],
 ];
 
 export default function MarketingHeader({ signedIn }: { signedIn: boolean }) {

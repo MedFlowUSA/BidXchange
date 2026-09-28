@@ -205,70 +205,87 @@ export default async function Home() {
         <section id="questions" className={clean.questions} aria-labelledby="questions-title">
           <div>
             <span className={styles.eyebrow}>BEFORE YOU GET STARTED</span>
-            <h2 id="questions-title">What to know before adding your first bid.</h2>
+            <h2 id="questions-title">Frequently Asked Questions</h2>
             <p>
               For contractor owners, estimators, bid coordinators and project managers handling
-              public-works and utility bids. Start with a public notice, your company profile and
-              the person responsible for the bid review.
+              public-works and utility bids. Find out what to bring, what your team can do here, and
+              which decisions stay with you.
             </p>
           </div>
           <div className={clean.faq}>
             <details>
-              <summary>Is BidXchange a bid board?</summary>
+              <summary>What do I need to get started?</summary>
               <p>
-                No. It helps you review and prepare bids for work you already found or added.
-                Research searches records available in BidXchange. Portal shortcuts open official
-                external sites; they do not import every bid posted there.
+                Start with a public bid notice, basic company details and a person to lead the
+                review. Add supporting records as you work through the requirements. You can explore
+                the fictional demo without entering company data.{' '}
+                <Link href="/pursuits/DEMO-001?workspace=demo">Try the sample bid workspace</Link>.
               </p>
             </details>
             <details>
-              <summary>Does BidXchange determine whether we legally qualify?</summary>
+              <summary>Can I use bids from PEPMA, SAM.gov or other portals?</summary>
               <p>
-                No. It organizes requirements and evidence for human review. Final qualification
-                determinations remain with authorized people and the issuing agency.
+                Yes. Paste the public notice text and record its official link, deadline and
+                submission instructions. Portal shortcuts open external sites; they do not
+                automatically import or synchronize every notice. Your team checks the official
+                source for updates. <a href="#current-scope">See the current connection limits</a>.
               </p>
             </details>
             <details>
-              <summary>Does BidXchange write the entire proposal?</summary>
+              <summary>What belongs in my company profile?</summary>
               <p>
-                No. It drafts an outline from reviewed records and exports a working PDF or Word
-                document. Your team supplies technical answers, pricing and final review.
+                Legal company details, CSLB and DIR records, insurance expiration dates, bonding
+                information, service areas and relevant past projects. Keep the source and
+                last-checked date with each record so reviewers know what needs updating.{' '}
+                <Link href="/company?workspace=demo">Explore the sample company profile</Link>.
               </p>
             </details>
             <details>
-              <summary>Does BidXchange submit the bid?</summary>
+              <summary>How does BidBuddy use my company records?</summary>
               <p>
-                No. Your team submits through the buyer’s channel and records the result. BidXchange
-                does not independently verify buyer receipt.
+                In an enabled workspace, BidBuddy uses saved records your role permits it to access
+                to explain requirements, identify missing information and help draft an outline.
+                General mode does not use private company records. Review AI answers against the
+                source notice. <a href="#ai-assistance">See an illustrative BidBuddy answer</a>.
               </p>
             </details>
             <details>
-              <summary>What will I see in the demo?</summary>
+              <summary>Can I create and export a bid response?</summary>
               <p>
-                Fictional company records and a municipal energy retrofit opportunity. Explore
-                requirements and tasks without entering company data; the demo does not assess your
-                business or a live contract.
+                You can create a response outline from current, attested company records, add your
+                technical answers and export a PDF or Word draft. Missing information stays marked
+                for human input. Your team supplies pricing and approves a specific draft version.{' '}
+                <Link href="/pursuits/DEMO-001?workspace=demo">
+                  Explore the sample response workflow
+                </Link>
+                .
+              </p>
+            </details>
+            <details>
+              <summary>Does BidXchange submit bids or determine eligibility?</summary>
+              <p>
+                No. Your team reviews qualifications, makes the bid/no-bid decision, signs and
+                submits through the buyer’s required channel. You can record the submission and
+                confirmation here; BidXchange does not independently verify buyer receipt. It does
+                not guarantee eligibility, responsiveness, award, profitability or revenue.
               </p>
             </details>
             <details id="security">
-              <summary>Is our company information shared publicly?</summary>
+              <summary>Who can see my company information?</summary>
               <p>
-                No. Authenticated workspaces use organization membership and role-based access.
-                Company records can be restricted by role.
-              </p>
-            </details>
-            <details>
-              <summary>Does BidXchange guarantee awards?</summary>
-              <p>
-                No. BidXchange does not guarantee eligibility, responsiveness, award, profitability
-                or revenue.
+                Authenticated workspaces use organization membership and role-based access. Company
+                records can be restricted by role and are not published in the public demo. Link to
+                supporting documents in storage your company controls; access to those external
+                files is managed there.
               </p>
             </details>
             <details id="pricing">
-              <summary>What does it cost?</summary>
+              <summary>How do I arrange a walkthrough, and what does it cost?</summary>
               <p>
                 Start with a pilot walkthrough with Manuel. Commercial terms are not finalized; no
-                prices or service commitments are published yet.
+                prices or service commitments are published yet.{' '}
+                <a href="#request-demo">Arrange a walkthrough</a>. If the contact option opens your
+                email app, send the message there to request a time.
               </p>
             </details>
           </div>

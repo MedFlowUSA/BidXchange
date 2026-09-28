@@ -379,6 +379,11 @@
   margin-top: 14px;
   font-size: 14px;
 }
+.landing .faq a {
+  color: #254fce;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .landing summary:focus-visible {
   outline: 3px solid #315cff;
   outline-offset: 5px;
