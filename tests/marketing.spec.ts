@@ -1,14 +1,109 @@
 import { test, expect } from '@playwright/test';
 
+test('sample review connects requirements, records, tasks and human draft review without saving', async ({
+  page,
+}) => {
+  const mutations: string[] = [];
+  const providerCalls: string[] = [];
+  page.on('request', (request) => {
+    if (!['GET', 'HEAD'].includes(request.method())) mutations.push(request.url());
+    if (/\/api\/|supabase\.co|api\.openai\.com/.test(request.url()))
+      providerCalls.push(request.url());
+  });
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Try a sample bid review', exact: true }).click();
+  await expect(page).toHaveURL(/#sample-review$/);
+  const preview = page.locator('#sample-review');
+  const panel = page.locator('#sample-step');
+  await expect(panel).toContainText('confirmation for this bid is missing');
+  const license = preview.getByRole('button', { name: 'License requirement', exact: true });
+  await license.focus();
+  await page.keyboard.press('Enter');
+  await expect(license).toHaveAttribute('aria-pressed', 'true');
+  await expect(panel).toContainText('Needs human review');
+  await expect(panel.locator('dd').first()).toContainText(
+    'classification required for the electrical scope',
+  );
+  await expect(panel).toContainText('Bid lead: compare the classification');
+  await preview.getByRole('button', { name: 'Mandatory job walk', exact: true }).click();
+  await expect(license).toHaveAttribute('aria-pressed', 'false');
+  await expect(panel).toContainText('attendance has not been confirmed');
+  await expect(panel).toContainText('Project manager: confirm the date');
+  await preview.getByRole('button', { name: 'Company records', exact: true }).click();
+  await expect(panel).toContainText('last-checked date');
+  await expect(panel.getByRole('link', { name: 'View sample company profile' })).toHaveAttribute(
+    'href',
+    '/company?workspace=demo',
+  );
+  await preview.getByRole('button', { name: 'Open work', exact: true }).click();
+  await expect(panel).toContainText('Estimator · Request bond confirmation');
+  await expect(panel).toContainText('Completing a task does not approve a requirement');
+  await preview.getByRole('button', { name: 'Reviewed draft', exact: true }).click();
+  await expect(panel).toContainText('Sample draft · not approved');
+  await expect(panel).toContainText('[HUMAN INPUT REQUIRED]');
+  await expect(panel).toContainText('approves a specific version');
+  await expect(preview).toContainText('Fictional demonstration data');
+  expect(mutations).toEqual([]);
+  expect(providerCalls).toEqual([]);
+  expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual([0, 0]);
+  await page.reload();
+  await expect(
+    preview.getByRole('button', { name: 'Bid requirements', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('sample changes explain re-review, preserve human authority and reset', async ({ page }) => {
+  await page.goto('/');
+  const preview = page.locator('#sample-review');
+  const summary = preview.locator('summary');
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  const status = preview.getByRole('status');
+  await preview.getByRole('button', { name: 'Recorded amendment', exact: true }).click();
+  await expect(status).toContainText('register sign-off is cleared');
+  await expect(status).toContainText('decision is stale');
+  await preview.getByRole('button', { name: 'Expired insurance', exact: true }).click();
+  await expect(status).toContainText('linked requirement needs review');
+  await expect(status).toContainText('Request renewed evidence');
+  await expect(preview).toContainText('Previous decisions remain in the history');
+  await expect(preview).toContainText('No automatic no-bid decision or approval');
+  await preview.getByRole('button', { name: 'Reset example', exact: true }).click();
+  await expect(status).toContainText('Choose a change');
+  await expect(
+    preview.getByRole('button', { name: 'Expired insurance', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('company profile is directly discoverable and the illustrative answer points to its basis', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const answer = page.locator('#ai-assistance');
+  await expect(answer).toContainText('SCRIPTED EXAMPLE · FICTIONAL RECORDS');
+  await answer
+    .getByRole('link', { name: 'See the sample requirements behind this answer' })
+    .click();
+  await expect(page).toHaveURL(/#sample-review$/);
+  await page
+    .locator('#company-passport')
+    .getByRole('link', { name: 'View sample company profile' })
+    .click();
+  await expect(page).toHaveURL(/\/company\?workspace=demo$/);
+  await expect(page.getByRole('heading', { name: 'Company profile', exact: true })).toBeVisible();
+  await expect(page.locator('main')).toContainText('Apex');
+});
+
 test('specific deliverables and manual boundaries are discoverable by keyboard', async ({
   page,
 }) => {
   await page.goto('/');
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toContainText(
-    'Bring the bid notice, company records and review checklist together.',
+    'Find the unanswered questions before they become last-minute work.',
   );
-  await expect(page.locator('#capabilities')).toContainText('before committing estimating time');
-  await expect(page.locator('#workflow')).toContainText('BidXchange does not submit bids for you.');
+  await expect(page.locator('#capabilities')).toContainText('BEFORE COMMITTING ESTIMATING TIME');
+  await expect(page.locator('#sample-review')).toContainText(
+    'does not determine eligibility or submit bids for you.',
+  );
   const scope = page.locator('#current-scope summary');
   await scope.focus();
   await page.keyboard.press('Enter');
@@ -20,9 +115,9 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
   await expect(page.locator('#ai-assistance')).toContainText(
     'approve pricing, verify legal qualifications',
   );
-  await expect(page.locator('#ai-assistance')).toContainText(
-    'Create a response outline for this solicitation.',
-  );
+  await page.getByText('What can BidBuddy access?', { exact: true }).click();
+  await expect(page.locator('#ai-assistance')).toContainText('your role must allow draft creation');
+  await expect(page.locator('#ai-assistance')).toContainText('not a live AI response');
   await expect(page.locator('#ai-assistance')).not.toContainText('Create an RFP');
   await expect(page.locator('#questions')).toContainText(
     'contractor owners, estimators, bid coordinators and project managers',
@@ -40,7 +135,7 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
     'See how to review your first bid in BidXchange.',
   );
   await expect(page.locator('#request-demo')).toContainText('Do not email confidential records.');
-  for (const href of ['#capabilities', '#workflow', '#questions', '#request-demo']) {
+  for (const href of ['#sample-review', '#company-passport', '#ai-assistance', '#request-demo']) {
     await expect(page.locator(href)).toHaveCount(1);
     await expect(page.locator(`a[href="${href}"]`).first()).toHaveAttribute('href', href);
   }
@@ -53,10 +148,10 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'See what the bid requires. Know what your company still needs.',
+    'Before you price the job, review what the bid requires.',
   );
   await expect(
-    page.getByRole('link', { name: 'Explore the Demo', exact: true }).first(),
+    page.getByRole('link', { name: 'Open the full demo', exact: true }).first(),
   ).toHaveAttribute('href', '/pursuits/DEMO-001?workspace=demo');
   for (const link of await page.getByRole('link', { name: 'Sign In', exact: true }).all())
     await expect(link).toHaveAttribute('href', '/login');
@@ -64,12 +159,14 @@ test('root is public, accurate and separate from demo and sign-in', async ({ pag
   await expect(page.locator('main')).not.toContainText('Green Energy Solutions');
   await expect(
     page.getByRole('heading', {
-      name: 'A requirement checklist, a task list and a response draft.',
+      name: 'Find the unanswered questions before they become last-minute work.',
     }),
   ).toBeVisible();
   await expect(page.getByRole('region', { name: 'What BidXchange is' })).toBeVisible();
   await expect(page.locator('figure')).toContainText('Fictional demonstration data');
-  await page.getByRole('link', { name: 'Explore the Demo', exact: true }).first().click();
+  // White text in the preview must retain its dark panel background.
+  await expect(page.locator('figure')).toHaveCSS('background-color', 'rgb(18, 33, 59)');
+  await page.getByRole('link', { name: 'Open the full demo', exact: true }).first().click();
   await expect(page).toHaveURL(/\/pursuits\/DEMO-001\?workspace=demo$/);
   await expect(
     page.getByRole('heading', { name: 'Municipal building energy retrofit' }),
@@ -82,12 +179,12 @@ test('request CTAs offer the approved business contact without claiming delivery
   await page.goto('/');
   await page
     .locator('main')
-    .getByRole('link', { name: 'Request a Bid Review', exact: true })
+    .getByRole('link', { name: 'Arrange a walkthrough', exact: true })
     .click();
   await expect(page).toHaveURL(/#request-demo$/);
   const contact = page.getByRole('region', { name: 'Demo contact' });
   await expect(
-    contact.getByRole('link', { name: 'Email Manuel for a Bid Review' }),
+    contact.getByRole('link', { name: 'Email Manuel for a walkthrough' }),
   ).toHaveAttribute(
     'href',
     'mailto:mrodriguez@oaisinc.com?subject=BidXchange%20bid%20review%20request',
@@ -125,9 +222,9 @@ test('public navigation supports keyboard, mobile escape and section links', asy
   }
   await page
     .getByRole('navigation', { name: 'Public navigation', exact: true })
-    .getByRole('link', { name: 'Capabilities', exact: true })
+    .getByRole('link', { name: 'How it works', exact: true })
     .click();
-  await expect(page).toHaveURL(/#capabilities$/);
+  await expect(page).toHaveURL(/#sample-review$/);
   if (await toggle.isVisible()) await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const pricing = page.locator('#pricing summary');

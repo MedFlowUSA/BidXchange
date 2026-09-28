@@ -1,4 +1,4 @@
-﻿import styles from './marketing.module.css';
+import styles from './marketing.module.css';
 import DemoRequestForm from './demo-request-form';
 import { demoIntakeConfig } from '../lib/demo-intake-server';
 import { demoContactHref, operationsContact } from '../lib/operations-contact';
@@ -7,7 +7,7 @@ export default function InterestPreview() {
   return (
     <section id="request-demo" className={styles.requestSection} aria-labelledby="request-title">
       <div className={styles.requestIntro}>
-        <span className={styles.eyebrow}>REQUEST A BID REVIEW</span>
+        <span className={styles.eyebrow}>ARRANGE A WALKTHROUGH</span>
         <h2 id="request-title">See how to review your first bid in BidXchange.</h2>
         <p>
           Bring a public-works, school-facility, municipal or utility bid your company is
@@ -26,7 +26,7 @@ export default function InterestPreview() {
             Do not email confidential records.
           </p>
           <a className={styles.primary} href={demoContactHref}>
-            Email Manuel for a Bid Review
+            Email Manuel for a walkthrough
           </a>
           <p>Opens your email app; send the message there to request a walkthrough.</p>
           <a href={demoContactHref}>{operationsContact.email}</a>

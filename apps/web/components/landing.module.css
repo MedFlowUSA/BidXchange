@@ -1,6 +1,48 @@
 .landing {
   --m-copy: #586476;
 }
+.landing section[id] {
+  scroll-margin-top: 110px;
+}
+.landing .textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #254fce;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.textLink svg {
+  flex-shrink: 0;
+}
+.passport.assistant {
+  background: #fff;
+}
+.answer {
+  padding: 24px;
+  background: #f3f5f9;
+  border: 1px solid #d8e0ed;
+  border-top: 3px solid #315cff;
+  border-radius: 10px;
+}
+.answer h3 {
+  margin-top: 15px;
+  font-size: 18px;
+  line-height: 1.5;
+}
+.answer ol {
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.answer li {
+  padding-block: 8px;
+}
+.answer > p {
+  font-size: 12px;
+}
 .landing .hero {
   background: linear-gradient(90deg, #f7f5ee 0%, #f7f5ee 65%, #eaeef5 65%, #eaeef5 100%);
 }
@@ -9,6 +51,10 @@
   padding: 60px 5% 64px;
   gap: 54px;
   grid-template-columns: 1.1fr 1fr;
+  align-items: start;
+}
+.hero > div > div:first-child {
+  padding-top: 80px;
 }
 .hero h1 {
   font-size: clamp(38px, 3.5vw, 50px);
@@ -68,6 +114,7 @@
   display: grid;
   grid-template-columns: 1.25fr 1fr;
   gap: 48px;
+  align-items: center;
 }
 .orientation h2 {
   margin: 14px 0 18px;
@@ -433,6 +480,9 @@
   color: #697588;
 }
 @media (max-width: 1020px) {
+  .hero > div > div:first-child {
+    padding-top: 0;
+  }
   .hero > div {
     padding: 60px 7%;
     gap: 42px;
