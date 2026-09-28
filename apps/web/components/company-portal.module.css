@@ -410,3 +410,12 @@
     border-radius: 12px;
   }
 }
+.companyLogo {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  max-height: 140px;
+  object-fit: contain;
+  object-position: left center;
+  margin-bottom: 20px;
+}
