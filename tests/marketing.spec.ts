@@ -85,9 +85,10 @@ test('company profile is directly discoverable and the illustrative answer point
     .click();
   await expect(page).toHaveURL(/#sample-review$/);
   await page
-    .locator('#company-passport')
-    .getByRole('link', { name: 'View sample company profile' })
+    .locator('#questions summary')
+    .filter({ hasText: 'What belongs in my company profile?' })
     .click();
+  await page.getByRole('link', { name: 'Explore the sample company profile', exact: true }).click();
   await expect(page).toHaveURL(/\/company\?workspace=demo$/);
   await expect(page.getByRole('heading', { name: 'Company profile', exact: true })).toBeVisible();
   await expect(page.locator('main')).toContainText('Apex');
@@ -130,12 +131,18 @@ test('specific deliverables and manual boundaries are discoverable by keyboard',
   await expect(page.locator('#security')).toContainText(
     'organization membership and role-based access',
   );
-  await expect(page.locator('#questions')).toContainText('does not guarantee eligibility');
+  await expect(page.locator('#questions')).toContainText('not guarantee eligibility');
   await expect(page.locator('#request-demo')).toContainText(
     'See how to review your first bid in BidXchange.',
   );
   await expect(page.locator('#request-demo')).toContainText('Do not email confidential records.');
-  for (const href of ['#sample-review', '#company-passport', '#ai-assistance', '#request-demo']) {
+  for (const href of [
+    '#sample-review',
+    '#company-passport',
+    '#ai-assistance',
+    '#questions',
+    '#request-demo',
+  ]) {
     await expect(page.locator(href)).toHaveCount(1);
     await expect(page.locator(`a[href="${href}"]`).first()).toHaveAttribute('href', href);
   }
@@ -180,6 +187,7 @@ test('request CTAs offer the approved business contact without claiming delivery
   await page
     .locator('main')
     .getByRole('link', { name: 'Arrange a walkthrough', exact: true })
+    .first()
     .click();
   await expect(page).toHaveURL(/#request-demo$/);
   const contact = page.getByRole('region', { name: 'Demo contact' });
@@ -222,9 +230,12 @@ test('public navigation supports keyboard, mobile escape and section links', asy
   }
   await page
     .getByRole('navigation', { name: 'Public navigation', exact: true })
-    .getByRole('link', { name: 'How it works', exact: true })
+    .getByRole('link', { name: 'FAQ', exact: true })
     .click();
-  await expect(page).toHaveURL(/#sample-review$/);
+  await expect(page).toHaveURL(/#questions$/);
+  await expect(
+    page.getByRole('heading', { name: 'Frequently Asked Questions', exact: true }),
+  ).toBeVisible();
   if (await toggle.isVisible()) await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const pricing = page.locator('#pricing summary');
