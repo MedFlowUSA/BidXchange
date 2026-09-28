@@ -1,4 +1,40 @@
 import { test, expect } from '@playwright/test';
+import { installSpeechFake } from './fixtures/speech-fake';
+
+test('demo BidBuddy supports reviewed dictation without automatically calling AI', async ({
+  page,
+}) => {
+  await installSpeechFake(page);
+  const prompts: string[] = [];
+  await page.route('**/api/demo-assistant', (route) => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { available: true } });
+    prompts.push(route.request().postDataJSON().prompt);
+    return route.fulfill({ json: { answer: 'Synthetic voice question response.' } });
+  });
+  await page.goto('/assistant?workspace=demo');
+  const drawer = page.getByRole('dialog', { name: 'BidBuddy', exact: true });
+  await drawer.getByRole('button', { name: 'Dictate question', exact: true }).click();
+  await page.evaluate(() =>
+    window.__speech.results([{ text: 'Explain a bid bond.', final: true }]),
+  );
+  await drawer.getByRole('button', { name: 'Stop dictation', exact: true }).click();
+  await expect(drawer.getByRole('button', { name: 'Ask BidBuddy', exact: true })).toBeDisabled();
+  await drawer.getByRole('button', { name: 'Add text to question', exact: true }).click();
+  expect(prompts).toHaveLength(0);
+  await drawer.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(drawer.getByRole('article', { name: 'AI answer' })).toContainText(
+    'Synthetic voice question response.',
+  );
+  expect(prompts).toEqual(['Explain a bid bond.']);
+  await drawer.getByRole('button', { name: 'Dictate question', exact: true }).click();
+  await page.evaluate(() =>
+    window.__speech.results([{ text: 'Discard these words', final: true }]),
+  );
+  await drawer.getByRole('button', { name: 'Clear answer', exact: true }).click();
+  await expect(drawer.getByLabel('Live dictation preview')).toHaveCount(0);
+  await expect(drawer.getByLabel('Review dictated text')).toHaveCount(0);
+  await expect(drawer.getByRole('button', { name: 'Dictate question', exact: true })).toBeEnabled();
+});
 test('demo drawer offers general questions without tenant API requests or workspace records', async ({
   page,
 }) => {

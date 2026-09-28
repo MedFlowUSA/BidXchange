@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import AssistantSamResearch from './assistant-sam-research';
 import { samSearchIntent } from '../lib/research/sam-contracts';
+import VoiceDictation from './voice-dictation';
 export default function PublicDemoAssistant() {
   const [available, setAvailable] = useState(false),
     [checking, setChecking] = useState(true),
@@ -11,6 +12,8 @@ export default function PublicDemoAssistant() {
     [error, setError] = useState('');
   const controller = useRef<AbortController | null>(null);
   const [research, setResearch] = useState(false);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [voiceSession, setVoiceSession] = useState(0);
   useEffect(() => {
     const c = new AbortController();
     fetch('/api/demo-assistant', { cache: 'no-store', signal: c.signal })
@@ -24,7 +27,7 @@ export default function PublicDemoAssistant() {
     };
   }, []);
   async function ask() {
-    if (!available || pending || !prompt.trim()) return;
+    if (!available || pending || voiceBusy || !prompt.trim()) return;
     if (samSearchIntent(prompt)) {
       setAnswer('');
       setError('');
@@ -121,7 +124,18 @@ export default function PublicDemoAssistant() {
             style={{ width: '100%', marginBlock: 12 }}
           />
         </label>
-        <button className="button primary" disabled={!available || pending || !prompt.trim()}>
+        <VoiceDictation
+          key={voiceSession}
+          value={prompt}
+          onChange={setPrompt}
+          maxLength={1500}
+          disabled={!available || pending || research}
+          onBusyChange={setVoiceBusy}
+        />
+        <button
+          className="button primary"
+          disabled={!available || pending || voiceBusy || !prompt.trim()}
+        >
           {pending ? 'Thinking…' : 'Ask BidBuddy'}
         </button>
         {pending && (
@@ -150,6 +164,7 @@ export default function PublicDemoAssistant() {
             <button
               className="button"
               onClick={() => {
+                setVoiceSession((value) => value + 1);
                 setAnswer('');
                 setPrompt('');
                 setError('');
