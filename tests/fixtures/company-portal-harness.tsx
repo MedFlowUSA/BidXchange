@@ -1,5 +1,8 @@
 import { createRoot } from 'react-dom/client';
-import CompanyPortal, { CompanyPanel } from '../../apps/web/components/company-portal';
+import CompanyPortal, {
+  CompanyPanel,
+  CompanyNextActions,
+} from '../../apps/web/components/company-portal';
 import CompanyReview from '../../apps/web/components/company-review';
 import CompanySnapshot from '../../apps/web/components/company-snapshot';
 import ProfileCompletion from '../../apps/web/components/profile-completion';
@@ -50,6 +53,7 @@ createRoot(document.getElementById('root')!).render(
   <main style={{ padding: 20, maxWidth: 1100, margin: 'auto' }}>
     <CompanyPortal data={data} reviewCount={data.facts.length}>
       <CompanyPanel name="overview">
+        <CompanyNextActions data={data} />
         <CompanySnapshot data={data} />
         <ProfileCompletion data={data} />
       </CompanyPanel>
@@ -67,6 +71,10 @@ createRoot(document.getElementById('root')!).render(
       <CompanyPanel name="records">
         <section className="panel" id="fact-example">
           <h2>Saved evidence example</h2>
+          <a href="#fact-second">Open another record</a>
+        </section>
+        <section className="panel" id="fact-second" style={{ marginTop: 1200 }}>
+          <h2>Second saved evidence</h2>
         </section>
       </CompanyPanel>
       <CompanyPanel name="dates">

@@ -21,10 +21,11 @@ for (const width of [1440, 390])
         {
           name: 'stub-request-form-only',
           setup(build) {
-            build.onResolve({ filter: /^\.\/information-requests$/ }, () => ({
-              path: 'request-form',
-              namespace: 'stub',
-            }));
+            build.onResolve({ filter: /^\.\/information-requests$/ }, (args) =>
+              args.importer.replaceAll('\\', '/').includes('/components/')
+                ? { path: 'request-form', namespace: 'stub' }
+                : undefined,
+            );
             build.onLoad({ filter: /.*/, namespace: 'stub' }, () => ({
               contents: 'export const ProfileInformationRequest = () => null;',
               loader: 'js',
@@ -54,8 +55,19 @@ for (const width of [1440, 390])
     );
     await page.getByLabel('Company draft').fill('Unsaved contractor details');
     await nav.getByRole('link', { name: 'Overview', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Your next actions' })).toBeInViewport();
     await expect(page.getByLabel('Company draft')).not.toBeVisible();
     await expect(page.getByRole('heading', { name: 'Your company details' })).toBeVisible();
+    await expect(
+      page.getByRole('progressbar', { name: 'Company profile fields recorded' }),
+    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your next actions' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Open pursuits →', exact: true })).toHaveAttribute(
+      'href',
+      /\/pursuits\?organization=/,
+    );
+    await page.getByRole('link', { name: 'See missing fields →' }).click();
+    await expect(page.locator('#profile-completion-title')).toBeFocused();
     await expect(
       page.getByText(
         'Saved website overview: fictional contractor provides energy services and customer assistance.',
@@ -91,10 +103,19 @@ for (const width of [1440, 390])
     );
     await page.getByRole('link', { name: 'Website service claim', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Saved evidence example' })).toBeVisible();
+    await expect(page.locator('#fact-example')).toBeFocused();
+    await page.getByRole('link', { name: 'Open another record' }).click();
+    await expect(page.locator('#fact-second')).toBeFocused();
+    await expect(page.locator('#fact-second')).toBeInViewport();
+    await page.goBack();
+    await expect(page.locator('#fact-example')).toBeFocused();
     await page.goBack();
     await expect(page.getByRole('heading', { name: 'Review company evidence' })).toBeVisible();
     await nav.getByRole('link', { name: 'Overview', exact: true }).click();
-    await page.getByRole('link', { name: 'Website service claim', exact: true }).click();
+    await page
+      .getByRole('region', { name: 'Your company details' })
+      .getByRole('link', { name: 'Website service claim', exact: true })
+      .click();
     await expect(page.getByRole('heading', { name: 'Saved evidence example' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Your company details' })).not.toBeVisible();
     await page.goBack();
@@ -107,6 +128,11 @@ for (const width of [1440, 390])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
+    await page.evaluate(() => {
+      location.hash = '#company-decisions';
+    });
+    await expect(page.getByRole('heading', { name: 'Your company details' })).toBeVisible();
+    await expect(page.locator('#company-overview')).toBeFocused();
     await page.goto('/company-layout-test?viewer&empty#company-overview');
     await page.addStyleTag({
       content: bundle.outputFiles.find((f) => f.path.endsWith('.css'))!.text,

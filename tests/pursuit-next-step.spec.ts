@@ -74,5 +74,14 @@ test('primary action prioritizes cited stale evidence then register and respects
   ];
   expect(pursuitNextStep(data, pursuit).title).toBe('Review recorded no-bid decision');
   data.decisions[0].decision = 'bid';
+  expect(pursuitNextStep(data, pursuit)).toMatchObject({
+    title: 'Create response outline',
+    href: '#response-packages',
+  });
+  data.responsePackages = [
+    { id: 'draft', title: 'Response', content: '{}', status: 'draft', updated_at: data.reviewAsOf },
+  ];
   expect(pursuitNextStep(data, pursuit).title).toBe('Open submission handoff');
+  data.decisions[0].decision = 'no_bid';
+  expect(pursuitNextStep(data, pursuit).title).toBe('Review recorded no-bid decision');
 });
