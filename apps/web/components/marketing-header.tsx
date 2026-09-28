@@ -8,9 +8,9 @@ import styles from './marketing.module.css';
 import PublicWorkspaceAccess from './public-workspace-access';
 
 const links = [
-  ['Capabilities', '#capabilities'],
-  ['Workflow', '#workflow'],
-  ['Questions', '#questions'],
+  ['How it works', '#sample-review'],
+  ['Company profile', '#company-passport'],
+  ['BidBuddy', '#ai-assistance'],
 ];
 
 export default function MarketingHeader({ signedIn }: { signedIn: boolean }) {
@@ -69,7 +69,7 @@ export default function MarketingHeader({ signedIn }: { signedIn: boolean }) {
               onClick={close}
             />
             <a href="#request-demo" className={styles.primary} onClick={close}>
-              Request a Bid Review <ArrowUpRight size={16} aria-hidden="true" />
+              Arrange a walkthrough <ArrowUpRight size={16} aria-hidden="true" />
             </a>
           </div>
         </nav>
