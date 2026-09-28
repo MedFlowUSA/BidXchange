@@ -37,6 +37,15 @@ if (params.has('many')) {
     updated_at: `2026-09-${20 + i}T12:00:00Z`,
   }));
 }
+if (params.has('branding')) {
+  data.facts.push({
+    ...data.facts[0],
+    id: 'logo',
+    fact_type: 'identity',
+    label: 'Company logo',
+    value: '/company-brand/green-energy-solutions.png',
+  });
+}
 createRoot(document.getElementById('root')!).render(
   <main style={{ padding: 20, maxWidth: 1100, margin: 'auto' }}>
     <CompanyPortal data={data} reviewCount={data.facts.length}>

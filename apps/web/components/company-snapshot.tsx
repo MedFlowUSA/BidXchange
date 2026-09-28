@@ -2,6 +2,7 @@
 import { Building2, MapPin, Wrench, FileCheck2, Users } from 'lucide-react';
 import { reviewStatus } from '../lib/company-readiness';
 import { reviewedPortalUrl } from '../lib/sources/portal-url';
+import { companyLogo } from '../lib/company-logo';
 import type { Fact, TenantData } from '../lib/tenant-types';
 import styles from './company-portal.module.css';
 
@@ -52,6 +53,7 @@ export default function CompanySnapshot({ data }: { data: TenantData }) {
     },
   ];
   const website = reviewedPortalUrl(data.organization.website);
+  const logo = companyLogo(data.facts);
   const savedDates = [data.companyProfile?.updated_at, ...data.facts.map((f) => f.updated_at)]
     .filter((stamp): stamp is string => !!stamp && Number.isFinite(Date.parse(stamp)))
     .sort((a, b) => Date.parse(b) - Date.parse(a));
@@ -76,6 +78,15 @@ export default function CompanySnapshot({ data }: { data: TenantData }) {
         </a>
       </div>
       <div className={styles.savedProfile}>
+        {logo && (
+          <img
+            className={styles.companyLogo}
+            src={logo}
+            alt={`${data.organization.operating_name} logo`}
+            width={500}
+            height={197}
+          />
+        )}
         <p>
           <strong>Legal name:</strong> {data.organization.legal_name}
         </p>

@@ -137,4 +137,19 @@ for (const width of [1440, 390])
     await expect(services.getByRole('link', { name: 'Service 1', exact: true })).not.toBeVisible();
     await services.locator('summary').click();
     await expect(services.getByRole('link', { name: 'Service 1', exact: true })).toBeVisible();
+    await expect(page.getByRole('img', { name: /logo$/ })).toHaveCount(0);
+    await page.goto('/company-layout-test?branding#company-overview');
+    await page.addStyleTag({
+      content: bundle.outputFiles.find((f) => f.path.endsWith('.css'))!.text,
+    });
+    await page.addScriptTag({
+      content: bundle.outputFiles.find((f) => f.path.endsWith('.js'))!.text,
+    });
+    const logo = page.getByRole('img', { name: /logo$/ });
+    await expect(logo).toBeVisible();
+    await expect(logo).toHaveAttribute('src', '/company-brand/green-energy-solutions.png');
+    await expect.poll(() => logo.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBe(500);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
   });
