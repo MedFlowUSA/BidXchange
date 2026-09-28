@@ -19,6 +19,7 @@ import AssistantTaskPlan from './assistant-task-plan';
 import AssistantSavedConversation from './assistant-saved-conversation';
 import AssistantSolicitationReview from './assistant-solicitation-review';
 import AssistantSamResearch from './assistant-sam-research';
+import VoiceDictation from './voice-dictation';
 import { OpportunityForm } from './capture-forms';
 import { samSearchIntent } from '../lib/research/sam-contracts';
 import {
@@ -74,6 +75,8 @@ export default function Assistant({
   const [savedBusy, setSavedBusy] = useState(false);
   const [savedSession, setSavedSession] = useState(0);
   const [researchPrompt, setResearchPrompt] = useState<string | null>(null);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [voiceSession, setVoiceSession] = useState(0);
   useEffect(() => {
     setSavedBusy(false);
   }, [organizationId, context?.id, available]);
@@ -206,7 +209,8 @@ export default function Assistant({
     setReviewChoices(items);
   }
   async function ask(question = prompt, retry = false, answerMode = mode, fresh = false) {
-    if (pending || savedBusy || actionLock.current || !question.trim() || !available) return;
+    if (pending || savedBusy || voiceBusy || actionLock.current || !question.trim() || !available)
+      return;
     if (
       answerMode === 'workspace' &&
       !sharingChoice &&
@@ -768,12 +772,21 @@ export default function Assistant({
                   required
                   disabled={pending || savedBusy || !available}
                 />
+                <VoiceDictation
+                  key={`${organizationId}:${context?.kind}:${context?.id}:${mode}:${active}:${savedSession}:${voiceSession}`}
+                  value={prompt}
+                  onChange={setPrompt}
+                  maxLength={3000}
+                  disabled={pending || savedBusy || !available || researchPrompt !== null}
+                  onBusyChange={setVoiceBusy}
+                />
                 <div className={styles.actions}>
                   <button
                     className="button primary"
                     disabled={
                       pending ||
                       savedBusy ||
+                      voiceBusy ||
                       !available ||
                       !prompt.trim() ||
                       (mode === 'workspace' &&
@@ -913,6 +926,7 @@ export default function Assistant({
                 className="button secondary"
                 disabled={pending || savedBusy}
                 onClick={() => {
+                  setVoiceSession((value) => value + 1);
                   setActive(null);
                   setConversations([]);
                   thread.current = null;
@@ -1002,6 +1016,7 @@ export default function Assistant({
                 className="text-button"
                 disabled={pending || savedBusy}
                 onClick={() => {
+                  setVoiceSession((value) => value + 1);
                   setConversations([]);
                   thread.current = null;
                   setActive(null);

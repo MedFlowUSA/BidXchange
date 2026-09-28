@@ -2,8 +2,64 @@ import { test, expect, type Page } from '@playwright/test';
 import { build } from 'esbuild';
 import path from 'node:path';
 import { samDemoReport } from '../apps/web/lib/research/sam-demo';
+import { installSpeechFake } from './fixtures/speech-fake';
 let js = '',
   css = '';
+
+test('workspace dictation requires review and explicit send; mode changes discard unfinished speech', async ({
+  page,
+}) => {
+  await installSpeechFake(page);
+  const requests: { prompt: string; mode: string }[] = [];
+  await page.route('**/api/assistant', (route) => {
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({
+      contentType: 'application/x-ndjson',
+      body:
+        JSON.stringify({
+          type: 'answer',
+          answer: {
+            answer: [{ text: 'Synthetic response', sources: [] }],
+            evidence: [],
+            citations: [],
+            risks: [],
+            nextAction: '',
+            notice: 'Synthetic test',
+          },
+        }) + '\n',
+    });
+  });
+  await mount(page);
+  await page.getByLabel('Ask about Synthetic Test Company').fill('Keep my question.');
+  await page.getByRole('button', { name: 'Dictate question', exact: true }).click();
+  await page.evaluate(() => window.__speech.results([{ text: 'Explain bid bonds.', final: true }]));
+  await page.getByRole('button', { name: 'Stop dictation', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Ask BidBuddy', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Add text to question', exact: true }).click();
+  await expect(page.getByLabel('Ask about Synthetic Test Company')).toHaveValue(
+    'Keep my question.\nExplain bid bonds.',
+  );
+  expect(requests).toHaveLength(0);
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(page.getByRole('article')).toContainText('Synthetic response');
+  expect(requests).toMatchObject([
+    { prompt: 'Keep my question.\nExplain bid bonds.', mode: 'workspace' },
+  ]);
+  await page.getByRole('button', { name: 'Dictate question', exact: true }).click();
+  await page.evaluate(() => {
+    window.__speech.results([{ text: 'Unfinished company question', final: true }]);
+    window.__speech.remember();
+  });
+  await page.getByLabel('Answer mode', { exact: true }).selectOption('general');
+  await page.evaluate(() => window.__speech.late([{ text: 'Late private words', final: true }]));
+  await expect(page.getByLabel('Live dictation preview')).toHaveCount(0);
+  await expect(page.getByLabel('Review dictated text')).toHaveCount(0);
+  await expect(page.getByLabel('Ask a question', { exact: true })).not.toHaveValue(
+    /Late private words/,
+  );
+  await expect(page.getByRole('button', { name: 'Dictate question', exact: true })).toBeEnabled();
+  expect(requests).toHaveLength(1);
+});
 
 test('SAM notice prefills the existing opportunity form without saving or inventing a deadline', async ({
   page,
