@@ -166,8 +166,12 @@ export function samConnector(
   from: Date,
   to: Date,
   request: typeof fetch = fetch,
+  filters: { title?: string; ncode?: string; state?: string; ptype?: string } = {},
+  attempts = 3,
 ): SourceConnector {
   if (!config.enabled || !config.key) throw new SourceError('not_configured');
+  if (!Number.isInteger(attempts) || attempts < 1 || attempts > 3)
+    throw new SourceError('invalid_configuration');
   if (
     !Number.isFinite(from.getTime()) ||
     !Number.isFinite(to.getTime()) ||
@@ -185,7 +189,7 @@ export function samConnector(
   ) {
     if (!Number.isInteger(offset) || offset < 0 || offset >= config.pages)
       throw new SourceError('page_limit');
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < attempts; attempt++) {
       try {
         const u = new URL('https://api.sam.gov/opportunities/v2/search');
         Object.entries({
@@ -195,6 +199,8 @@ export function samConnector(
           limit: String(config.limit),
           offset: String(offset),
         }).forEach(([k, v]) => u.searchParams.set(k, v));
+        for (const name of ['title', 'ncode', 'state', 'ptype'] as const)
+          if (filters[name]) u.searchParams.set(name, filters[name]);
         if (noticeId && published) {
           const posted = new Date(published.slice(0, 10));
           if (
@@ -252,7 +258,7 @@ export function samConnector(
               : error instanceof Error && /timeout|abort/i.test(error.name)
                 ? 'timeout'
                 : 'unavailable';
-        if (attempt === 2 || !['unavailable', 'timeout'].includes(code))
+        if (attempt === attempts - 1 || !['unavailable', 'timeout'].includes(code))
           throw new SourceError(code);
         await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
       }

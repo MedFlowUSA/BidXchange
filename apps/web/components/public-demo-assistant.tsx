@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import AssistantSamResearch from './assistant-sam-research';
+import { samSearchIntent } from '../lib/research/sam-contracts';
 export default function PublicDemoAssistant() {
   const [available, setAvailable] = useState(false),
     [checking, setChecking] = useState(true),
@@ -8,6 +10,7 @@ export default function PublicDemoAssistant() {
     [answer, setAnswer] = useState(''),
     [error, setError] = useState('');
   const controller = useRef<AbortController | null>(null);
+  const [research, setResearch] = useState(false);
   useEffect(() => {
     const c = new AbortController();
     fetch('/api/demo-assistant', { cache: 'no-store', signal: c.signal })
@@ -22,6 +25,12 @@ export default function PublicDemoAssistant() {
   }, []);
   async function ask() {
     if (!available || pending || !prompt.trim()) return;
+    if (samSearchIntent(prompt)) {
+      setAnswer('');
+      setError('');
+      setResearch(true);
+      return;
+    }
     setPending(true);
     setError('');
     setAnswer('');
@@ -52,6 +61,18 @@ export default function PublicDemoAssistant() {
   return (
     <section className="panel" aria-label="Live demo AI">
       <h2>Ask BidBuddy</h2>
+      {research ? (
+        <AssistantSamResearch demo initialPrompt={prompt} onClose={() => setResearch(false)} />
+      ) : (
+        <button
+          type="button"
+          className="button secondary"
+          disabled={pending}
+          onClick={() => setResearch(true)}
+        >
+          Try the bid-search walkthrough
+        </button>
+      )}
       <p>
         Live AI for general questions, explanations and drafting. Demo company records are
         fictional; this assistant cannot access workspace data or live websites.

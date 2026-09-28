@@ -18,6 +18,9 @@ import type { TenantData } from '../lib/tenant-types';
 import AssistantTaskPlan from './assistant-task-plan';
 import AssistantSavedConversation from './assistant-saved-conversation';
 import AssistantSolicitationReview from './assistant-solicitation-review';
+import AssistantSamResearch from './assistant-sam-research';
+import { OpportunityForm } from './capture-forms';
+import { samSearchIntent } from '../lib/research/sam-contracts';
 import {
   RequirementReviewSelection,
   RequirementReviewResult,
@@ -70,6 +73,7 @@ export default function Assistant({
     [feedback, setFeedback] = useState('');
   const [savedBusy, setSavedBusy] = useState(false);
   const [savedSession, setSavedSession] = useState(0);
+  const [researchPrompt, setResearchPrompt] = useState<string | null>(null);
   useEffect(() => {
     setSavedBusy(false);
   }, [organizationId, context?.id, available]);
@@ -115,6 +119,7 @@ export default function Assistant({
       controller.current?.abort();
       setSavedBusy(false);
       setSavedSession((value) => value + 1);
+      setResearchPrompt(null);
       setConversations([]);
       setActive(null);
       setPrompt('');
@@ -160,6 +165,7 @@ export default function Assistant({
       controller.current?.abort();
       setSavedBusy(false);
       setSavedSession((value) => value + 1);
+      setResearchPrompt(null);
       setConversations([]);
       setActive(null);
       setPrompt('');
@@ -178,6 +184,7 @@ export default function Assistant({
     setConversations([]);
     setActive(null);
     setPrompt('');
+    setResearchPrompt(null);
   }, [organizationId, context?.kind, context?.id]);
   function changeSharing(choice: RequirementExcerpt | undefined, confirmed = false) {
     controller.current?.abort();
@@ -200,6 +207,15 @@ export default function Assistant({
   }
   async function ask(question = prompt, retry = false, answerMode = mode, fresh = false) {
     if (pending || savedBusy || actionLock.current || !question.trim() || !available) return;
+    if (
+      answerMode === 'workspace' &&
+      !sharingChoice &&
+      !reviewChoices.length &&
+      samSearchIntent(question)
+    ) {
+      setResearchPrompt(question);
+      return;
+    }
     if (!demo && answerMode === 'general' && responseCommand(question)) {
       setError(
         'Switch to Workspace records to create an outline from this bid. General questions do not access company records.',
@@ -412,12 +428,51 @@ export default function Assistant({
                   refresh an answer. Earlier answers remain snapshots.
                 </p>
                 <p>
-                  General questions do not use company records. This chat has no live web browsing.
-                  Do not enter passwords or API keys.
+                  General questions do not use company records. Use the separate SAM.gov search
+                  below to review public search filters; availability depends on the official
+                  connection. Other websites are not browsed by this chat. Do not enter passwords or
+                  API keys.
                 </p>
               </details>
               <Link href={workspaceHref('/company', organizationId)}>Manage company records</Link>
             </div>
+          )}
+          {researchPrompt !== null ? (
+            <AssistantSamResearch
+              key={`sam:${organizationId}:${savedSession}`}
+              org={organizationId}
+              demo={demo}
+              initialPrompt={researchPrompt}
+              onClose={() => setResearchPrompt(null)}
+              renderSave={
+                organizationId
+                  ? (result, checkedAt) => (
+                      <OpportunityForm
+                        key={`${checkedAt}:${result.id}`}
+                        data={{ organization: { id: organizationId, default_timezone: 'UTC' } }}
+                        defaults={{
+                          title: result.title,
+                          buyer: result.agency,
+                          solicitation_number: result.solicitationNumber,
+                          source_url: result.url,
+                          source_note: `Official SAM.gov API notice ${result.id}, checked ${checkedAt}. Source deadline: ${result.deadline ?? 'not supplied'}. Requirements and attachments have not been reviewed.`,
+                          official_deadline: result.deadlineInstant,
+                          deadline_timezone: 'UTC',
+                        }}
+                      />
+                    )
+                  : undefined
+              }
+            />
+          ) : (
+            <button
+              type="button"
+              className="button secondary"
+              disabled={pending || savedBusy || (!demo && !available)}
+              onClick={() => setResearchPrompt(prompt)}
+            >
+              Find bids on SAM.gov
+            </button>
           )}
           {!demo && context?.kind === 'pursuit' && (
             <details>

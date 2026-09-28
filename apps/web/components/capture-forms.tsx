@@ -225,10 +225,13 @@ export function RequirementForm({
 export function OpportunityForm({
   data,
   opportunity,
+  defaults,
 }: {
-  data: TenantData;
+  data: { organization: Pick<TenantData['organization'], 'id' | 'default_timezone'> };
   opportunity?: LiveOpportunity;
+  defaults?: Partial<LiveOpportunity>;
 }) {
+  const initial = opportunity ?? defaults;
   return (
     <CaptureForm
       label={opportunity ? 'Edit opportunity' : 'Add opportunity'}
@@ -239,14 +242,14 @@ export function OpportunityForm({
         updated_at: opportunity?.updated_at ?? '',
       }}
       initial={{
-        title: opportunity?.title ?? '',
-        buyer: opportunity?.buyer ?? '',
-        solicitation_number: opportunity?.solicitation_number ?? '',
-        source_url: opportunity?.source_url ?? '',
-        source_note: opportunity?.source_note ?? '',
-        summary: opportunity?.summary ?? '',
-        official_deadline: opportunity?.official_deadline ?? '',
-        deadline_timezone: opportunity?.deadline_timezone ?? data.organization.default_timezone,
+        title: initial?.title ?? '',
+        buyer: initial?.buyer ?? '',
+        solicitation_number: initial?.solicitation_number ?? '',
+        source_url: initial?.source_url ?? '',
+        source_note: initial?.source_note ?? '',
+        summary: initial?.summary ?? '',
+        official_deadline: initial?.official_deadline ?? '',
+        deadline_timezone: initial?.deadline_timezone ?? data.organization.default_timezone,
       }}
       note={`Record the original notice or a traceable source note. ${deadlineNote}`}
       fields={[
