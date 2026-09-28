@@ -25,7 +25,7 @@ export default function TodayTaskQueue({ data }: { data: TenantData }) {
         </button>
       </div>
       <form
-        key={`${filters.owner}-${filters.timing}`}
+        key={`${filters.owner}-${filters.timing}-${filters.page}`}
         action="/dashboard#today-tasks-heading"
         method="get"
         className={styles.filters}

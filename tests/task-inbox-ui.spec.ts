@@ -86,3 +86,13 @@ test('query errors and changed-page empty states give honest recovery actions', 
     /task_page=0/,
   );
 });
+
+test('server page navigation resets unapplied filter edits to the actual query', async ({
+  page,
+}) => {
+  await page.goto('/dashboard?organization=11111111-1111-4111-8111-111111111111');
+  await page.getByRole('combobox', { name: 'Task owner', exact: true }).selectOption('unassigned');
+  await page.getByRole('button', { name: 'Simulate server page navigation' }).click();
+  await expect(page.getByRole('combobox', { name: 'Task owner', exact: true })).toHaveValue('mine');
+  await expect(page.getByRole('navigation', { name: 'Task pages' })).toContainText('Page 2');
+});

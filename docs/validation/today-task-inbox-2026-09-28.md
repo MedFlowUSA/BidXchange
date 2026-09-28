@@ -28,6 +28,7 @@ No migrations, role/RLS changes, new tables, dependencies, environment variables
 - `npx playwright test --reporter=line`: all 341 tests passed (desktop/mobile projects).
 - `npm run test:secrets` and `git diff --check`: passed.
 - `npm run build`: passed; production Next.js routes generated successfully.
+- Final navigation correction: `npx playwright test tests/task-inbox-ui.spec.ts --reporter=line` passed (4). A server page transition resets unapplied filter edits to the query actually being shown. Typecheck, lint and build were repeated for this correction.
 
 Initial browser selectors matched the full implicit label and both the overdue option and badge. Tests were corrected to use named comboboxes and a list-item-scoped badge; no application behavior was weakened to make them pass.
 

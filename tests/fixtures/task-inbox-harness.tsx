@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import { useState } from 'react';
 import TodayTaskQueue from '../../apps/web/components/today-task-queue';
 import { parseTaskInboxFilters } from '../../apps/web/lib/task-inbox';
 import { workflowData, pursuit, user } from './workflow-data';
@@ -39,8 +40,25 @@ data.taskInbox = {
       ],
   error: params.error === 'true',
 };
-createRoot(document.getElementById('root')!).render(
-  <main>
-    <TodayTaskQueue data={data} />
-  </main>,
-);
+function Harness() {
+  const [current, setCurrent] = useState(data);
+  return (
+    <main>
+      <TodayTaskQueue data={current} />
+      <button
+        onClick={() =>
+          setCurrent({
+            ...current,
+            taskInbox: {
+              ...current.taskInbox!,
+              filters: { ...current.taskInbox!.filters, page: current.taskInbox!.filters.page + 1 },
+            },
+          })
+        }
+      >
+        Simulate server page navigation
+      </button>
+    </main>
+  );
+}
+createRoot(document.getElementById('root')!).render(<Harness />);
