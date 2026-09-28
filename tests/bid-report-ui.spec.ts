@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { build } from 'esbuild';
+import path from 'node:path';
 let js = '',
   css = '';
 test.beforeAll(async () => {
@@ -10,6 +11,7 @@ test.beforeAll(async () => {
     outdir: '.tmp/bid-report-harness',
     jsx: 'automatic',
     define: { 'process.env.NODE_ENV': '"production"' },
+    alias: { 'next/link': path.resolve('tests/fixtures/link.tsx') },
   });
   js = out.outputFiles.find((f) => f.path.endsWith('.js'))!.text;
   css = out.outputFiles.find((f) => f.path.endsWith('.css'))!.text;
@@ -26,6 +28,22 @@ for (const width of [1440, 390])
     await page.goto('/report-test');
     await page.addStyleTag({ content: css });
     await page.addScriptTag({ content: js });
+    const alignment = page.locator('[aria-label="Job requirements and company resources"]');
+    await expect(
+      alignment.getByRole('progressbar', { name: 'Reviewed resource alignment' }),
+    ).toHaveAttribute('value', '0');
+    await alignment.getByText('How this percentage is calculated', { exact: true }).click();
+    await expect(
+      alignment.getByText('This is reviewed evidence coverage', { exact: false }),
+    ).toBeVisible();
+    await alignment
+      .getByText('Explore job needs and possible company resources', { exact: true })
+      .click();
+    await expect(alignment.getByRole('link', { name: 'Review this requirement' })).toHaveCount(2);
+    await alignment
+      .getByText('Explore job needs and possible company resources', { exact: true })
+      .click();
+    await alignment.getByText('How this percentage is calculated', { exact: true }).click();
     let fail = true;
     const queries: URLSearchParams[] = [];
     await page.route('**/api/bid-reports?*', (r) => {
