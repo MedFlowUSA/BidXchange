@@ -1,8 +1,73 @@
 import { test, expect, type Page } from '@playwright/test';
 import { build } from 'esbuild';
 import path from 'node:path';
+import { samDemoReport } from '../apps/web/lib/research/sam-demo';
 let js = '',
   css = '';
+
+test('SAM notice prefills the existing opportunity form without saving or inventing a deadline', async ({
+  page,
+}) => {
+  const report = samDemoReport();
+  report.canSave = true;
+  report.results[0].url = 'https://sam.gov/opp/synthetic/view';
+  const company = { codes: [], partial: false };
+  await page.route('**/api/assistant/research/sam**', (r) => {
+    if (r.request().method() === 'GET') return r.fulfill({ json: { available: true, company } });
+    return r.fulfill({
+      json:
+        r.request().postDataJSON().action === 'prepare'
+          ? {
+              available: true,
+              company,
+              prepared: { filters: report.filters, warnings: [], unsupported: false },
+            }
+          : { report, company },
+    });
+  });
+  await mount(page);
+  await page.getByRole('button', { name: 'Find bids on SAM.gov', exact: true }).click();
+  await page.getByLabel('What bids should BidBuddy look for?').fill('Find electrical bids');
+  await page.getByRole('button', { name: 'Prepare search filters' }).click();
+  await page.getByRole('checkbox', { name: /reviewed these filters/ }).check();
+  await page.getByRole('button', { name: 'Search SAM.gov now' }).click();
+  await page.getByRole('button', { name: 'Review before saving opportunity' }).click();
+  const editor = page.locator('details[aria-label="Add opportunity"]');
+  await editor.locator('summary').click();
+  await expect(editor.locator('[name="title"]')).toHaveValue(report.results[0].title);
+  await expect(editor.locator('[name="source_url"]')).toHaveValue(report.results[0].url);
+  await expect(editor.locator('[name="record_id"]')).toHaveValue('');
+  await expect(editor.locator('[name="updated_at"]')).toHaveValue('');
+  await expect(editor.locator('[name="official_deadline"]')).toHaveValue('');
+  await expect(editor.locator('[name="deadline_timezone"]')).toHaveValue('UTC');
+  await expect(editor.locator('[name="source_note"]')).toHaveValue(
+    /Requirements and attachments have not been reviewed/,
+  );
+  await expect(editor.getByRole('link', { name: /Open/ })).toHaveCount(0);
+});
+
+test('company SAM question opens reviewed research instead of claiming a chat search', async ({
+  page,
+}) => {
+  let chatCalls = 0;
+  await page.route('**/api/assistant', (r) => {
+    chatCalls++;
+    return r.abort();
+  });
+  await page.route('**/api/assistant/research/sam**', (r) =>
+    r.fulfill({ json: { available: false, company: { codes: [], partial: false } } }),
+  );
+  await mount(page);
+  await page
+    .getByLabel('Ask about Synthetic Test Company')
+    .fill('Find bids on SAM.gov for our company');
+  await page.getByRole('button', { name: 'Ask BidBuddy', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Find bids on SAM.gov' })).toBeVisible();
+  await expect(page.getByLabel('What bids should BidBuddy look for?')).toHaveValue(
+    'Find bids on SAM.gov for our company',
+  );
+  expect(chatCalls).toBe(0);
+});
 
 for (const operation of ['source review', 'saved conversation'] as const)
   test(`collapsing during ${operation} releases the busy lock and ignores late output`, async ({

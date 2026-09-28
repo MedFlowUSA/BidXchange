@@ -212,3 +212,77 @@
   outline: 3px solid #3459cc;
   outline-offset: 3px;
 }
+.researchFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-block: 16px;
+}
+.researchPanel > form {
+  display: grid;
+  gap: 14px;
+  margin-block: 20px;
+}
+.researchPanel label:not(.researchConsent) {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+}
+.researchPanel input:not([type='checkbox']):not([type='hidden']),
+.researchPanel select,
+.researchPanel textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #a7b5cd;
+  border-radius: 8px;
+  background: #fff;
+  color: #10213e;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+}
+.researchPanel button:not(:global(.button)) {
+  padding: 9px 12px;
+  border: 1px solid #c3cee0;
+  border-radius: 8px;
+  background: #f4f7fd;
+  color: #18305a;
+  font: inherit;
+  cursor: pointer;
+}
+.researchPanel > form > button {
+  justify-self: start;
+}
+.researchPanel button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.researchPanel p {
+  color: #53627a;
+}
+.researchPanel a {
+  color: #254bc1;
+  text-decoration: underline;
+}
+.researchConsent {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+.researchConsent input {
+  flex: 0 0 auto;
+  margin-top: 5px;
+}
+.researchFields label {
+  min-width: 0;
+}
+.researchFields input,
+.researchFields select {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .researchFields {
+    grid-template-columns: 1fr;
+  }
+}
