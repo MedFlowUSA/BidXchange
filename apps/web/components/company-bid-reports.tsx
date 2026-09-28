@@ -27,6 +27,11 @@ export default function CompanyBidReports({ data }: { data: TenantData }) {
           Select a saved pursuit to automatically assemble your company information, bid details,
           requirement reviews, saved answers and outstanding tasks into one PDF.
         </p>
+        <p>
+          The report shows reviewed resource alignment, possible company resources to investigate,
+          and the work needed to develop a response for each job requirement. Open the pursuit to
+          review the calculation and evidence before exporting.
+        </p>
         {!pursuits.length ? (
           <>
             <h3>Start with a saved opportunity</h3>

@@ -4,6 +4,7 @@ import { Download } from 'lucide-react';
 import type { TenantData } from '../lib/tenant-types';
 import { readResponseDraft } from '../lib/response-package';
 import { canIncludeRestricted } from '../lib/bid-report';
+import BidAlignment from './bid-alignment';
 export default function BidReportDownload({
   data,
   pursuitId,
@@ -90,6 +91,9 @@ export default function BidReportDownload({
         Download company details, bid information, reviewed criteria, saved answers, evidence
         references and remaining work in one PDF.
       </p>
+      {data.requirements !== undefined && (
+        <BidAlignment data={data} pursuitId={pursuitId} restricted={restricted} />
+      )}
       {automaticAnswers ? (
         <p>
           Automatically includes the newest supported saved answer draft for this pursuit. If no

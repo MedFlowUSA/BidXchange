@@ -9,6 +9,7 @@ import { hasCurrentRegisterSignoff } from './workspace-guide';
 import { gateLabels } from './response-release';
 import { detailFields } from './sources/normalized';
 import { findSource } from './sources/registry';
+import { bidAlignment, resourceLine, resourceRulesVersion } from './bid-alignment';
 
 export class BidReportError extends Error {}
 export const canIncludeRestricted = (role: string) =>
@@ -90,6 +91,7 @@ export function bidReport(
         a.id.localeCompare(b.id),
     );
   const factIds = new Set(facts.map((f) => f.id));
+  const alignment = bidAlignment(data, pursuitId, !!selection.restricted, now);
   const blocks: ResponseBlock[] = [];
   const add = (kind: ResponseBlock['kind'], text: string) => blocks.push({ kind, text });
   if (selection.latestDraft)
@@ -127,7 +129,8 @@ export function bidReport(
       'body',
       'ACTION REQUIRED: No requirements are recorded. Review the entire solicitation and build the register.',
     );
-  add('heading', 'Company identity and records');
+  const companyAppendixStart = blocks.length;
+  add('heading', 'Appendix: company identity and source records');
   add(
     'body',
     `Workspace legal name: ${shown(data.organization.legal_name)}\nOperating name: ${shown(data.organization.operating_name)}\nWebsite: ${shown(data.organization.website)}\nOrganization record: ${data.organization.id}`,
@@ -160,7 +163,8 @@ export function bidReport(
       `Source: ${shown(f.source_reference)}\nSource note: ${shown(f.source_note)}\nRecord ${f.id}; updated ${f.updated_at}; visibility ${f.sensitivity}`,
     );
   }
-  add('heading', 'Bid information');
+  const companyAppendix = blocks.splice(companyAppendixStart);
+  add('heading', 'The job: scope, buyer and deadline');
   const details = opportunity.source_details;
   add(
     'body',
@@ -195,6 +199,25 @@ export function bidReport(
       'Recorded source details are manual entries, not a live portal check. Blank fields mean unknown, not “not required.” Compare them with the latest notice and amendments.',
     );
   }
+  add('heading', 'Job needs and company resources');
+  add(
+    'body',
+    alignment.percent === null
+      ? `Reviewed resource alignment: not calculated. ${alignment.reason}`
+      : `Reviewed resource alignment: ${alignment.percent}% — ${alignment.supported} of ${alignment.applicable} applicable requirements supported by reviewed company resources.`,
+  );
+  add(
+    'body',
+    `Current waivers / not-applicable findings excluded: ${alignment.excluded}\nRecorded blockers: ${alignment.blocked}\nRequirements with possible resource leads to review: ${alignment.potential}`,
+  );
+  add(
+    'note',
+    `${alignment.formula}\n${alignment.notice}\nA low percentage may reflect unfinished evidence review, not lack of company capability. The register may still be incomplete.`,
+  );
+  add(
+    'note',
+    `Resource-search suggestions and response-planning prompts use checklist rules ${resourceRulesVersion}. They are not AI conclusions or human approvals. They never link evidence or change a requirement status.`,
+  );
   add('heading', 'Selected response draft');
   add(
     'body',
@@ -212,7 +235,48 @@ export function bidReport(
     const r = row.requirement,
       resolution = row.resolution,
       answer = answerFor(r.id);
-    add('heading', `${i + 1}. ${r.requirement}`);
+    const resource = alignment.rows.find((a) => a.requirement.id === r.id)!;
+    add('heading', `${i + 1}. Job requirement`);
+    add('body', r.requirement);
+    add('body', `Company-resource alignment: ${resource.status}`);
+    if (resource.linked.length) {
+      add('body', 'Company resources already linked for this requirement:');
+      resource.linked.forEach((e) =>
+        add(
+          'note',
+          resourceLine(e.fact, e.status) +
+            (e.needsRenewal
+              ? '\nRenewal needed: record expires on or before the submission date.'
+              : '') +
+            (['license', 'insurance', 'certification'].includes(e.fact.fact_type) &&
+            !e.fact.expiration_date
+              ? '\nExpiration date missing; this resource cannot count toward alignment.'
+              : ''),
+        ),
+      );
+    }
+    if (!resource.linked.length)
+      add('body', 'No visible company resource has been linked and reviewed for this requirement.');
+    if (resource.suggested.length) {
+      add('body', 'Possible company resources to investigate — not confirmed matches:');
+      resource.suggested.forEach((e) =>
+        add('note', `${resourceLine(e.fact, e.status)}\nWhy suggested: ${e.reason}`),
+      );
+    }
+    add(
+      'body',
+      `Suggested response-planning step — human confirmation required:\n${resource.approach}`,
+    );
+    if (resource.tasks.length)
+      add(
+        'body',
+        `Work needed to develop the company solution:\n${resource.tasks.map((t) => `${t.title} — ${t.notes || 'Open this linked task for details.'}`).join('\n')}`,
+      );
+    else
+      add(
+        'note',
+        'No open linked task is recorded. Assign the responsible person and next action after reviewing the requirement.',
+      );
     add(
       'note',
       `Requirement ${r.id}; version ${r.updated_at}\nSource quotation / location: ${shown(r.citation)}\nAssigned reviewer: ${shown(r.owner_user_id)}`,
@@ -333,6 +397,7 @@ export function bidReport(
     'note',
     'Submission information was recorded by a user and was not independently verified by BidXchange. BidXchange did not submit the bid. This report includes the latest loaded decision, sign-off and release, not a complete historical audit. Downloaded copies do not update after amendments, evidence changes or revoked approvals.',
   );
+  blocks.push(...companyAppendix);
   if (blocks.reduce((n, b) => n + b.text.length, 0) > 180000)
     throw new BidReportError('This report is too large for one PDF. No partial PDF was generated.');
   return {
