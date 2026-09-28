@@ -1,0 +1,35 @@
+.reports {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.reports input:not([type='checkbox']),
+.reports select {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 8px 0 16px;
+}
+.reports label {
+  font-weight: 600;
+}
+.reports p,
+.reports h3,
+.reports a {
+  overflow-wrap: anywhere;
+}
+.summary {
+  padding: 16px;
+  border-radius: 12px;
+  background: #f1f5fc;
+  margin-top: 16px;
+}
+.summary h3 {
+  margin-top: 0;
+}
+.note {
+  color: #52627a;
+  font-size: 13px;
+  line-height: 1.65;
+}

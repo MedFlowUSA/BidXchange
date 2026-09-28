@@ -123,6 +123,9 @@ for (const width of [1440, 390])
     await nav.getByRole('link', { name: 'Edit profile', exact: true }).focus();
     await page.keyboard.press('Enter');
     await expect(page.getByLabel('Company draft')).toHaveValue('Unsaved contractor details');
+    await nav.getByRole('link', { name: 'Bid reports', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Company bid reports' })).toBeVisible();
+    await expect(page.locator('#company-reports')).toBeFocused();
     await nav.getByRole('link', { name: 'Requests', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Requested information' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(

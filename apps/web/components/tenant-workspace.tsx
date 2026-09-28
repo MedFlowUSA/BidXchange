@@ -32,6 +32,7 @@ import BidReview from './bid-review';
 import NoticeExcerptReview from './notice-excerpt-review';
 import ResponsePackages from './response-package';
 import BidReportDownload from './bid-report';
+import CompanyBidReports from './company-bid-reports';
 import EvidenceStressTest from './evidence-stress-test';
 import PursuitDecision from './pursuit-decision';
 import RequirementResolution from './requirement-resolution';
@@ -715,6 +716,9 @@ export default function TenantWorkspace({
         {!recordId && page === 'Company' && (
           <>
             <CompanyPortal key={org.id} data={data} reviewCount={pending.length}>
+              <CompanyPanel name="reports">
+                <CompanyBidReports key={org.id} data={data} />
+              </CompanyPanel>
               {data.decisionMemoryEnabled && (
                 <CompanyPanel name="decisions">
                   <DecisionMemoryPanel data={data} />

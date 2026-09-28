@@ -13,6 +13,30 @@ const selection = (data: ReturnType<typeof qualificationData>) => ({
 });
 const body = (document: ReturnType<typeof bidReport>) =>
   document.blocks.map((b) => b.text).join('\n');
+
+test('automatic report picks the newest supported saved draft and leaves missing answers explicit', () => {
+  const data = qualificationData(),
+    original = data.responsePackages![0];
+  const newer = {
+    ...original,
+    id: 'newer',
+    title: 'BID response: New answer',
+    updated_at: '2026-09-28T18:00:00Z',
+  };
+  data.responsePackages = [original, { ...newer, id: 'unsupported', content: '{}' }, newer];
+  const report = bidReport(data, pursuit, { latestDraft: true }, now);
+  expect(report.version).toContain('answer draft newer');
+  expect(body(report)).toContain('Automatically selected newest supported');
+  expect(() => bidReport(data, pursuit, { latestDraft: true, ...selection(data) }, now)).toThrow(
+    'not both',
+  );
+  data.responsePackages = [];
+  expect(body(bidReport(data, pursuit, { latestDraft: true }, now))).toContain(
+    'No supported saved answer draft',
+  );
+  data.responsePackages = Array(21).fill({ ...original, content: '{}' });
+  expect(() => bidReport(data, pursuit, { latestDraft: true }, now)).toThrow('latest records');
+});
 test('report preserves saved answers, human findings, missing answers and user-provided company facts distinctly', () => {
   const data = qualificationData();
   data.tasks = [{ id: 'done', pursuit_id: pursuit, title: 'Completed task', status: 'complete' }];

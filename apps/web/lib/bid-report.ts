@@ -13,7 +13,12 @@ import { findSource } from './sources/registry';
 export class BidReportError extends Error {}
 export const canIncludeRestricted = (role: string) =>
   ['organization_admin', 'executive_approver', 'estimator'].includes(role);
-export type BidReportSelection = { packageId?: string; version?: string; restricted?: boolean };
+export type BidReportSelection = {
+  packageId?: string;
+  version?: string;
+  restricted?: boolean;
+  latestDraft?: boolean;
+};
 const shown = (value: unknown) =>
   typeof value === 'string' && value.trim() ? value : 'Not recorded';
 const words = (value: string) => value.replaceAll('_', ' ');
@@ -44,9 +49,24 @@ export function bidReport(
     throw new BidReportError(
       'This bid exceeds the report limits or has an incomplete source set. No partial PDF was generated.',
     );
-  const saved = selection.packageId
-    ? data.responsePackages?.find((p) => p.id === selection.packageId)
+  if (selection.latestDraft && (selection.packageId || selection.version))
+    throw new BidReportError('Choose automatic answers or a specific draft, not both.');
+  // responsePackages is loaded server-side for exactly this organization/pursuit.
+  const candidates = [...(data.responsePackages ?? [])].sort(
+    (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at) || a.id.localeCompare(b.id),
+  );
+  const latest = selection.latestDraft
+    ? candidates.find((p) => p.status === 'draft' && readResponseDraft(p.content))
     : undefined;
+  if (selection.latestDraft && !latest && candidates.length >= 21)
+    throw new BidReportError(
+      'No supported answer draft was found in the latest records. Open the pursuit to choose a draft.',
+    );
+  const saved = selection.latestDraft
+    ? latest
+    : selection.packageId
+      ? data.responsePackages?.find((p) => p.id === selection.packageId)
+      : undefined;
   if (selection.packageId && (!saved || saved.updated_at !== selection.version))
     throw new BidReportError(
       'The selected answer draft changed or is unavailable. Reload before exporting.',
@@ -72,6 +92,13 @@ export function bidReport(
   const factIds = new Set(facts.map((f) => f.id));
   const blocks: ResponseBlock[] = [];
   const add = (kind: ResponseBlock['kind'], text: string) => blocks.push({ kind, text });
+  if (selection.latestDraft)
+    add(
+      'note',
+      saved
+        ? `Automatically selected newest supported saved answer draft: ${saved.title}; saved ${saved.updated_at}. This is not an approval. Download again after saving changes to get a new snapshot.`
+        : 'No supported saved answer draft is available. This report includes current records and review findings; unanswered requirements remain marked.',
+    );
   const answerFor = (id: string) => draft?.answers.find((a) => a.requirementId === id);
   const answered = brief.rows.filter(({ requirement: r }) => {
     const a = answerFor(r.id);

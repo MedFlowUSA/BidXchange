@@ -7,9 +7,11 @@ import { canIncludeRestricted } from '../lib/bid-report';
 export default function BidReportDownload({
   data,
   pursuitId,
+  automaticAnswers = false,
 }: {
   data: TenantData;
   pursuitId: string;
+  automaticAnswers?: boolean;
 }) {
   const packages = (data.responsePackages ?? [])
     .filter((p) => p.status === 'draft' && readResponseDraft(p.content))
@@ -33,13 +35,14 @@ export default function BidReportDownload({
     setMessage('Preparing your saved bid report…');
     const timer = setTimeout(() => c.abort(), 60000);
     try {
-      const saved = packages.find((p) => p.id === selected);
-      if (selected && !saved)
+      const saved = automaticAnswers ? undefined : packages.find((p) => p.id === selected);
+      if (!automaticAnswers && selected && !saved)
         throw Error('The selected draft is unavailable. Reload before exporting.');
       const query = new URLSearchParams({
         organization: data.organization.id,
         pursuit: pursuitId,
         restricted: String(restricted),
+        ...(automaticAnswers ? { answers: 'latest' } : {}),
         ...(saved ? { package: saved.id, version: saved.updated_at } : {}),
       });
       const response = await fetch(`/api/bid-reports?${query}`, {
@@ -87,29 +90,45 @@ export default function BidReportDownload({
         Download company details, bid information, reviewed criteria, saved answers, evidence
         references and remaining work in one PDF.
       </p>
-      <label htmlFor="bid-report-draft">Answers to include</label>
-      <select
-        id="bid-report-draft"
-        value={selected}
-        onChange={(e) => setSelected(e.target.value)}
-        disabled={busy}
-        style={{ display: 'block', maxWidth: '100%', width: '100%', marginBlock: 8, minHeight: 44 }}
-      >
-        <option value="">No answer draft — show requirements and review findings</option>
-        {packages.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.title} — saved {p.updated_at}
-          </option>
-        ))}
-      </select>
-      {!packages.length && (
+      {automaticAnswers ? (
         <p>
-          No saved answers yet. Create and save a response draft below to include them. You can
-          still download the current bid review.
+          Automatically includes the newest supported saved answer draft for this pursuit. If no
+          answers are saved, the report shows the requirements and remaining work. Company and bid
+          records are fetched again each time you generate the PDF.
         </p>
-      )}
-      {(data.responsePackages?.length ?? 0) > 20 && (
-        <p>The 20 most recently updated supported drafts are offered here.</p>
+      ) : (
+        <>
+          <label htmlFor="bid-report-draft">Answers to include</label>
+          <select
+            id="bid-report-draft"
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
+            disabled={busy}
+            style={{
+              display: 'block',
+              maxWidth: '100%',
+              width: '100%',
+              marginBlock: 8,
+              minHeight: 44,
+            }}
+          >
+            <option value="">No answer draft — show requirements and review findings</option>
+            {packages.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title} — saved {p.updated_at}
+              </option>
+            ))}
+          </select>
+          {!packages.length && (
+            <p>
+              No saved answers yet. Create and save a response draft below to include them. You can
+              still download the current bid review.
+            </p>
+          )}
+          {(data.responsePackages?.length ?? 0) > 20 && (
+            <p>The 20 most recently updated supported drafts are offered here.</p>
+          )}
+        </>
       )}
       {canIncludeRestricted(data.organization.role) && (
         <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBlock: 12 }}>
@@ -135,7 +154,11 @@ export default function BidReportDownload({
         onClick={() => void download()}
       >
         <Download size={16} aria-hidden="true" />{' '}
-        {busy ? 'Preparing PDF…' : 'Download bid report PDF'}
+        {busy
+          ? 'Preparing PDF…'
+          : automaticAnswers
+            ? 'Generate bid report PDF'
+            : 'Download bid report PDF'}
       </button>
       <p role="status">{message}</p>
     </section>

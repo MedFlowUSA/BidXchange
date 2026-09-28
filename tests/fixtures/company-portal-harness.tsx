@@ -4,6 +4,7 @@ import CompanyPortal, {
   CompanyNextActions,
 } from '../../apps/web/components/company-portal';
 import CompanyReview from '../../apps/web/components/company-review';
+import CompanyBidReports from '../../apps/web/components/company-bid-reports';
 import CompanySnapshot from '../../apps/web/components/company-snapshot';
 import ProfileCompletion from '../../apps/web/components/profile-completion';
 import { qualificationData } from './qualification-data';
@@ -59,6 +60,9 @@ createRoot(document.getElementById('root')!).render(
       </CompanyPanel>
       <CompanyPanel name="review">
         <CompanyReview data={data} />
+      </CompanyPanel>
+      <CompanyPanel name="reports">
+        <CompanyBidReports data={data} />
       </CompanyPanel>
       <CompanyPanel name="edit">
         <section className="panel" id="passport-identity">
