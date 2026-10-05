@@ -87,6 +87,9 @@ export default async function Home() {
                 <a href="#request-demo" className={styles.secondary}>
                   Arrange a walkthrough <ArrowUpRight size={18} aria-hidden="true" />
                 </a>
+                <a href="/ges-ai-demo" className={styles.secondary}>
+                  GES AI call simulation <ArrowRight size={18} aria-hidden="true" />
+                </a>
               </div>
               <p className={clean.heroNote}>
                 Your team makes the decision, approves the response, and submits the bid.
@@ -95,6 +98,17 @@ export default async function Home() {
             <div className={`${styles.heroVisual} ${clean.visual}`}>
               <ProductPreview />
             </div>
+          </div>
+        </section>
+        <section id="ges-call-simulation" className={clean.orientation} aria-labelledby="ges-call-title">
+          <div>
+            <span className={styles.eyebrow}>GES ELECTRICAL · INTERACTIVE DEMO</span>
+            <h2 id="ges-call-title">See a customer call become an appointment and follow-up drafts.</h2>
+          </div>
+          <div>
+            <p>Follow a simulated lighting inquiry with Donn as the customer in Calimesa. View the customer record, demonstration appointment, email draft, proposal draft, and operator handoff.</p>
+            <a href="/ges-ai-demo" className={clean.textLink}>Run the GES AI call simulation <ArrowRight size={16} aria-hidden="true" /></a>
+            <p>Scripted demonstration with optional browser speech. No live calls, bookings, emails, or contracts are sent.</p>
           </div>
         </section>
         <section id="capabilities" className={clean.orientation} aria-label="What BidXchange is">
